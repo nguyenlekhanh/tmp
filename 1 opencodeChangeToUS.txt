@@ -1,0 +1,3634 @@
+ok chạy ok rồi
+source github này: https://github.com/zane-tv/tiktok-live-temple-rpc
+
+giờ sửa lại cho bên mỹ dc ko?
+ChatGPT said:
+
+Được nhé! Mình có thể giúp bạn chuyển project Chùa Online TikTok Live RPC thành phiên bản dành cho thị trường Mỹ (US), giữ nguyên hệ thống đang chạy tốt trên Windows, Bun và ZeroTTS.
+
+Mình đã xem repository GitHub: zane-tv/tiktok-live-temple-rpc .
+
+Hiện tại project được thiết kế chủ yếu cho người xem Việt Nam: giao diện tiếng Việt, lời cầu nguyện tiếng Việt, giọng Mai Chi, nội dung xin xăm, công đức và các nghi thức Phật giáo. 
+GitHub
+
+Mình đề xuất không chỉ dịch tiếng Việt sang tiếng Anh, mà xây dựng lại trải nghiệm phù hợp với người xem TikTok Mỹ.
+1. Phiên bản US nên thay đổi thế nào?
+Essencial para iniciantes: Prática diária de meditação, recitação de mantras e meditação budista em uma única rotina, criando uma nova energia para o corpo e mente em 7 dias. - Caminho da Iluminação - Rede de Estudos Budistas
+ 
+
+US Buddhist Temple Live
+
+Giao diện tiếng Anh, không gian thiền định, tượng Phật, hoa sen, nến và hiệu ứng ánh sáng nhẹ.
+Lanterne flottante Lotus pas cher x 6, lanternes thailandaises mariage
+ 
+
+Send a Prayer
+
+Người xem bình luận lời cầu nguyện, tên hoặc lời chúc. Hệ thống hiển thị đèn hoa sen và đọc lời cầu nguyện bằng tiếng Anh.
+Tibetanske pojoče skodelice | Tibetanske Sklede
+ 
+
+Meditation & Blessings
+
+Thả tim kích hoạt chuông thiền, follow kích hoạt hiệu ứng ánh sáng, gift kích hoạt nghi thức đặc biệt.
+3d golden lotus flower shape logo | Premium Vector
+ 
+
+Community Gratitude Wall
+
+Bảng vinh danh người xem, người gửi lời cầu nguyện và người ủng hộ livestream.
+2. Những phần cần sửa trong source code
+
+File
+	
+
+Nội dung thay đổi
+
+public/index.html
+	
+
+Chuyển toàn bộ giao diện sang English
+
+public/admin.html
+	
+
+Bảng điều khiển tiếng Anh
+
+public/js/live.js
+	
+
+Đổi câu lệnh tương tác, hiệu ứng và thông báo
+
+public/js/particles.js
+	
+
+Điều chỉnh hiệu ứng theo phong cách US
+
+public/css/live.css
+	
+
+Thiết kế lại màu sắc, typography, bố cục
+
+server.js
+	
+
+Từ khóa comment, xử lý gift, lời cảm ơn
+
+tts_worker.py
+	
+
+Lọc văn bản tiếng Anh và giọng đọc phù hợp
+
+data/
+	
+
+Tách dữ liệu, bảng xếp hạng và nội dung US
+Một điểm rất quan trọng: giọng đọc
+
+Hiện tại project sử dụng ZeroTTS với giọng mặc định Mai Chi. Không nên chỉ đổi câu tiếng Việt thành tiếng Anh rồi giữ nguyên bộ lọc tiếng Việt.
+
+Cần chọn một giải pháp TTS tiếng Anh có giọng tự nhiên, ví dụ giọng American English, đồng thời giữ ZeroTTS làm tùy chọn nếu vẫn cần tiếng Việt.
+3. Các tính năng tương tác dành cho người xem Mỹ
+
+TikTok event
+	
+
+Hành động
+
+Like
+	
+
+Ring meditation bell
+
+Follow
+	
+
+Send a blessing animation
+
+Share
+	
+
+Light a golden lotus
+
+Comment PRAYER
+	
+
+Send a prayer
+
+Comment PEACE
+	
+
+Peaceful meditation animation
+
+Comment LOVE
+	
+
+Send love and kindness
+
+Rose gift
+	
+
+Small lotus offering
+
+Large gift
+	
+
+Special temple ceremony
+
+Nội dung sẽ dùng tiếng Anh tự nhiên, không dịch máy từng chữ.
+4. Mình đề xuất làm phiên bản US theo hướng này
+PEACEFUL TEMPLE LIVE
+Buddha Ayurvedic Hospital - Premium Healing Gateway | Private Membership Association
+ 
+Send a Prayer • Find Your Peace
+
+Interactive livestream for an American audience
+
+    English voice narration
+
+    American English comments
+
+    Live prayer messages
+
+    Meditation bell and lotus animations
+
+    Community leaderboard
+
+    TikTok gifts and follower interactions
+
+Mình sẽ giữ lại:
+
+    Bun.js và JSON-RPC.
+
+    Kết nối TikTok Live.
+
+    Hệ thống OBS 1080 × 1920.
+
+    Hệ thống nhận diện Like, Follow, Share, Gift.
+
+    Cơ chế hàng đợi TTS và hiệu ứng tương tác.
+
+Như vậy không phải viết lại toàn bộ project từ đầu.
+5. Mình cần bạn xác nhận một điều
+
+Bạn muốn hướng nội dung nào cho thị trường Mỹ?
+
+Chọn phong cách livestream
+
+A. Buddhist Temple Live
+
+Giữ chủ đề Phật giáo, cầu nguyện, hoa sen, chuông chùa. Phù hợp cộng đồng quan tâm Phật giáo tại Mỹ.
+
+B. Spiritual & Meditation Live
+
+Thiền định, bình an, năng lượng tích cực, chữa lành tinh thần. Hướng đến cộng đồng rộng hơn.
+
+C. Prayer & Blessings Live
+
+Cầu nguyện, gửi lời chúc phúc, ánh sáng và lòng biết ơn.
+
+Giọng đọc
+American English – giọng Mỹ tự nhiên
+British English – giọng Anh
+English + Vietnamese – hai ngôn ngữ
+
+Sau khi xác nhận, bạn gửi mình file ZIP source hiện tại (không cần gửi .venv, node_modules hay model AI). Mình sẽ hướng dẫn chỉnh sửa theo từng file, giữ nguyên bản đang chạy tốt để tránh phát sinh lỗi lần nữa.
+You said:
+
+giờ có opencode làm sao kêu opencode sửa, cho mình prompt kêu opencode sửa dc ko?
+và voice mình mới thêm thư mục config/piper/en hay config/piper/vn
+ChatGPT said:
+
+Được. Nếu bạn đang dùng OpenCode, cách tốt nhất là đưa cho nó một prompt yêu cầu đọc toàn bộ source, phân tích kiến trúc rồi chuyển đổi sang phiên bản US, đồng thời giữ nguyên các chức năng đang chạy ổn định.
+
+Vì bạn đã có thư mục config/piper/en và config/piper/vn, mình đề xuất sử dụng Piper TTS để phân biệt giọng tiếng Anh và tiếng Việt, không cần phụ thuộc vào ZeroTTS cho tiếng Anh.
+1. Prompt đầy đủ cho OpenCode
+
+Bạn mở OpenCode tại thư mục:
+text
+
+tiktok-live-temple-rpc-main
+
+Sau đó copy toàn bộ prompt này vào OpenCode.
+Writing
+TASK: Convert TikTok Live Temple RPC into US Market Edition
+
+You are working on an existing TikTok Live RPC project.
+
+Your task is to transform the current Vietnamese-focused project into a polished US-market livestream experience while preserving the existing architecture and all working functionality.
+
+IMPORTANT: Do not rebuild the project from scratch. Inspect the entire repository before making changes.
+1. FIRST: Analyze the Existing Project
+
+Before editing anything:
+
+    Read package.json and understand the Bun.js architecture.
+    Inspect server.js, tts_worker.py, public/, config/, data/, and all related modules.
+    Understand TikTok Live connection and event handling.
+    Understand JSON-RPC and WebSocket endpoints.
+    Understand OBS live screen rendering.
+    Understand the existing TTS implementation.
+    Inspect the existing Piper voice directories:
+        config/piper/en
+        config/piper/vn
+
+Identify existing voice models, configuration files, and their actual filenames.
+
+Do not assume model filenames. Discover them from the filesystem.
+
+Create a short implementation plan before modifying files.
+2. US MARKET LOCALIZATION
+
+Convert all user-facing content into natural American English.
+
+Requirements:
+
+    English interface.
+    American spelling and natural expressions.
+    English admin dashboard.
+    English livestream notifications.
+    English prayer and blessing messages.
+    English comments and interaction commands.
+    English event descriptions.
+    English leaderboard.
+    English OBS overlays.
+
+Avoid literal translations from Vietnamese.
+
+Do not translate internal identifiers, RPC method names, API field names, or protocol structures unless absolutely necessary.
+3. LIVESTREAM THEME
+
+Create a polished US-market experience named:
+
+PEACEFUL TEMPLE LIVE
+
+Main tagline:
+
+"Send a Prayer. Find Your Peace."
+
+Visual direction:
+
+    Elegant Buddhist temple atmosphere.
+    Golden lotus flowers.
+    Warm golden lighting.
+    Peaceful meditation atmosphere.
+    Floating particles.
+    Beautiful typography.
+    Smooth animations.
+    Professional vertical livestream layout.
+
+Keep OBS output at 1080x1920 (9:16).
+
+Make sure the interface is readable on mobile screens.
+4. TIKTOK INTERACTION SYSTEM
+
+Preserve all existing TikTok event handlers.
+
+Adapt user-facing interactions:
+
+    Like: meditation bell or subtle lotus animation.
+    Follow: welcome blessing animation.
+    Share: golden lotus animation.
+    Comment PRAYER: display a prayer message.
+    Comment PEACE: peaceful meditation animation.
+    Comment LOVE: loving-kindness message.
+    Gift: appropriate lotus offering animation.
+    Large gifts: special celebration animation.
+
+Use the existing TikTok event data structures.
+
+Do not invent event properties or break existing event handlers.
+
+Add configurable English messages.
+
+Avoid making religious or supernatural guarantees.
+5. TTS SYSTEM - VERY IMPORTANT
+
+The project has two voice directories:
+
+    config/piper/en
+    config/piper/vn
+
+Inspect both directories recursively.
+
+Determine the actual Piper model files (.onnx), configuration files (.onnx.json), and available voice metadata.
+
+Implement a robust multilingual TTS manager:
+
+English:
+
+    Default language: en-US.
+    Use an installed American English Piper voice from config/piper/en.
+
+Vietnamese:
+
+    Default language: vi-VN.
+    Use an installed Vietnamese Piper voice from config/piper/vn.
+
+Requirements:
+
+    Automatically select the correct voice based on language.
+    English content must never be sent to the Vietnamese voice.
+    Vietnamese content must never be sent to the English voice.
+    Keep voice selection configurable.
+    Add graceful fallback when a voice model is missing.
+    Do not download voice models automatically.
+    Do not delete or modify existing voice models.
+    Preserve the existing TTS queue.
+    Preserve asynchronous processing.
+    Prevent overlapping speech.
+    Preserve the existing audio output format and OBS integration.
+
+If Piper is not currently integrated, inspect the installed Piper package or executable before implementing the integration.
+
+Do not assume a Piper CLI command or API without checking the installed environment.
+
+Keep ZeroTTS available as an optional fallback if it is already functional.
+6. LANGUAGE CONFIGURATION
+
+Add a clean configuration structure.
+
+For example:
+
+DEFAULT_LANGUAGE=en DEFAULT_EN_VOICE=auto DEFAULT_VN_VOICE=auto
+
+Use actual discovered model names instead of hardcoded guesses.
+
+Allow language configuration without editing source code.
+7. ADMIN DASHBOARD
+
+Localize the admin dashboard into American English.
+
+Add or preserve:
+
+    Language selection.
+    English voice selection.
+    Vietnamese voice selection.
+    TTS enable/disable.
+    Speech volume.
+    Speech speed if supported.
+    Test voice button.
+    Current voice status.
+    TikTok connection status.
+    Live event status.
+
+Keep existing admin features functional.
+8. SAFETY AND RELIABILITY
+
+Critical requirements:
+
+    Do not break TikTok Live connectivity.
+    Do not break JSON-RPC 2.0.
+    Do not break WebSocket endpoints.
+    Do not break OBS browser source.
+    Do not break existing event processing.
+    Do not delete user data.
+    Do not overwrite voice models.
+    Do not remove ZeroTTS unless explicitly requested.
+    Preserve Windows compatibility.
+    Use correct Windows paths.
+    Avoid Linux-only executable paths.
+    Handle missing voice files gracefully.
+    Do not expose credentials or TikTok session data.
+
+9. TESTING
+
+After modifications:
+
+    Check JavaScript syntax.
+    Check Python syntax.
+    Verify Piper model discovery.
+    Verify English voice initialization.
+    Verify Vietnamese voice initialization.
+    Test English TTS.
+    Test Vietnamese TTS.
+    Test language switching.
+    Test server startup using bun start.
+    Verify TikTok connection.
+    Verify OBS screen and admin dashboard.
+    Verify JSON-RPC and WebSocket endpoints.
+
+Do not claim a test passed unless it was actually executed.
+10. FINAL REPORT
+
+At completion, provide:
+
+    Files modified.
+    Features implemented.
+    English voice model detected.
+    Vietnamese voice model detected.
+    TTS architecture used.
+    Tests passed.
+    Remaining issues.
+    Exact commands to start the project on Windows.
+
+Work directly in the existing repository.
+
+Prioritize stability, compatibility, and maintainability over unnecessary rewrites.
+2. Cấu trúc voice Piper nên có
+
+Bạn đang có hai thư mục:
+
+config/piper/
+
+en/
+English
+
+en_US-voice-name.onnx
+
+en_US-voice-name.onnx.json
+
+vn/
+Vietnamese
+
+vi_VN-voice-name.onnx
+
+vi_VN-voice-name.onnx.json
+
+Đây là cấu trúc minh họa. Tên file thực tế phải theo model bạn đã tải.
+3. Kiểm tra voice trước khi đưa OpenCode sửa
+
+Bạn chạy lệnh này trong CMD:
+cmd
+
+dir /s /b config\piper
+
+Nó sẽ liệt kê toàn bộ model Piper.
+
+Gửi kết quả cho mình, mình có thể xác định:
+
+    Giọng tiếng Anh đang dùng là American hay British.
+
+    Giọng Việt là giọng nam hay nữ nếu metadata có thông tin.
+
+    Có đủ file .onnx và .onnx.json không.
+
+4. Một lưu ý quan trọng
+
+Mình khuyên thiết kế hệ thống như sau:
+
+Nội dung
+	
+
+TTS
+
+English livestream
+	
+
+Piper English
+
+Vietnamese livestream
+	
+
+Piper Vietnamese
+
+Nội dung không có voice Piper
+	
+
+ZeroTTS fallback
+
+Tắt đọc tự động
+	
+
+Không phát TTS
+
+Đặc biệt: Không để OpenCode xóa ZeroTTS hoặc viết lại toàn bộ server.js. Hãy yêu cầu nó chỉnh từng module và kiểm tra sau mỗi thay đổi.
+
+Như vậy bạn có thể vận hành một project nhưng phục vụ được cả người xem Mỹ lẫn Việt Nam.
+
+
+
+111111111111 chuyển qua thiên chúa dùng freebuff
+thôi giờ giữ source đó, dùng source mẫu đó chuyển qua thiên chúa dc ko? tôi dùng freebuff
+
+đúng rồi: Mình nghiêng về General Christian nếu mục tiêu là tiếp cận nhiều người xem Mỹ hơn, vì không giới hạn livestream vào một hệ phái cụ thể.
+Nó có tự lấy hình luôn ko?
+
+cho lại full prompt đi
+
+Dưới đây là FULL PROMPT hoàn chỉnh dành cho Freebuff, gộp tất cả yêu cầu thành một nhiệm vụ duy nhất: chuyển source Chùa Online thành General Christian Prayer Live dành cho thị trường Mỹ, tự tìm và tải hình ảnh, tích hợp Piper TTS, giữ nguyên TikTok RPC và OBS.
+
+Bạn chỉ cần mở Freebuff tại thư mục project `tiktok-live-temple-rpc-main`, sau đó copy toàn bộ prompt này.
+
+Writing
+
+# MASTER PROJECT TASK: CONVERT TIKTOK LIVE TEMPLE RPC INTO GENERAL CHRISTIAN PRAYER LIVE (US MARKET)
+
+You are an autonomous senior full-stack developer working on an existing project.
+
+GitHub source: https://github.com/zane-tv/tiktok-live-temple-rpc
+
+PROJECT LOCATION: Existing local repository: tiktok-live-temple-rpc-main
+
+OBJECTIVE:
+
+Transform the existing Vietnamese Buddhist TikTok livestream application into a professional GENERAL CHRISTIAN PRAYER LIVE platform targeting viewers in the United States.
+
+The new project brand:
+
+CHRISTIAN PRAYER LIVE
+
+Main tagline:
+
+FAITH • HOPE • LOVE
+
+Secondary tagline:
+
+"Pray Together. Grow in Faith."
+
+IMPORTANT:
+
+- Work directly in the existing source code.
+- Do not rebuild the application from scratch.
+- Preserve all working infrastructure.
+- Do not delete existing functionality unnecessarily.
+- Do not break the current Windows installation.
+- Make changes incrementally.
+- Back up files before modifying important modules.
+- Test actual functionality instead of only changing text and CSS.
+
+# ================================================== PHASE 1: ANALYZE THE EXISTING PROJECT
+
+Before editing, inspect the entire repository.
+
+Read and understand:
+
+- package.json
+- server.js
+- tts\_worker.py
+- public/
+- public/js/
+- public/css/
+- config/
+- config/piper/en/
+- config/piper/vn/
+- data/
+- all existing RPC modules
+- all TikTok event handlers
+- OBS browser source
+- admin dashboard
+- existing TTS implementation
+
+Identify:
+
+1. How TikTok Live connects.
+2. How comments are received.
+3. How likes, follows, shares and gifts are handled.
+4. How JSON-RPC works.
+5. How WebSocket communicates.
+6. How OBS renders the livestream.
+7. How TTS is queued and played.
+8. How backgrounds and visual effects are loaded.
+
+Create a short implementation plan before modifying files.
+
+Do not make assumptions about existing file names or APIs.
+
+# ================================================== PHASE 2: PRESERVE EXISTING INFRASTRUCTURE
+
+Keep all existing working functionality:
+
+- Bun.js server.
+- TikTok Live Connector.
+- TikTok username/room connection.
+- TikTok comment listener.
+- Like listener.
+- Follow listener.
+- Share listener.
+- Gift listener.
+- JSON-RPC 2.0.
+- WebSocket.
+- OBS browser source.
+- 1080x1920 vertical livestream.
+- Admin dashboard.
+- TTS queue.
+- Audio playback.
+- Python environment.
+- Piper voice models.
+- ZeroTTS fallback.
+- Existing RPC methods.
+
+Do not rename or remove RPC endpoints.
+
+Do not modify API structures unless necessary.
+
+Do not break compatibility with existing OBS scenes.
+
+# ================================================== PHASE 3: GENERAL CHRISTIAN BRANDING
+
+Replace the Buddhist temple identity with:
+
+CHRISTIAN PRAYER LIVE
+
+Target market: United States.
+
+Religious direction: GENERAL CHRISTIAN.
+
+The content must be welcoming to viewers from different Christian traditions.
+
+Do not focus exclusively on Catholicism or Protestantism.
+
+Use broadly recognizable Christian themes:
+
+- Jesus Christ.
+- Christian faith.
+- Prayer.
+- Hope.
+- Love.
+- Forgiveness.
+- Gratitude.
+- God's grace.
+- Bible-inspired encouragement.
+- Peace.
+- Spiritual reflection.
+
+Remove Buddhist-specific content from the user-facing interface:
+
+- Buddha.
+- Buddhist temples.
+- Lotus offerings.
+- Buddhist rituals.
+- Buddhist fortune telling.
+- Buddhist merit systems.
+- Buddhist prayers.
+- Buddhist symbols.
+
+Do not delete old source files if they are still required for compatibility. Replace the user-facing experience.
+
+All user-facing content must use natural American English.
+
+# ================================================== PHASE 4: PROFESSIONAL LIVESTREAM DESIGN
+
+Create a premium Christian livestream visual experience.
+
+Brand:
+
+CHRISTIAN PRAYER LIVE
+
+Tagline:
+
+FAITH • HOPE • LOVE
+
+Secondary text:
+
+"Pray Together. Grow in Faith."
+
+Visual direction:
+
+- Beautiful Christian church interiors.
+- Illuminated crosses.
+- Holy Bible.
+- Church stained glass.
+- Prayer candles.
+- Sunrise.
+- Golden light rays.
+- Peaceful skies.
+- Elegant Christian artwork.
+- Soft floating particles.
+- Cinematic lighting.
+
+Color palette:
+
+- Deep navy.
+- Warm gold.
+- Ivory white.
+- Soft beige.
+- Dark charcoal.
+
+Avoid excessive animations.
+
+The design should look professional, peaceful and trustworthy.
+
+OBS layout:
+
+- 1080x1920.
+- Vertical 9:16.
+- Mobile-readable text.
+- Responsive layout.
+- Clear prayer request area.
+- Live comments.
+- Community activity.
+- Attractive event notifications.
+
+Create an attractive central Christian visual with a cross as a primary symbol.
+
+# ================================================== PHASE 5: AUTOMATIC IMAGE DISCOVERY AND DOWNLOAD
+
+VERY IMPORTANT:
+
+Do not use only placeholder images.
+
+Find, download and integrate real Christian-themed image assets.
+
+Use reputable image sources:
+
+- Unsplash.
+- Pexels.
+- Pixabay.
+- Wikimedia Commons.
+
+Only use images with suitable licenses for commercial livestream broadcasting.
+
+Check license and attribution requirements.
+
+Do not download random copyrighted images.
+
+IMAGE CATEGORIES:
+
+1. Christian cross.
+2. Church interior.
+3. Stained glass.
+4. Holy Bible.
+5. Prayer candles.
+6. Jesus Christ artwork.
+7. Sunrise and peaceful skies.
+8. Christian worship atmosphere.
+9. Golden light backgrounds.
+10. Peaceful landscapes.
+
+Create this asset structure:
+
+public/assets/christian/
+
+backgrounds/ cross/ church/ bible/ candles/ jesus/ overlays/
+
+Download approximately 10-20 high-quality images if suitable assets are available.
+
+Requirements:
+
+- Prefer high-resolution images.
+- Prefer vertical images or images suitable for 9:16 cropping.
+- Optimize image sizes.
+- Use descriptive filenames.
+- Avoid duplicate images.
+- Verify downloaded files.
+- Record original source URLs.
+- Record license information.
+- Record attribution requirements.
+
+Create:
+
+public/assets/christian/asset-manifest.json
+
+The manifest should include:
+
+- Filename.
+- Category.
+- Source.
+- License.
+- Attribution.
+- Image dimensions if available.
+
+Do not claim an image was downloaded unless the file actually exists.
+
+Do not use remote image URLs during the livestream.
+
+All downloaded assets must be served locally.
+
+If image downloading is unavailable, create the folder structure and report which images still need to be added.
+
+# ================================================== PHASE 6: AUTOMATIC BACKGROUND ROTATION
+
+Implement automatic background rotation for OBS.
+
+Example rotation:
+
+1. Beautiful church interior.
+2. Cross at sunrise.
+3. Holy Bible with candlelight.
+4. Peaceful Christian landscape.
+5. Church stained glass.
+6. Christian prayer candles.
+7. Golden illuminated cross.
+
+Requirements:
+
+- Smooth fade transitions.
+- Configurable interval.
+- No abrupt flashing.
+- No distracting effects.
+- Keep prayer text readable.
+- Use dark overlays when necessary.
+- Avoid loading external URLs.
+
+Admin controls:
+
+- Enable/disable background rotation.
+- Select background category.
+- Change background manually.
+- Set rotation interval.
+- Preview available backgrounds.
+- Randomize backgrounds.
+
+Use locally downloaded images.
+
+# ================================================== PHASE 7: TIKTOK INTERACTION SYSTEM
+
+Preserve existing TikTok event structures.
+
+Adapt existing events to Christian interactions.
+
+LIKE:
+
+Display subtle golden light particles around the cross.
+
+FOLLOW:
+
+Display:
+
+"Welcome to our prayer community. God bless you\!"
+
+SHARE:
+
+Display:
+
+"Thank you for sharing faith, hope and love\!"
+
+COMMENT COMMANDS:
+
+AMEN: Display a beautiful AMEN animation.
+
+PRAY: Display:
+
+"Let us pray together."
+
+JESUS: Display a Jesus-centered inspirational message.
+
+FAITH: Display an inspirational faith message.
+
+HOPE: Display a message about hope.
+
+LOVE: Display a message about God's love.
+
+PRAYER: Invite viewers to submit prayer requests.
+
+GOD: Display a short inspirational Christian message.
+
+THANK YOU: Display a gratitude animation.
+
+Avoid repeating the same messages too frequently.
+
+Add configurable message templates.
+
+Use the existing TikTok event payloads.
+
+Do not invent event fields.
+
+# ================================================== PHASE 8: PRAYER REQUEST SYSTEM
+
+Implement an interactive prayer request system.
+
+Accept comments such as:
+
+PRAY FOR ME PRAYER REQUEST PLEASE PRAY PRAY FOR MY FAMILY
+
+When detected:
+
+- Add the request to a prayer queue.
+- Display a visually attractive prayer notification.
+- Show the viewer's TikTok display name when available.
+- Keep messages concise.
+- Avoid displaying sensitive personal information.
+- Prevent spam.
+- Add configurable moderation.
+
+Example:
+
+"Sarah is asking for prayers for her family."
+
+Community message:
+
+"Let us keep Sarah and her family in our prayers."
+
+Add a prayer request queue to the admin dashboard.
+
+Admin controls:
+
+- Approve request.
+- Hide request.
+- Remove request.
+- Pause prayer notifications.
+- Clear queue.
+
+Do not make promises of guaranteed healing, wealth, miracles or supernatural outcomes.
+
+Never require viewers to send gifts to receive prayers.
+
+# ================================================== PHASE 9: TIKTOK GIFTS
+
+Adapt existing gift handlers.
+
+Use Christian-themed animations.
+
+Small gifts:
+
+- Small prayer candle.
+- Soft golden light.
+- Thank-you notification.
+
+Medium gifts:
+
+- Illuminated cross animation.
+- Beautiful candlelight effect.
+
+Large gifts:
+
+- Special celebration.
+- Golden light rays.
+- Community gratitude message.
+
+Example messages:
+
+"Thank you for supporting our prayer community."
+
+"May your kindness inspire hope and love."
+
+Do not imply that gifts purchase blessings, prayers, healing or salvation.
+
+Keep existing gift event processing and gift IDs.
+
+# ================================================== PHASE 10: PIPER MULTILINGUAL TTS
+
+VERY IMPORTANT:
+
+The existing project contains:
+
+config/piper/en/ config/piper/vn/
+
+Inspect both directories recursively.
+
+Identify actual installed voice files:
+
+- .onnx
+- .onnx.json
+
+Read model metadata.
+
+Do not assume model names.
+
+Implement language-aware voice selection.
+
+ENGLISH:
+
+- Default language: en-US.
+- Use an available American English Piper voice.
+- Natural American pronunciation.
+- Correct English punctuation.
+- Appropriate speaking speed.
+- Clear and friendly narration.
+
+VIETNAMESE:
+
+- Default language: vi-VN.
+- Use the existing Vietnamese Piper voice.
+- Preserve Vietnamese pronunciation.
+
+Requirements:
+
+- English messages must use English TTS.
+- Vietnamese messages must use Vietnamese TTS.
+- Do not send English through a Vietnamese-only text sanitizer.
+- Preserve the existing TTS queue.
+- Prevent overlapping speech.
+- Preserve existing audio playback.
+- Preserve OBS integration.
+- Add voice testing controls.
+- Add voice selection in admin dashboard.
+- Allow TTS to be disabled.
+- Allow language configuration.
+
+Keep ZeroTTS as an optional fallback if already functional.
+
+Do not delete or overwrite existing voice models.
+
+Do not download voice models automatically.
+
+Do not invent Piper CLI commands.
+
+Inspect the installed Piper implementation before integrating or changing its invocation.
+
+# ================================================== PHASE 11: ENGLISH PRAYER AND MESSAGE LIBRARY
+
+Create a reusable English message library.
+
+Categories:
+
+1. Welcome messages.
+2. Prayer invitations.
+3. Faith encouragement.
+4. Hope messages.
+5. Love messages.
+6. Gratitude messages.
+7. Bible-inspired encouragement.
+8. Community appreciation.
+9. Gift thank-you messages.
+10. Closing messages.
+
+Use natural American English.
+
+Messages should be short and suitable for live speech.
+
+Avoid repetitive messages.
+
+Avoid fabricated Bible quotations.
+
+If quoting Scripture, verify the book, chapter and verse.
+
+Store messages separately from application logic so they can be edited easily.
+
+# ================================================== PHASE 12: ADMIN DASHBOARD
+
+Convert the existing admin dashboard into English.
+
+Preserve existing functionality.
+
+Add or improve:
+
+- TikTok connection status.
+- Current live room information.
+- Live comments.
+- Like counter.
+- Follow counter.
+- Share counter.
+- Gift counter.
+- Prayer request queue.
+- Prayer message management.
+- Background selection.
+- Background rotation.
+- English voice selection.
+- Vietnamese voice selection.
+- TTS test button.
+- TTS enable/disable.
+- Voice status.
+- Speech volume.
+- Speech speed if supported.
+- Live event configuration.
+
+Make the dashboard easy to use.
+
+Do not remove existing RPC controls.
+
+# ================================================== PHASE 13: CONFIGURATION
+
+Use a configuration file or environment variables where appropriate.
+
+Example settings:
+
+DEFAULT\_LANGUAGE=en DEFAULT\_EN\_VOICE=auto DEFAULT\_VN\_VOICE=auto
+
+CHRISTIAN\_THEME=true BACKGROUND\_ROTATION=true BACKGROUND\_ROTATION\_INTERVAL=60
+
+TTS\_ENABLED=true
+
+Use the actual discovered voice filenames.
+
+Do not hardcode incorrect paths.
+
+Preserve existing configuration.
+
+# ================================================== PHASE 14: WINDOWS COMPATIBILITY
+
+The application runs on Windows using:
+
+- XAMPP directory structure.
+- Bun.
+- Python 3.12.
+- uv.
+- Windows virtual environment.
+
+Python executable:
+
+.venv\\Scripts\\python.exe
+
+Use Windows-compatible paths.
+
+Do not assume:
+
+bin/python python3
+
+Use path.join() and pathlib.Path appropriately.
+
+Do not break the existing working ZeroTTS local model configuration.
+
+Do not modify the working model cache unnecessarily.
+
+# ================================================== PHASE 15: TESTING
+
+After modifications, run actual tests.
+
+JavaScript:
+
+- Syntax checks.
+- Bun startup.
+- TikTok connector initialization.
+- RPC endpoint.
+- WebSocket endpoint.
+
+Python:
+
+- Python syntax.
+- Piper voice discovery.
+- English voice initialization.
+- Vietnamese voice initialization.
+- English speech test.
+- Vietnamese speech test.
+
+Frontend:
+
+- OBS browser source.
+- 1080x1920 rendering.
+- Background rotation.
+- Prayer notifications.
+- Gift animations.
+- Admin dashboard.
+
+TikTok:
+
+- Comment handling.
+- AMEN command.
+- PRAY command.
+- FAITH command.
+- Like handling.
+- Follow handling.
+- Share handling.
+- Gift handling.
+
+Do not claim tests passed unless they were actually executed.
+
+If TikTok credentials or an active LIVE session are unavailable, clearly report that those tests require a real session.
+
+# ================================================== PHASE 16: FINAL REPORT
+
+At completion, provide a detailed report:
+
+1. Files modified.
+2. Files created.
+3. Features implemented.
+4. Images downloaded.
+5. Image source and license information.
+6. Piper English model detected.
+7. Piper Vietnamese model detected.
+8. TTS architecture.
+9. Tests actually passed.
+10. Tests not performed.
+11. Remaining issues.
+12. Exact Windows startup commands.
+
+Do not leave the project in a broken state.
+
+If an implementation causes a regression, fix it before completing.
+
+FINAL PRIORITY:
+
+A stable, professional Christian Prayer Live application for the United States market, preserving the existing TikTok Live RPC architecture and working OBS integration.
+
+Do not rebuild from scratch. Work directly in the existing repository.
+
+## 2. Sau khi Freebuff chạy xong, cấu trúc mong muốn
+
+tiktok-live-temple-rpc-main/
+
+public/
+
+assets/christian/
+
+backgrounds · cross · church · bible · candles · jesus · overlays
+
+index.html
+
+js/ · css/
+
+config/piper/
+
+en/ – American English voice
+
+vn/ – Vietnamese voice
+
+server.js
+
+tts\_worker.py
+
+package.json
+
+.env
+
+## 3. Cách triển khai an toàn
+
+Mình khuyên bạn làm theo thứ tự:
+
+1. Copy toàn bộ project hiện tại thành một bản backup `tiktok-live-temple-rpc-backup`.
+2. Cho Freebuff đọc và phân tích toàn bộ source trước.
+3. Cho phép nó sửa source và tạo thư mục hình ảnh Christian.
+4. Yêu cầu nó chạy kiểm tra trước khi kết thúc.
+5. Chỉ thay project đang livestream sau khi bản mới chạy ổn.
+
+Lưu ý: Không đưa TikTok cookies, session hoặc API secrets vào prompt. Không cho Freebuff xóa `.venv`, model ZeroTTS hay các thư mục Piper hiện có.
+
+Mục tiêu cuối cùng là một hệ thống duy nhất: Christian Prayer Live – American English – Piper Voice – TikTok Live – OBS 9:16 – tự động đổi hình nền và hiển thị lời cầu nguyện.
+
+
+CHRISTIAN PRAYER LIVE — Conversion Complete
+The existing Bun/TikTok Live RPC application has been converted in place into a general Christian prayer livestream for the US market. The original JSON-RPC architecture, TikTok event pipeline, WebSocket layer, 9:16 OBS stage, admin dashboard, Python environment and Piper models were preserved.
+
+The server is currently running at:
+
+Stage: http://localhost:3000
+OBS clean source: http://localhost:3000/?obs=1
+Admin: http://localhost:3000/admin
+What was implemented
+Area	Result
+Brand	CHRISTIAN PRAYER LIVE, “FAITH • HOPE • LOVE”, “Pray Together. Grow in Faith.”
+Visuals	Navy/gold/ivory church stage, glowing cross, licensed photography, soft overlays, particles
+Stage	1080×1920 layout, prayer request card, verse card, live comments, community activity, counters, footer
+TikTok	Comments, likes, follows, shares and gifts mapped to Christian interactions
+Prayer queue	Moderation with approve, hide, remove, pause, clear and auto-approve
+Backgrounds	19 local photographs, 6 categories, timed fade rotation, manual selection, thumbnails
+TTS	Language-aware Piper worker, EN-US and VI-VN voices, queue, cache, admin tests
+Admin	Full English dashboard for connection, prayer, audio, backgrounds, messages and RPC
+Compatibility	Original temple.* methods, event names, OBS URL and state aliases retained
+User-facing Buddhist content was removed. Internal legacy names such as temple.burnIncense remain only as RPC compatibility identifiers.
+
+Images and licensing
+Downloaded 19 photographs + 3 generated overlays into public/assets/christian, with full source, license and author records in asset-manifest.json.
+
+Category	Count
+Church interiors	4
+Altar crosses	4
+Prayer candles	4
+Sunrise/golden skies	3
+Bible/communion	2
+Christian artwork	2
+Generated overlays	3
+Licenses: 9× CC BY-SA 3.0, 5× CC BY-SA 4.0, 1× CC BY 2.0, 1× CC BY 3.0, 1× CC0, 2× public domain, plus 3 generated CC0 overlays.
+
+The stage now shows a subtle photo credit line for the active background, and the admin shows the full credit. Keep the manifest with the project and include the required photographer credits in your video description. All images are served locally; no remote image is requested during the stream.
+
+Piper voices detected
+English (3):
+
+en_US-amy-medium — default
+en_US-arctic-medium
+en_US-hfc_female-medium
+Vietnamese (14):
+
+vi_VN-vais1000-medium — default
+banmai, chieuthanh, cuc, duyoryx3175, lacphi, maiphuong, manhdung, minhkhang, minhquang, ngochuyen, ngochuyennew, phuongtrang, taian2
+The rewritten tts_worker.py selects voices by language, loads models on demand, caches WAV output and keeps the existing browser narration queue serialized. English events use US English voices; Vietnamese text uses the Vietnamese voice. The admin has Test English, Test Vietnamese, volume, speed, language and enable/disable controls.
+
+ZeroTTS was not retained as a fallback: the Windows checkout has no zerotts package and the old worker pointed to a macOS model directory, so it was not functional here. The original worker is preserved in backup/tts_worker.py.bak.
+
+Verification actually performed
+Server/API: 51/51 smoke checks passed via scripts/smoke-test.js, including:
+
+Bun startup, /api/health, /admin, all static assets.
+temple.getState compatibility and new counters.
+19-image background catalog, categories, local serving and manual changes.
+Prayer add/display/first-name privacy/pause/hide/remove.
+AMEN and PRAY commands, prayer-request detection and sanitization.
+English and Vietnamese Piper synthesis, WAV serving, cache hits, voice discovery.
+Settings updates, editable message library, tiered gift messages, Bible references.
+WebSocket JSON-RPC plus prayer.request, temple.event and temple.state notifications.
+TikTok connector: initialized successfully and failed gracefully for a non-live handle with Failed to retrieve Room ID from all sources.; disconnect clears the stale channel/error state. No crash.
+
+Browser: OBS mode rendered at the correct 1080×1920 aspect, AMEN overlay and event pipeline were exercised, prayer card and comments/community columns rendered, photo credit populated, footer placement verified, and the browser console had no JavaScript errors after the final reload. Admin connection, prayer moderation, voice controls and background grid were checked visually.
+
+Not tested here
+A real TikTok LIVE session. No live account was available, so actual comment/like/follow/share/gift events from TikTok were not observed end to end.
+OBS Studio itself. The page was verified in Chromium at the OBS aspect ratio, not captured inside OBS. Audio autoplay may require clicking Enable Audio & Narration once via OBS Interact.
+Long-duration CPU/audio stability over a multi-hour broadcast.
+Native-speaker pronunciation review of the generated English/Vietnamese audio.
+Main files
+server.js — HTTP, WebSocket, TikTok, RPC, prayer queue, rotation
+tts_worker.py — multilingual Piper worker
+config/app.config.json — settings
+config/messages.en.json — editable messages and verified KJV verses
+public/index.html — livestream stage
+public/admin.html — ministry dashboard
+public/css/live.css, public/js/live.js, public/js/audio.js
+public/assets/christian/asset-manifest.json
+scripts/fetch_christian_assets.py — reproducible licensed-image fetcher
+scripts/smoke-test.js
+.env.example
+README.md — full setup, API, licensing and testing documentation
+backup/ — pre-conversion copies of modified files
+Windows startup
+The environment is already installed. To start again:
+
+bat
+Copy
+cd /d "C:\xampp\htdocs\ai\fbpage\banhang\tiktok y tuong marketing\1"
+bun run start
+For a fresh machine:
+
+bat
+Copy
+bun install
+uv venv .venv
+uv pip install --python .venv\Scripts\python.exe piper-tts pillow
+bun run start
+Then open OBS with a Browser source at http://localhost:3000/?obs=1, 1080×1920, and connect the TikTok account from /admin while it is live.
+
+Remaining notes
+The current room intentionally contains a two-request demo state. Clear it from the admin queue before going live.
+CC BY/BY-SA backgrounds require attribution; the on-stream credit and manifest are included for that purpose.
+This folder is not a Git repository, so no commit or push was made.
+The app is running with rotation enabled, TTS ready, default English voice en_US-amy-medium, and TikTok disconnected.
+The next highest-value step is a real LIVE run to validate the actual TikTok payloads and OBS audio behavior.
+
+
+11111111111111111
+Haha :D Đây mới là bài toán quan trọng. Christian Prayer Live không thể chỉ có hình thánh đường và nhạc nền. Phải tạo cảm giác mọi người đang tham gia một buổi cầu nguyện trực tiếp, dù hiện tại chỉ có 1 người xem.
+
+Mình đề xuất biến livestream thành một chương trình cầu nguyện tương tác liên tục dành cho khán giả Mỹ.
+
+## 1\. Thiết kế nội dung để giữ chân người xem
+
+¿Qué es el Te Deum? Historia del Himno de Alabanza 📜 – Productos Religiosos
+
+Welcome to Prayer
+
+Khi có người vào LIVE, hiện lời chào:
+
+"Welcome, friend\! You are not alone. Let's take a moment to pray together."
+
+Tương tác khi có người vào
+
+The Good Ones International Outreach
+
+Daily Bible Verse
+
+Cứ 3–5 phút xuất hiện một câu Kinh Thánh KJV, kèm lời suy ngẫm ngắn.
+
+Prayer of the Hour
+
+Mỗi 5–10 phút có một lời cầu nguyện bằng tiếng Anh: sức khỏe, gia đình, bình an, hy vọng.
+
+Radiant Church Interior | Stained glass church, Stained glass art, Glass window art
+
+Community Prayer Wall
+
+Bình luận PRAY, AMEN để tham gia. Người xem có thể gửi lời cầu nguyện và thấy yêu cầu được duyệt hiển thị trên màn hình.
+
+## 2\. Tạo hoạt động liên tục trên màn hình
+
+Mình muốn màn hình có những nội dung thay đổi tự nhiên:
+
+- Người mới vào: chào mừng.
+- Người bình luận AMEN: hiện hiệu ứng Amen.
+- Người gửi PRAY: đưa lời cầu nguyện vào hàng đợi.
+- Người tặng quà: cảm ơn bằng tiếng Anh.
+- Mỗi vài phút: đổi câu Kinh Thánh.
+- Mỗi 5–10 phút: Piper đọc một lời cầu nguyện mới.
+- Nhạc nền luôn chạy nhẹ nhàng.
+
+Không nên giả lập người xem, bình luận, donate hoặc tạo cảm giác có người tham gia khi thực tế không có. Hãy để tương tác thật tạo nên cộng đồng.
+
+## 3\. Prompt cho Freebuff nâng cấp livestream
+
+Đây là phần mình nghĩ đáng làm nhất tiếp theo.
+
+Writing
+
+# FEATURE UPGRADE: CHRISTIAN PRAYER LIVE – INTERACTIVE LIVE SHOW
+
+Upgrade the existing Christian Prayer Live application into an engaging, automated Christian prayer livestream for US TikTok audiences.
+
+Do not rebuild the project. Preserve all existing functionality.
+
+## 1\. LIVE WELCOME SYSTEM
+
+When a real TikTok viewer joins:
+
+- Welcome them by display name.
+- Show a beautiful welcome animation.
+- Generate a short English greeting using Piper TTS.
+- Avoid repeating greetings for the same viewer too frequently.
+
+Example: "Welcome, Sarah\! We're so glad you're here. May God's peace be with you today."
+
+## 2\. DAILY BIBLE VERSE
+
+Create a rotating Bible verse system using verified KJV references.
+
+Every 3–5 minutes:
+
+- Display a Bible verse.
+- Show its book, chapter and verse.
+- Add a short inspirational reflection.
+- Optionally narrate it using Piper TTS.
+
+Avoid repeating recent verses.
+
+## 3\. AUTOMATED PRAYER PROGRAM
+
+Create themed prayer sessions:
+
+- Morning Prayer.
+- Prayer for Healing.
+- Prayer for Family.
+- Prayer for Anxiety and Peace.
+- Prayer for Financial Difficulties.
+- Prayer for Strength.
+- Night Prayer.
+- Prayer of Gratitude.
+
+Every 5–10 minutes, introduce a new prayer session.
+
+Each prayer should be natural, compassionate, original English prose.
+
+Do not promise miraculous outcomes or guaranteed healing.
+
+## 4\. REAL VIEWER INTERACTIONS
+
+Handle actual TikTok events:
+
+- Viewer joins.
+- Comments.
+- AMEN.
+- PRAY.
+- Prayer requests.
+- Gifts.
+- Likes.
+- Shares.
+- Follows.
+
+Each interaction should trigger an appropriate visual response.
+
+Do not fabricate viewers, comments, gifts or engagement metrics.
+
+## 5\. PRAYER WALL
+
+Build an attractive prayer request wall.
+
+Features:
+
+- Display approved prayer requests.
+- Show first names or anonymous labels only.
+- Moderate inappropriate content.
+- Allow admin approval and removal.
+- Automatically rotate approved requests.
+- Piper can read approved prayers when enabled.
+
+## 6\. CONTINUOUS LIVE SHOW
+
+Create a configurable programming schedule.
+
+Example: 00:00 Welcome and peaceful introduction. 03:00 Bible verse. 06:00 Morning prayer. 10:00 Prayer for family. 15:00 Bible reflection. 20:00 Community prayer. 25:00 Prayer for healing. 30:00 Gratitude prayer.
+
+Continue cycling without restarting the server.
+
+Avoid overlapping Piper narration.
+
+## 7\. AUDIO EXPERIENCE
+
+- Continuous soft Christian ambient music.
+- Automatic volume ducking during narration.
+- Natural pauses between prayers.
+- No overlapping speech.
+- English US voice as default.
+- Configurable narration speed and volume.
+
+## 8\. ADMIN CONTROLS
+
+Add:
+
+- Enable/disable automation.
+- Pause/resume program.
+- Select prayer theme.
+- Next prayer.
+- Next Bible verse.
+- TTS test.
+- Narration volume.
+- Music volume.
+- Welcome message toggle.
+- Prayer wall moderation.
+- Event history.
+
+Allow manual control at all times.
+
+## 9\. IMPORTANT REQUIREMENTS
+
+- Use real TikTok events only.
+- Never simulate viewers or donations in production.
+- Do not repeatedly spam greetings.
+- Avoid repetitive prayers.
+- Respect viewer privacy.
+- Keep the visual presentation peaceful and professional.
+- Preserve the 1080x1920 OBS stage.
+- Preserve existing JSON-RPC and WebSocket compatibility.
+
+## 10\. TESTING
+
+Test all features using clearly labeled simulated events.
+
+Verify that real TikTok events are handled separately from test events.
+
+Provide a report of modified files, actual tests and remaining limitations.
+
+## 4\. Mình đề xuất thêm một tính năng rất hay
+
+Ý tưởng nên triển khai# PRAY WITH ME ❤️
+
+Telugu Church Austin | Dedicated Telugu, Tamil, English & Spanish Services
+
+[tgfachurch.org](<https://tgfachurch.org/?utm_source=chatgpt.com>)
+
+Khi người xem vào, màn hình chuyển sang một lời mời:
+
+"Take a deep breath. Whatever you're going through today, let's bring it to God together."
+
+Sau đó Piper đọc lời cầu nguyện khoảng 45–60 giây, nhạc nền giảm nhẹ và ánh sáng thánh đường chuyển động chậm.
+
+## 5\. Mình muốn hỏi bạn một câu để định hướng chương trình
+
+Bạn muốn Christian Prayer Live hoạt động theo kiểu nào?
+
+interactive A. Interactive Prayer 24/7
+
+Chào người xem, đọc Kinh Thánh, cầu nguyện, tương tác bình luận.
+
+B. Virtual Church
+
+Giống một buổi lễ trong nhà thờ: Kinh Thánh, suy ngẫm, cầu nguyện, nhạc thờ phượng.
+
+C. Healing & Night Prayer
+
+Tập trung cầu nguyện chữa lành, bình an, mất ngủ, gia đình.
+
+D. Kết hợp cả ba
+
+Một chương trình Christian Prayer tổng hợp, thay đổi chủ đề liên tục.
+
+ Chọn phong cách
+
+Mình nghiêng về D: vừa có nội dung liên tục, vừa có tương tác thật, giúp người xem có lý do ở lại lâu hơn.
+
+
+
+Interactive Live Show — Built and Verified
+Christian Prayer Live now runs an automated, narrated program on top of the existing TikTok/JSON-RPC pipeline. It cycles welcome, Scripture, prayer, community and gratitude segments, welcomes real viewers by name, rotates the prayer wall, and hands full manual control to the dashboard. The server is running at http://localhost:3000/?obs=1 with the program live.
+
+The program
+#	Segment	Holds	#	Segment	Holds
+1	Welcome & peaceful introduction	2:00	7	Bible verse	2:30
+2	Bible verse	2:30	8	Prayer session	3:30
+3	Prayer session	3:00	9	Bible reflection	3:00
+4	Bible verse	2:30	10	Bible verse	2:30
+5	Prayer session	3:30	11	Prayer of gratitude	3:00
+6	Community prayer	3:00	12	Prayer session	3:30
+The cycle is ~35 minutes and repeats without a restart. Each cue fades a centered card onto the stage for 15–17 seconds, stays up while Piper is speaking, and is queued so prayers never talk over each other. Music ducks underneath.
+
+Eight prayer themes with three original prayers each: Morning, Healing, Family, Anxiety & Peace, Financial Hardship, Strength, Night, Gratitude. Recent themes and prayers are remembered, so wording does not repeat quickly. Nothing promises healing, wealth, miracles or salvation.
+Twenty verified KJV verses with an original short reflection each, stored in messages.en.json so they remain editable. The last five references are avoided.
+Welcomes fire only from real TikTok MEMBER events, use the first name, and are rate-limited: once per viewer per 45 minutes, 20 seconds apart, max three per two minutes.
+Prayer wall rotates approved requests in the stage's right column, first names only. The community segment lifts one request up in prayer; the text is displayed, but narration uses only the first name so personal details are never read aloud.
+Admin controls
+Live Show Automation panel: enable/disable, pause/resume, welcome toggle, program-narration toggle, prayer theme (rotate all or pin one), pace (Gentle 1.3× / Standard / Frequent 0.75×), Next Segment, Next Bible Verse, Next Reflection, Next Prayer, Gratitude Prayer, Test Welcome, Restart Program, live status, next-segment countdown and an auto/manual/test cue log. Compact equivalents sit in the stage's quick dock.
+
+Files
+File	Change
+lib/show.js	New. Schedule, 8 themes × 3 prayers, welcome logic, cue builder, verse/theme/variant de-duplication
+server.js	Show state + persistence, cue publishing with narration guard, 8 show.* RPC methods, show.cue/show.state broadcasts, real-join welcomes, cue replay on reconnect, simulated-event flags
+config/app.config.json	show defaults (enabled, welcome, narration, theme, pace)
+config/config.js	Show config + SHOW_* environment overrides
+config/messages.en.json	20 KJV verses, each with a reflection; Romans 8:28 completed to the full verse
+public/index.html	Cue card, program line, prayer wall column, demo badge, dock controls
+public/css/live.css	Cue card styles and variants, program line, compact prayer wall, demo badge
+public/js/live.js	Cue queue with narration hold, program line, wall rotation, dock wiring
+public/admin.html	Live Show Automation panel and program log
+public/js/admin.js	Show rendering, controls, log, cue-triggered refresh
+public/css/admin.css	Panel, program board and log styling
+scripts/smoke-test.js	17 new show checks; restores a sane TTS volume after running
+README.md	Program schedule, themes, welcomes, controls, RPC, config, test results
+.env.example	SHOW_ENABLED, SHOW_WELCOME, SHOW_NARRATION, SHOW_THEME, SHOW_PACE
+Tests actually run
+74/74 smoke checks passed, including 12-segment schedule, 8 themes, 20 reflected KJV verses, labelled test welcome that doesn't count as a viewer, manual verse/prayer/reflection cues, pause/resume, configurable pace, and a show.cue WebSocket broadcast.
+Real vs simulated separation: simulated events carried a simulated flag, generated no welcome, and a simulated prayer request stayed off the prayer wall and out of the community cue. A red DEMO MODE · SIMULATED ACTIVITY badge appears on stage while demo activity is on.
+Audio: a show prayer narration ducked music from 0.100 to 0.035 and restored it to 0.100; the music deck's start time was unchanged (no restart). The server skipped narration while a previous prayer was still speaking, and logs showed the guard working.
+Browser: 1080×1920 OBS frame captured, cue card and program line render, prayer wall rotated (Grace/Sarah → Emily/David) with first names only, welcome card rendered with the sample label, no JavaScript errors on the stage or dashboard after reload.
+Reconnect: a stage that connects mid-cue receives the current cue, including a welcome, without replaying narration.
+Theme + pace: pinning night produced NIGHT PRAYER / Before We Sleep, then reset to rotate-all; pace persisted and reset to 1.
+Not tested: a real TikTok LIVE session (no live channel here), so the actual MEMBER welcome was not observed from TikTok — deduplication and greeting text were verified through show.testWelcome and engine tests. OBS Studio's own audio routing and multi-hour stability were also not exercised.
+
+Start on Windows
+bat
+Copy
+bun install
+uv venv .venv
+uv pip install --python .venv\Scripts\python.exe piper-tts
+bun start
+OBS browser source: http://localhost:3000/?obs=1 (1080×1920). Dashboard: http://localhost:3000/admin. The program begins ~12 seconds after launch once Piper is ready; set SHOW_ENABLED=false to start with automation off.
+
+The most useful next step is to observe one real LIVE session so the welcome pacing and the bottom panels can be tuned against actual TikTok join volume.
+
+
+111111111111111111
+Quá tốt\! :D Bây giờ Christian Prayer Live của bạn đã chuyển từ một màn hình livestream tĩnh thành một chương trình cầu nguyện tự động khoảng 35 phút, lặp liên tục.
+
+Mình đánh giá đây là nền tảng khá hoàn chỉnh. Nhưng bước tiếp theo nên tập trung vào việc giữ chân người xem và tăng tương tác thật.
+
+## 5 nâng cấp mình đề xuất tiếp theo
+
+Groupes | Coeurs en prière
+
+1\. Dynamic Prayer Experience
+
+Khi có người vào, nội dung chuyển nhẹ sang lời chào và lời cầu nguyện phù hợp.
+
+Bible with candles
+
+2\. Bible Quiz
+
+Đặt câu hỏi Kinh Thánh, người xem trả lời bằng bình luận. Hiển thị đáp án sau 20–30 giây.
+
+Три історичні приклади, коли Бог дивовижно відповів на національну молитву
+
+3\. Prayer Request Interaction
+
+Người xem bình luận PRAY để gửi lời cầu nguyện, AMEN để tham gia.
+
+Dnevna liturgija, sveci, molitve i vjera | Evanđelje
+
+4\. Gift Recognition
+
+Khi có quà thật, hiện hiệu ứng đẹp, cảm ơn người tặng bằng tiếng Anh và Piper đọc lời cảm ơn.
+
+Free AI Cathedral Generator Online | Create Gothic, Baroque, and Modern Cathedrals
+
+5\. Smart Scene Rotation
+
+Tự đổi cảnh thánh đường theo chủ đề Morning Prayer, Healing, Night Prayer, Gratitude.
+
+## Prompt tiếp theo cho Freebuff
+
+Mình đề xuất ưu tiên Bible Quiz và Prayer Interaction trước.
+
+Writing
+
+# CHRISTIAN PRAYER LIVE – PHASE 2: INTERACTIVE COMMUNITY ENGAGEMENT
+
+Upgrade the existing application without rebuilding it.
+
+Preserve the current 35-minute automated program, Piper TTS, background music, TikTok connector, RPC, WebSocket, prayer wall and OBS stage.
+
+## 1\. LIVE BIBLE QUIZ
+
+Create an interactive Bible quiz system for US audiences.
+
+- Use verified KJV Bible references.
+- Display one question at a time.
+- Allow viewers to answer through TikTok comments.
+- Accept answers case-insensitively.
+- Reveal the correct answer after 20–30 seconds.
+- Show a short Bible explanation.
+- Narrate the answer using Piper TTS.
+- Rotate questions without repeating recently used questions.
+
+Create at least 100 original quiz questions with verified answers and references.
+
+## 2\. PRAYER REQUEST INTERACTION
+
+Allow viewers to comment:
+
+PRAY PRAYER AMEN
+
+Features:
+
+- Detect genuine prayer requests.
+- Show an invitation to submit prayer requests.
+- Add requests to moderation.
+- Display approved requests on the prayer wall.
+- Thank viewers for participating.
+- Never expose personal information.
+
+## 3\. LIVE GIFT EXPERIENCE
+
+Investigate the actual TikTok gift event pipeline.
+
+When a real gift arrives:
+
+- Display the sender.
+- Display gift name and quantity.
+- Show a tasteful animation.
+- Generate a personalized English thank-you.
+- Optionally use Piper TTS.
+
+Never fabricate gifts or donation amounts.
+
+## 4\. SMART BACKGROUND ROTATION
+
+Create themed cathedral background playlists:
+
+- Morning Prayer.
+- Healing Prayer.
+- Night Prayer.
+- Gratitude.
+- Bible Reflection.
+
+Match the visual background to the current program segment.
+
+Use existing locally stored licensed assets.
+
+## 5\. ADMIN DASHBOARD
+
+Add controls for:
+
+- Enable/disable Bible Quiz.
+- Quiz frequency.
+- Answer reveal delay.
+- Prayer interaction toggle.
+- Gift announcement toggle.
+- Gift TTS toggle.
+- Scene rotation.
+- Manual next question.
+- Manual next background.
+
+## 6\. TESTING
+
+Use labelled simulated events for automated tests.
+
+Do not claim real TikTok interactions were verified without an actual LIVE session.
+
+Preserve all existing functionality and run the full smoke test suite.
+
+## Một việc quan trọng trước khi nâng cấp
+
+Bạn nên chạy thử LIVE thật khoảng 30–60 phút để xác nhận:
+
+- Piper không bị ngắt giữa chừng.
+- Nhạc nền không bị phát lại từ đầu.
+- TikTok MEMBER event thực sự chào người mới.
+- Gift event thực sự được nhận.
+- Không có hai lời cầu nguyện đọc chồng lên nhau.
+
+Mình muốn hướng Christian Prayer Live thành một nhà thờ trực tuyến có tương tác thật, chứ không chỉ là một video tự chạy. Đây sẽ là hướng phát triển bền vững hơn.
+
+
+Community engagement is live
+The 35-minute program, Piper narration, music, prayer wall and OBS stage are untouched. Three interactive layers now sit on top of them, all driven by real server events.
+
+Bible quiz
+150 original questions in lib/quiz.js, each with a verified KJV reference, an original explanation, alternate accepted spellings and number words.
+Answers arrive through normal TikTok comments: case-insensitive, whitespace-tolerant, one correct answer per viewer. Wrong guesses are ignored rather than shamed, and a correct answer is acknowledged by name on the stage without ever printing the answer early.
+The answer stays hidden until the 25-second window ends (configurable 15–30s), then the card reveals the answer, reference, explanation and up to three correct names. It is narrated by Piper when free; if a prayer is still speaking, the quiz narration is skipped instead of talking over it.
+Recently used questions are avoided; the card auto-closes about 14 seconds after the reveal and schedules the next question.
+The stage shows this in a dedicated band that temporarily conceals the program cue, so the two never overlap.
+Prayer interaction
+PRAY, PRAYER, AMEN and phrases like PRAY FOR ME now raise a short invitation banner. A genuine request goes through the existing moderation queue, appears on the prayer wall with a first name only, and the viewer sees “Thank you, Sarah — your request is on the prayer wall.” Invitations are rate-limited so a busy chat cannot spam them. The dashboard toggle stops new requests from being queued without touching existing ones.
+
+Gift experience
+Real gift events now render a spotlight card with sender, gift name, quantity and a personalized thank-you (Grace L. sent 3x Prayer candle), plus tier-appropriate particles, chime/bell and the existing large-gift celebration. Announcement and spoken-thanks toggles are respected, and silenced gifts carry no TTS text. Nothing is simulated or invented.
+
+Scene matching
+Program cues now choose a locally stored image category that fits the moment: welcome → cathedral, Scripture/reflection → Bible, community → church, gratitude → Bible; prayers by theme (healing/night → candles, family/finances → church, strength → cross, morning/anxiety → backgrounds). Rotation stays inside the chosen category until the next cue. It can be switched off.
+
+Dashboard
+A new Community Engagement panel adds quiz on/off, answer narration, frequency, reveal delay, Next Question, Reveal Answer, prayer interaction, gift announcements, gift narration, scene matching and Next Background, with a live question/answer status board.
+
+Files
+File	Change
+lib/quiz.js	New — 150-question bank, engine, timers, de-duplication
+server.js	Quiz init/RPC/narration, comment-answer routing, gift thanks punctuation fix
+public/index.html	Quiz card, gift spotlight, prayer invitation markup
+public/css/live.css	Styles and placement for the three new stage elements
+public/js/live.js	Quiz/gift/invitation rendering and WebSocket handling
+public/admin.html / public/js/admin.js	Community Engagement panel and wiring
+config/app.config.json, config/config.js	Quiz, gift, prayer-interaction and scene-match defaults
+.env.example, README.md	New settings documented (QUIZ_*, GIFT_*, PRAYER_INTERACTION, SCENE_MATCH)
+scripts/smoke-test.js	23 new checks
+Verification actually run
+node scripts/smoke-test.js → 97/97 passed, including: 150 questions with KJV references, answer hidden pre-reveal, NOAH-style matching, duplicate suppression, wrong answers ignored, reveal payload, late answers rejected, quiz settings changes, quiz.start broadcast, gift sender/quantity/personalized thanks, announcement+TTS toggles, prayer-interaction off not queueing, and healing prayer switching the background to candles.
+Comment path: a correct answer posted as a TikTok-style comment scored the viewer and added only “answered the Bible quiz” to the public feed — the answer text did not leak.
+Timer cycle: an automatically opened question revealed itself at 25s and closed itself afterwards; the next question is scheduled from the configured frequency.
+Quiz narration: a tts.play event with source: "quiz" and the en_US-amy-medium voice was captured over the WebSocket when the program narration was idle (and correctly skipped when it was not).
+Browser at 1080×1920: question card, answer card, gift card above the prayer panels, and invitation banner all rendered with no console errors (captures above).
+Dashboard: quiz toggled off/on through the UI, frequency and reveal delay applied, prayer-interaction toggle blocked a test request, and the Next Question / Reveal Answer / Next Background buttons were clicked and confirmed.
+Not verified: a real TikTok LIVE session — no live account was available, so the connector, comment-answer and gift handlers were exercised with the same event payloads through the RPC/simulation path, not observed from TikTok. Long-running (multi-hour) stability and OBS Studio’s own audio monitoring were also not exercised here.
+
+Server is running at http://localhost:3000/?obs=1; dashboard at http://localhost:3000/admin. Startup is unchanged: bun start.
+
+The most useful next step is a rehearsal against one real LIVE room, where quiz pacing and gift/card frequency can be tuned to actual chat volume.
+
+111111111111111111111 music build
+Được :D Mình đề xuất làm lại luôn Music Manager để sau này bạn chỉ cần bỏ file nhạc vào hoặc xóa file trong thư mục `audio`, sau đó nhấn một nút trong Admin là danh sách nhạc tự cập nhật.
+
+Dưới đây là prompt đầy đủ cho Freebuff.
+
+## Prompt cho Freebuff
+
+Writing
+
+# CHRISTIAN PRAYER LIVE — MUSIC LIBRARY UPGRADE
+
+Modify the existing project in place. Do not rebuild the application or break any existing functionality.
+
+## 1\. REMOVE TWO BAD MUSIC TRACKS
+
+Remove these two tracks from the active music library and dashboard:
+
+- Quiet Hour
+  - 3:09
+  - 56 BPM
+  - String ensemble over slow harmony
+- Cathedral Light
+  - 3:14
+  - 52 BPM
+  - Deep organ-like ambience, wide stone reverb
+
+Remove them from:
+
+- music-manifest.json
+- Admin music playlist
+- Background music rotation
+- Any default or scheduled playback references
+
+Do not leave broken references. Preserve backups of removed files before deleting anything.
+
+Keep the other existing three tracks.
+
+## 2\. FIND AND ADD MORE CHRISTIAN AMBIENT MUSIC
+
+Expand the music library with at least 15–20 additional instrumental tracks.
+
+Music style:
+
+- Peaceful Christian worship ambience
+- Soft piano worship
+- Gentle piano and strings
+- Heavenly atmospheric pads
+- Church ambient atmosphere
+- Soft instrumental worship
+- Prayer meditation music
+- Gentle acoustic guitar
+- Emotional but peaceful orchestral ambience
+- Morning devotional instrumental
+- Night prayer ambience
+- Soft cinematic Christian background music
+
+Requirements:
+
+- No vocals.
+- No lyrics.
+- No aggressive drums.
+- No sudden loud transitions.
+- No scary or dark horror sounds.
+- No distracting melodies.
+- Suitable for a 24/7 Christian prayer livestream.
+- Seamless or smooth transitions between tracks.
+- Prefer tracks around 2–6 minutes.
+
+Find music from legitimate royalty-free sources such as Pixabay Music, Mixkit and other sources with clear licensing.
+
+IMPORTANT:
+
+- Do not download copyrighted commercial worship songs.
+- Verify the license for every downloaded track.
+- Record title, artist, source URL and license in the music manifest.
+- Do not falsely label music as royalty-free.
+- If a track cannot be downloaded or its license cannot be verified, do not add it.
+
+Store all downloaded music locally in the existing audio directory.
+
+## 3\. ADD A RESCAN MUSIC LIBRARY BUTTON IN ADMIN
+
+This is the most important feature.
+
+Add a button to the Admin Music Manager:
+
+**🔄 RESCAN MUSIC FOLDER**
+
+When clicked, it must automatically:
+
+1. Scan the actual audio directory on disk.
+2. Detect all supported audio files:
+   - .mp3
+   - .wav
+   - .ogg
+   - .m4a
+   - .flac
+3. Detect newly added files.
+4. Detect deleted files.
+5. Update music-manifest.json.
+6. Recalculate track metadata where possible:
+   - Filename
+   - Title
+   - Duration
+   - File size
+   - Format
+7. Remove missing files from the active playlist.
+8. Add new files to the Admin music dashboard immediately.
+9. Refresh the playlist without requiring a server restart.
+
+The button should show:
+
+- Scanning...
+- Number of tracks found.
+- Number of new tracks added.
+- Number of missing tracks removed.
+- Number of tracks updated.
+- Any scanning errors.
+
+Example success message:
+
+Music library synchronized\! 18 tracks found 3 new tracks added 2 missing tracks removed 1 metadata update
+
+## 4\. AUTOMATIC METADATA
+
+Generate friendly track titles from filenames.
+
+For example:
+
+soft-piano-prayer.mp3 → Soft Piano Prayer
+
+If metadata such as duration or BPM is unavailable, show Unknown instead of inventing values.
+
+Allow editing track titles from Admin without changing the physical filename.
+
+## 5\. ADMIN MUSIC MANAGER REDESIGN
+
+Improve the existing music panel.
+
+Display each track with:
+
+- Track title
+- Duration
+- Audio format
+- Play/Pause preview
+- Volume
+- Enable/Disable
+- Delete from playlist
+- Track status
+
+Add:
+
+- Rescan Music Folder button.
+- Shuffle toggle.
+- Repeat playlist toggle.
+- Manual next track.
+- Search music.
+- Filter by category.
+- Total tracks and total playlist duration.
+
+When a track is deleted from the folder, the next rescan must remove it from the dashboard automatically.
+
+When a track is disabled, keep the file and manifest entry but exclude it from playback.
+
+## 6\. MUSIC PLAYBACK MUST REMAIN STABLE
+
+Preserve existing audio functionality:
+
+- Background music loop.
+- Piper narration.
+- Automatic music ducking during prayers.
+- Volume controls.
+- Smooth fade-in and fade-out.
+- No restarting music when a new prayer starts.
+- No overlapping background tracks.
+- No interruption to the existing narration queue.
+
+If the currently playing track disappears during a rescan, finish gracefully if possible, then move to the next available enabled track.
+
+## 7\. BACKEND AND SECURITY
+
+Implement a dedicated music library rescan API/RPC method.
+
+Requirements:
+
+- Only allow scanning the configured audio directory.
+- Prevent directory traversal.
+- Never accept arbitrary filesystem paths from browser requests.
+- Validate file extensions.
+- Do not execute uploaded audio files.
+- Avoid duplicate manifest entries.
+- Write manifest updates atomically.
+- Keep a backup of the previous manifest.
+
+Use the existing JSON-RPC and WebSocket architecture.
+
+Broadcast a music.library.updated event after a successful scan so the Admin dashboard refreshes automatically.
+
+## 8\. VERIFICATION
+
+Test all of these:
+
+1. Delete an audio file manually from the audio folder.
+2. Click Rescan Music Folder.
+3. Confirm the deleted file disappears from Admin.
+4. Copy a new MP3 into the folder.
+5. Click Rescan Music Folder.
+6. Confirm the new track appears immediately.
+7. Preview the newly added track.
+8. Disable a track and confirm it is excluded from playback.
+9. Confirm existing music ducking still works during Piper narration.
+10. Confirm no existing TikTok, prayer, quiz or OBS functionality is broken.
+
+Run the full smoke test suite.
+
+At completion, report:
+
+- Number of tracks before and after.
+- New tracks downloaded.
+- Source and license of each new track.
+- Files changed.
+- Test results.
+- Exact location of the Rescan Music Folder button.
+
+IMPORTANT: Do not claim that new tracks were downloaded unless the files actually exist and play successfully.
+
+## Kết quả mình muốn sau khi Freebuff làm xong
+
+[capterra.com.au](<https://www.capterra.com.au/software/1087165/Dropcue?utm_source=chatgpt.com>)
+
+Admin sẽ có giao diện kiểu:
+
+- Music Library: Danh sách toàn bộ nhạc.
+- Rescan Music Folder: Nút đồng bộ thư mục.
+- Preview: Nghe thử từng bài.
+- Enable / Disable: Bật tắt từng bài.
+- Next Track: Chuyển bài thủ công.
+- Shuffle: Phát ngẫu nhiên.
+
+Điểm quan trọng nhất: Sau này bạn không cần nhờ Freebuff sửa code mỗi khi thêm hoặc xóa nhạc. Chỉ cần thao tác trong thư mục `audio`, vào Admin nhấn `RESCAN MUSIC FOLDER` là xong.
+
+
+Music library upgraded
+The app still runs on the same Bun server, JSON-RPC, WebSocket, Piper, prayer/quiz/show pipeline and OBS URL. Only the music library, scanner, player resilience and dashboard panel changed.
+
+Active tracks: 5 before → 21 after. Two rejected tracks removed, three originals kept, 18 new tracks downloaded and verified.
+
+Removed
+Track	File	Backup
+Quiet Hour	peaceful-prayer-02.ogg	docs/backups/music-removed
+Cathedral Light	cathedral-ambient-01.ogg	docs/backups/music-removed
+Both were removed from music-manifest.json, the playlist/rotation, the dashboard and scripts/generate_music.py. Files were moved, not deleted.
+
+New tracks (18, Mixkit)
+All are under the Mixkit Stock Music Free License — free for commercial/non-commercial use, no attribution required, no standalone redistribution. The linked title is the exact downloaded source file. Full record: docs/music-sources.md.
+
+Title	Artist	Length	Category
+Deep Meditation	Alejandro Magaña (A. M.)	2:27	Ambient
+Charlotte	Eugenio Mininni	3:45	Ambient
+Opalescent	Eugenio Mininni	4:44	Ambient
+Vastness	Andrew Ev	3:50	Ambient
+Rest Now	Eugenio Mininni	5:00	Ambient
+Smooth Meditation	Arulo	2:34	Ambient
+Forest Mist Whispers	Alejandro Magaña (A. M.)	2:31	Ambient
+Relaxation 07	Lily J	2:24	Ambient
+Finding Myself	Michael Ramir C.	2:14	Ambient
+Piano Reflections	Ahjay Stelino	3:19	Piano
+Tears of Joy	Michael Ramir C.	2:20	Piano
+Skyline	Eugenio Mininni	3:26	Piano
+Classical 7	Jonny S.	2:36	Piano
+Staring at the Night Sky	Alejandro Magaña (A. M.)	2:22	Piano
+Possible Dreams	Eugenio Mininni	2:39	Piano
+River Flow	Eugenio Mininni	4:30	Cinematic
+Drawing the Sky	Eugenio Mininni	3:27	Cinematic
+Moon Walk	Eugenio Mininni	3:25	Cinematic
+All 18 exist on disk at public/assets/christian/audio/, probe at 256–320 kb/s MP3, and stream locally. They are from Mixkit's instrumental Ambient/Piano/Cinematic categories; an automated vocal detector was not available, so vocal absence was not machine-audited. No commercial worship recordings were downloaded.
+
+Rescan — where it is
+/admin → Background Music panel → the gold “🔄 Rescan Music Folder” button at the top of the panel, next to the search box and category filter.
+
+It scans only public/assets/christian/audio/, recognizes .mp3 .wav .ogg .m4a .flac, and:
+
+adds new files with friendly titles (soft-piano-prayer.mp3 → “Soft Piano Prayer”) and marks their license Unknown — verify before publishing rather than guessing;
+drops files missing from disk;
+refreshes size, duration and format with ffprobe;
+preserves custom titles, enabled flags and license metadata;
+writes the manifest atomically and keeps music-manifest.backup.json;
+broadcasts music.library.updated so the dashboard and stage refresh without a restart.
+The result line reads, for example: Music library synchronized! 22 tracks found · 1 new · 0 missing · 0 metadata updates. New files also raise a “set its title, category and license” notice.
+
+Dashboard
+Each row now shows an editable title, status (Playing / Previewing / Disabled / Ready), duration, format, size, category, preview play/pause, per-track preview volume, Enable/Disable and Remove. Remove asks for confirmation and moves the audio to docs/backups/music-removed/. The panel also has search, category filter, total track count and total playlist duration. Existing shuffle, repeat, next/previous, master volume and test-audio controls remain.
+
+Playback safety
+Music still ducks to 3.5% while Piper speaks and restores to the configured volume.
+WebSocket events never restart the deck.
+If the selected file is disabled/removed, the server selects the first enabled track and the stage crossfades to it; a failed decode also advances instead of leaving silence.
+If all tracks are removed, music stops cleanly rather than tracking a missing file.
+Files
+File	Change
+lib/music-library.js	New — folder scan, metadata probing, atomic manifest writes, title/enable edits, safe removal
+server.js	Library-driven catalog, music.rescan, music.track.update, music.track.remove, selection repair, startup sync, music.library.updated, richer music.get/health
+public/admin.html	Rescan toolbar, search/filter, new library panel
+public/js/admin.js	Library rendering, rescan feedback, previews, per-track controls, WS handling
+public/css/admin.css	Music toolbar, library cards, states
+public/js/audio.js	Missing-current-track handling and decode fallback
+public/js/live.js	Live playlist refresh from music.library.updated, BPM-safe status
+music-manifest.json	21 tracks with title, artist, source, license, duration, format
+docs/music-sources.md	New — source/license/verification record
+scripts/generate_music.py	Rejected tracks removed; rerenders preserve licensed entries
+scripts/smoke-test.js	15 new music-library checks
+README.md	Library, rescan, admin controls, API and test results
+Tests actually run
+node scripts/smoke-test.js → 112/112 passed, including all previous TikTok/RPC/prayer/quiz/show/OBS checks.
+Rescan add: copied MP3 → 1 new, 22 found; auto title correct; unknown license; file served 200 audio/mpeg.
+Disable: left the playlist, stayed in the library as disabled, and the selected track automatically moved to peaceful-prayer-01.
+Custom title: “Smoke Test Prayer” survived a rescan.
+Remove: file moved to docs/backups/music-removed/, vanished from the playlist; traversal id ../../server.js rejected.
+Manual delete + rescan: removed exactly 1 track, leaving 21.
+Dashboard in Chromium: rescan reported 22 tracks found · 1 new; search piano → 7 matches; category Piano → 7; new-file preview played past 4 seconds; per-track volume changed audio; disable/enable updated the select; inline title saved to the manifest; no console errors.
+OBS stage in Chromium: 21 tracks loaded, live switch to a selected track without reload, gain 0.10 → 0.035 during Piper → 0.0999 after, deck continued (8.3 s in), and removal of the temporary current track recovered to peaceful-prayer-01.
+Health endpoint: musicTracks: 21, library total 21, TTS ready.
+Not verified: OBS Studio's own audio routing/monitoring (Chromium audio was verified), a real TikTok LIVE session (no TikTok code was changed), and machine-audited vocal absence in the Mixkit files.
+
+Server is running at http://localhost:3000/?obs=1; dashboard at http://localhost:3000/admin. Startup remains bun start.
+
+The natural next step is a listening pass over the 18 new tracks in the actual OBS mix, so any that feel too sparse or too present can be disabled or reordered before a long broadcast.
+
+
+
+111111111111111111 làm 50 seat vào nhà thờ
+Thử luôn\! 😄 Mình đề xuất làm tính năng LIVE PRAYER CONGREGATION cho Christian Prayer Live.
+
+Ý tưởng là tái tạo hiệu ứng cộng đồng quỳ lễ trong source Phật giáo, nhưng chuyển thành thánh đường Thiên Chúa giáo.
+
+Do you have to kneel at Catholic Mass?
+
+人們在擁有美麗彩色玻璃窗的教堂裡靜靜祈禱-插圖素材 \[114323487\] - PIXTA圖庫
+
+A Year of Prayer: Transforming Indian Parishes Through Faith – Living Words
+
+## Prompt cho Freebuff
+
+Writing
+
+# CHRISTIAN PRAYER LIVE — LIVE PRAYER CONGREGATION
+
+Implement a new interactive visual feature inspired by the original TikTok temple congregation system.
+
+IMPORTANT: Adapt the concept for a general Christian audience. Do not copy Buddhist statues, rituals, clothing or symbols.
+
+## 1\. MAIN VISUAL
+
+Create a beautiful 3D-style Christian cathedral congregation scene.
+
+Visual composition:
+
+- Large Gothic cathedral interior.
+- A prominent Christian cross at the altar.
+- Warm golden lighting and stained-glass windows.
+- A red or dark wooden prayer area.
+- Multiple rows of people kneeling in prayer.
+- People facing toward the altar and cross.
+- Peaceful, respectful Christian atmosphere.
+
+The scene must fit the existing 1080x1920 OBS stage.
+
+Do not use text baked into images.
+
+## 2\. REAL TIKTOK VIEWERS BECOME PRAYER PARTICIPANTS
+
+When an actual TikTok MEMBER/JOIN event arrives:
+
+- Create one prayer participant.
+- Assign the viewer's TikTok username.
+- Place the participant in an available position.
+- Animate a gentle transition into a kneeling prayer pose.
+- Display their username discreetly.
+
+When a viewer leaves:
+
+- Remove their participant if a genuine leave event is available.
+- Otherwise use a configurable inactivity timeout.
+- Never pretend that a viewer has left when no reliable event exists.
+
+## 3\. VISUAL BEHAVIOR
+
+Participants should:
+
+- Kneel facing the altar.
+- Have subtle natural prayer animations.
+- Use varied but respectful clothing.
+- Have diverse adult appearances.
+- Be visually consistent in style and scale.
+
+Avoid exaggerated movements.
+
+Use lightweight 2D sprites, CSS animations or optimized assets if a real-time 3D engine would be too expensive.
+
+Do not generate a separate image for every viewer.
+
+Use reusable character assets and deterministic variation.
+
+## 4\. VIEWER CAPACITY
+
+Support at least 50 simultaneous participants.
+
+Layout:
+
+- Organize participants into orderly rows.
+- Place newer viewers in available positions.
+- Keep the altar and cross visible.
+- Use smaller character representations as the congregation grows.
+- Avoid overlapping usernames.
+
+Add a participant counter.
+
+## 5\. INTERACTIONS
+
+- New viewer: gentle arrival animation.
+- Viewer sends AMEN: subtle golden glow around their participant.
+- Viewer submits an approved prayer request: small prayer symbol appears above their participant.
+- Viewer sends a real gift: tasteful golden celebration around their participant.
+- Do not fabricate any interaction.
+
+## 6\. ADMIN CONTROLS
+
+Add a Prayer Congregation panel:
+
+- Enable/Disable congregation.
+- Show/Hide usernames.
+- Show participant count.
+- Reset congregation.
+- Configure inactivity timeout.
+- Configure maximum visible participants.
+- Preview scene using clearly labelled DEMO participants.
+
+Demo participants must never be counted as real TikTok viewers.
+
+## 7\. TECHNICAL REQUIREMENTS
+
+Preserve:
+
+- Existing TikTok connector.
+- Existing MEMBER event pipeline.
+- Existing WebSocket architecture.
+- Existing OBS stage.
+- Existing prayer wall.
+- Existing Bible quiz.
+- Existing Piper narration.
+- Existing background music.
+
+Use actual TikTok events only.
+
+Check the connector's real event payloads before implementing join and leave behavior.
+
+Do not assume a leave event exists.
+
+Persist only the minimum participant information needed for the current LIVE session.
+
+## 8\. TESTING
+
+Test:
+
+- One real viewer joins.
+- Multiple viewers join.
+- Duplicate join events.
+- AMEN interaction.
+- Prayer request interaction.
+- Gift interaction.
+- Viewer disconnect.
+- Inactivity timeout.
+- 50 participant layout.
+- OBS 1080x1920 rendering.
+- Browser console errors.
+- CPU and memory usage.
+
+Clearly distinguish simulated tests from actual TikTok LIVE verification.
+
+Do not break any existing functionality.
+
+At completion, provide screenshots and a list of modified files.
+
+Mình khuyên: Làm nhân vật 3D nhỏ, xếp thành nhiều hàng hướng về thánh giá, giống bố cục ảnh Phật ban đầu. Đừng làm người quá to, vì khi có 30–50 người xem sẽ rất đẹp và tạo cảm giác cả nhà thờ đang cùng cầu nguyện. 🙏
+
+
+
+The connector has no leave event — only MEMBER joins (actions 1 and 3) — so departures must come from a clearly labelled inactivity timeout. I'll build the congregation around that constraint.
+
+Layout and pipeline are clear. I'll add a session-only congregation module, wire it to real MEMBER, AMEN, approved prayer and gift events, then build the stage scene and dashboard panel.
+
+The server now seats real MEMBER joins, keeps duplicate joins in one seat, and applies AMEN/prayer/gift marks only to real participants. Next I'm building the 1080×1920 scene layer.
+
+The server is up and the existing auto-connect reached a TikTok Live room (@tinytails99). I'll keep testing carefully so any real joins are never mixed with demo seats.
+
+The dashboard panel is in place with real/demo counts, timeout and seat controls, and a labelled roster. I'm exercising those controls now, then I'll run the full smoke suite.
+
+I've made quite a few responses in a row. Let me pause here to make sure we're still on the right track. Please let me know if you'd like me to continue or if you'd like to guide me in a different direction.
+
+
+111111111111111111111 check bản quyền
+Bạn nên kiểm tra trước khi livestream dài hạn, đặc biệt nếu Christian Prayer Live hướng đến người xem Mỹ và sau này có thể nhận gift, donate hoặc kiếm tiền.
+
+Mình khuyên bạn kiểm tra bằng Freebuff trực tiếp trên source code, không cần mở từng file thủ công.
+
+Có 2 nhóm cần kiểm tra riêng:
+
+1. Nhạc nền: Có quyền phát trong livestream TikTok, sử dụng thương mại và lưu trữ/phát từ máy tính hay không.
+2. Hình ảnh: Có quyền tải về, chỉnh sửa, crop 9:16, hiển thị trong livestream và sử dụng thương mại hay không.
+
+## 1. Những loại giấy phép cần biết
+
+| Giấy phép | Sử dụng thương mại | Lưu ý |
+| --- | --- | --- |
+| CC0 | Được phép | Nên lưu thông tin nguồn |
+| Public Domain | Được phép | Kiểm tra tình trạng tại Mỹ |
+| CC BY | Được phép | Phải ghi công tác giả |
+| CC BY-SA | Được phép | Phải ghi công và tuân thủ ShareAlike |
+| CC BY-NC | Không | Không dùng thương mại |
+| CC BY-ND | Có điều kiện | Không được phân phối bản phái sinh |
+
+Nguồn chính thức: [Creative Commons License Guide](<https://certificate.creativecommons.org/cc-licenses/?utm_source=chatgpt.com>).
+
+Creative Commons
+
++1
+
+Lưu ý: CC BY-SA không cấm crop hay chỉnh sửa, nhưng bản chuyển thể có thể phải tuân thủ điều kiện chia sẻ tương tự.
+
+## 2. Kiểm tra nhạc TikTok
+
+TikTok có Commercial Music Library dành cho hoạt động thương mại. Tuy nhiên, không nên mặc định rằng một bài trong thư viện này được phép tải về rồi phát qua OBS hoặc một hệ thống audio độc lập. Phải kiểm tra phạm vi cấp phép của từng bài.
+
+TikTok For Business
+
++2
+
+Đối với nhạc nền Christian Prayer Live, tốt nhất là:
+
+- Nhạc tự sáng tác.
+- Nhạc được cấp phép thương mại rõ ràng.
+- Giấy phép cho phép livestream, phát trực tuyến và sử dụng trên TikTok.
+- Có bằng chứng cấp phép để xuất trình nếu bị khiếu nại.
+
+TikTok có thể gỡ nội dung vi phạm bản quyền hoặc hạn chế quyền LIVE.
+
+TikTok
+
++1
+
+## 3. Nhờ Freebuff kiểm tra toàn bộ project
+
+Đây là prompt mình đề xuất. Nó yêu cầu Freebuff kiểm tra cả thư mục nhạc, hình ảnh và manifest, đồng thời tạo một trang quản lý bản quyền trong Admin.
+
+Nên làm trước khi tiếp tục nâng cấpWriting
+
+# CHRISTIAN PRAYER LIVE — FULL COPYRIGHT & COMMERCIAL LICENSE AUDIT
+
+Perform a complete copyright and commercial licensing audit of the existing project.
+
+IMPORTANT: Do not redesign or break the existing livestream application. Do not delete or replace existing assets automatically. This task is an audit first, not an asset replacement task.
+
+## 1\. MUSIC COPYRIGHT AUDIT
+
+Scan the entire audio directory and identify every music file.
+
+For each file, determine:
+
+- Filename
+- Track title
+- Duration
+- Artist/composer
+- Original source URL
+- License type
+- License URL
+- Commercial usage permission
+- Livestream/broadcast permission
+- TikTok usage permission
+- Permission to use through OBS or external audio playback
+- Whether attribution is required
+- Whether modifications are allowed
+- Whether the original recording and composition are both licensed
+
+If music is AI-generated, check available generation records and the provider's commercial usage terms.
+
+Do not assume that royalty-free means copyright-free.
+
+Do not assume that a Creative Commons license automatically covers every right needed for a commercial livestream.
+
+## 2\. IMAGE COPYRIGHT AUDIT
+
+Scan all image assets, including:
+
+- public/assets/christian/
+- cathedral backgrounds
+- church interiors
+- crosses
+- candles
+- Bible images
+- prayer congregation scenes
+- generated overlays
+- any other image directories
+
+For each image, verify:
+
+- Original source
+- Author/photographer
+- Exact license and version
+- Commercial use permission
+- Modification permission
+- Attribution requirements
+- Whether cropping to 9:16 is permitted
+- Whether color grading and image adjustments are permitted
+- Whether any additional restrictions apply
+
+Check original source pages instead of trusting filenames or existing manifest entries.
+
+## 3\. LICENSE STATUS
+
+Assign one of these statuses:
+
+VERIFIED: Evidence supports commercial use for the intended livestream.
+
+NEEDS\_REVIEW: License information is incomplete or broadcast rights are unclear.
+
+REJECTED: License prohibits commercial use or the intended modifications.
+
+UNKNOWN: Source or license cannot be verified.
+
+Never mark an asset VERIFIED without evidence.
+
+## 4\. CREATE A COPYRIGHT AUDIT REPORT
+
+Create:
+
+docs/COPYRIGHT\_AUDIT.md
+
+Include:
+
+- Every music file
+- Every image file
+- Source URLs
+- Authors
+- License URLs
+- Commercial permissions
+- Attribution requirements
+- Unresolved questions
+- Recommended replacements
+
+Also create:
+
+config/copyright-manifest.json
+
+Keep the manifest synchronized with actual local assets.
+
+## 5\. ADMIN DASHBOARD
+
+Add a Copyright & Licensing panel to the existing admin dashboard.
+
+Display:
+
+- Total music assets
+- Total image assets
+- Verified assets
+- Needs review
+- Rejected assets
+- Unknown assets
+
+Add filters:
+
+- Music
+- Images
+- Verified
+- Needs review
+- Rejected
+
+Each asset should display:
+
+- Filename
+- License
+- Author
+- Source link
+- Commercial usage status
+- Attribution requirements
+
+Add a button:
+
+SCAN COPYRIGHT & REFRESH REPORT
+
+When clicked:
+
+1. Scan local audio and image folders.
+2. Compare files against existing manifests.
+3. Identify added, deleted and modified files.
+4. Check available license metadata.
+5. Update the audit report.
+6. Refresh the Admin dashboard.
+
+IMPORTANT: Local file scanning does not prove copyright ownership. Do not automatically classify files without reliable licensing evidence.
+
+## 6\. ATTRIBUTION
+
+Create:
+
+docs/ASSET\_ATTRIBUTION.md
+
+Generate copy-ready credits for every image and music asset requiring attribution.
+
+Include author, title, source URL, license URL and modification details.
+
+Keep attribution records even when assets are removed from the active rotation.
+
+## 7\. SAFETY
+
+- Do not delete existing music.
+- Do not delete existing images.
+- Do not change the live music playlist.
+- Do not change TTS.
+- Do not change the congregation system.
+- Do not change TikTok RPC.
+- Do not change OBS layout.
+- Do not interrupt the running server.
+
+## 8\. FINAL REPORT
+
+Provide:
+
+1. Number of music files audited.
+2. Number of images audited.
+3. Number verified for commercial livestream use.
+4. Number requiring review.
+5. Number rejected.
+6. Assets with missing source information.
+7. Exact attribution requirements.
+8. Screenshots of the new Admin panel.
+9. Any unresolved licensing questions.
+
+Do not claim legal clearance where evidence is insufficient.
+
+## 4. Những gì bạn cần kiểm tra sau khi Freebuff chạy xong
+
+Đặc biệt chú ý các hình ảnh từ Wikimedia Commons.
+
+Bạn có thể mở trang hướng dẫn chính thức: [Wikimedia Commons – Reusing Content](<https://commons.wikimedia.org/wiki/Commons%3AREUSE?utm_source=chatgpt.com>).
+
+Trang này giải thích cách kiểm tra tác giả, giấy phép, yêu cầu ghi công và quyền chỉnh sửa từng hình ảnh.
+
+## 5. Mình khuyên thêm một điều
+
+Hãy yêu cầu Freebuff tạo một thư mục riêng:
+
+text
+
+```text
+docs/
+  COPYRIGHT_AUDIT.md
+  ASSET_ATTRIBUTION.md
+  LICENSE_EVIDENCE/
+      music/
+      images/
+```
+
+Lưu lại ảnh chụp hoặc bản sao thông tin giấy phép tại thời điểm tải tài sản.
+
+Mục tiêu cuối cùng: Mỗi bài nhạc và mỗi hình ảnh đang chạy trong Christian Prayer Live đều có hồ sơ nguồn gốc, giấy phép và bằng chứng sử dụng. Khi TikTok yêu cầu giải trình bản quyền, bạn sẽ dễ dàng tìm được hồ sơ tương ứng.
+
+Đây là việc đáng làm trước khi bật livestream kiếm tiền lâu dài.
+
+
+
+Copyright & Commercial Licensing Audit — Complete
+I audited every production asset under public/assets, the archived music folder, and documentation/reference images. No music or image files were deleted, replaced, or removed from the active playlists.
+
+Audit results
+Metric	Result
+Music files audited	23
+— active playlist	21 (18 enabled)
+— archived originals	2
+Image files audited	68
+— active Christian broadcast assets	24
+— legacy public/assets files	12
+— documentation/reference images	32
+VERIFIED	32
+NEEDS_REVIEW	43
+REJECTED	0
+UNKNOWN	16
+Total assets	91
+Music: All 23 are verified. The active library is 3 project-generated CC0 originals plus 18 Mixkit tracks. Mixkit’s official license permits commercial use and public performance on web/social platforms, including TikTok-style livestreams, but prohibits TV/radio broadcast, CDs/DVDs, video games, remixing, standalone redistribution, and rights registration. Mixkit does not require attribution.
+
+Images: 9 of the 24 active images are verified (3 generated overlays, 3 public-domain works, 1 CC0 photo, 2 CC BY photos). The other 15 active images are CC BY-SA and are marked NEEDS_REVIEW, not cleared, because 9:16 cropping and color grading may trigger ShareAlike obligations. The 12 legacy temple-era files and 4 upstream demo images are UNKNOWN and should not be broadcast.
+
+Missing source information: 16 files — the 12 legacy assets and 4 upstream demo images.
+
+Attribution: 17 active images require attribution: the 2 CC BY images and 15 CC BY-SA images. Copy-ready credits, including source, license link, author, and modification notes, are in ASSET_ATTRIBUTION.md.
+
+Evidence checked
+Wikimedia Commons: 21/21 active Commons images matched the current API metadata for license, author, and restrictions.
+Mixkit: the official license modal was read; 18/18 tracks matched the catalog’s title, artist, and duration metadata.
+Original music: generate_music.py confirms synthesis from scratch with no samples.
+Local files: every manifest entry exists and was SHA-256 hashed. Nothing is missing.
+Raw evidence: commons-license-evidence.json and mixkit-license-evidence.json.
+Admin panel
+The new Copyright & Licensing panel is at http://localhost:3000/admin, above the JSON-RPC console. The SCAN COPYRIGHT & REFRESH REPORT button is at the top of that panel.
+
+The panel includes music/image/status filters, search, source links, license status, author, commercial/TikTok permissions, and attribution requirements. It currently renders all 91 audited assets.
+
+Reports and files
+Created:
+
+COPYRIGHT_AUDIT.md — full inventory, evidence, permissions, unresolved questions, and recommended replacements.
+ASSET_ATTRIBUTION.md — copy-ready credits.
+copyright-manifest.json — synchronized machine-readable manifest.
+copyright-audit.js — fixed-directory scanner with atomic writes, backup, hashing, and report generation.
+copyright-audit.json — dashboard-readable mirror.
+copyright-manifest.backup.json
+Evidence JSON files and the panel screenshot.
+Modified:
+
+server.js — copyright.get, copyright.scan, /api/copyright, and state summary.
+admin.html, admin.js, admin.css — panel, filters, scan control.
+README.md — audit documentation and API entries.
+Tests run
+node --check on the server, admin script, and audit module — passed.
+Scanner add/remove/modify test: 92 assets after adding a test file, 91 after deletion, and one changed hash — passed.
+Panel rendering: 91 assets; Images + Needs review filter returned 43 — passed.
+Browser console after a clean reload: no JavaScript errors.
+Existing smoke suite: 129/129 checks passed.
+No real TikTok LIVE session or legal review was used in this audit.
+Important unresolved issues
+CC BY-SA ShareAlike scope for the 15 cropped/graded images needs legal review.
+Mixkit’s TV/radio exclusion must be checked against every distribution channel, along with its composition/master chain-of-title.
+Model, property, and publicity releases are not covered by copyright licenses, especially for congregation photographs.
+Legacy and upstream demo images have no provenance and must not be broadcast.
+Project authorship for the CC0-generated tracks and overlays should be attested by the owner.
+One runtime limitation
+I did not interrupt the running livestream server, as instructed. The new copyright.scan RPC and /api/copyright route are in server.js, but the current process predates them. The panel works now from the static mirror, and the scan button correctly reports that a restart is required. After the next normal restart (Ctrl+C, then bun start), the button will scan and refresh the reports and dashboard automatically.
+
+The full evidence report is COPYRIGHT_AUDIT.md. This audit is a licensing inventory, not legal clearance.
+
+The most important next decision is whether to keep the 15 CC BY-SA cathedral images under ShareAlike or replace them with CC0/CC BY alternatives.
+
+
+
+111111111111111111 tạo image mới = AI generate
+À, vậy thì mình không nên yêu cầu Freebuff tạo thêm một thư mục ảnh chung nữa. 😄
+
+Bạn đã có sẵn 7 categories rất hợp lý:
+
+| Category | Nội dung nên có |
+| --- | --- |
+| `backgrounds` | Bình minh, bầu trời vàng, ánh sáng thiên đường |
+| `bible` | Kinh Thánh mở, bàn thờ, trang Kinh Thánh |
+| `candles` | Nến cầu nguyện, ánh nến trong nhà thờ |
+| `cathedral` | Thánh đường Gothic, kiến trúc nhà thờ |
+| `church` | Giáo dân, cộng đoàn đang cầu nguyện |
+| `cross` | Thánh giá, ánh sáng chiếu qua thánh giá |
+| `jesus` | Hình ảnh Chúa Jesus theo phong cách tôn kính |
+
+## Mình đề xuất
+
+Giữ nguyên 7 thư mục và yêu cầu Freebuff:
+
+- Tạo thêm 5–10 ảnh AI cho mỗi category.
+- Lưu trực tiếp vào thư mục tương ứng.
+- Không ghi đè ảnh cũ.
+- Tạo thumbnail và tối ưu WebP.
+- Cập nhật `music-manifest.json` không liên quan; chỉ cập nhật manifest hình ảnh và copyright manifest.
+- Tự động quét lại Admin Dashboard.
+- Chỉ cho phép ảnh đã kiểm tra giấy phép được đưa vào rotation.
+
+## Prompt gửi Freebuff
+
+Writing
+
+Modify the existing Christian Prayer Live image library.
+
+IMPORTANT: There are already 7 established image categories. Keep the exact existing folder structure:
+
+public/assets/christian/ backgrounds/ bible/ candles/ cathedral/ church/ cross/ jesus/
+
+Do NOT create another generic image directory.
+
+Do NOT rename, delete or overwrite existing images.
+
+TASK:
+
+1. Inspect all 7 existing folders and their image manifests.
+2. Check which categories need more images.
+3. Use an actual available AI image-generation tool to create 5-10 original images per category.
+4. Save each generated image directly into its matching existing category.
+5. Use vertical 9:16 composition, ideally 1080x1920.
+6. Use cinematic photorealism, realistic lighting and consistent Christian visual style.
+7. No text, captions, watermarks or logos.
+8. Avoid distorted faces, hands and religious symbols.
+9. Preserve the existing image rotation and category-selection logic.
+10. Update the existing image manifest and copyright manifest with generation provenance and verified licensing information.
+11. Refresh the existing Copyright & Licensing Admin panel.
+12. Ensure AI-generated images are distinguishable from downloaded stock images.
+
+CATEGORY PROMPTS:
+
+backgrounds: peaceful sunrise, golden sky, heavenly light, peaceful nature.
+
+bible: open Holy Bible, scripture reading, Bible on wooden altar.
+
+candles: prayer candles, candlelight, peaceful church atmosphere.
+
+cathedral: beautiful Gothic cathedrals, stained glass, altar interiors.
+
+church: diverse Christian congregation, people worshipping and praying together.
+
+cross: beautiful Christian crosses, altar cross, dramatic natural light.
+
+jesus: respectful traditional Christian depictions of Jesus Christ, compassionate expression, biblical scenes.
+
+IMPORTANT: First verify that a real image-generation tool is available. DeepSeek Flash alone must not be assumed to generate images. If image generation is unavailable, stop and report the missing capability.
+
+After completion, report the number of successfully generated images in each of the 7 categories and show the updated folder structure.
+
+Một đề xuất nhỏ: Mình muốn `cathedral` và `church` là hai category chủ lực, vì đây là hai cảnh quan trọng nhất của livestream. `jesus` nên dùng tiết chế, xen kẽ với các cảnh nhà thờ để tổng thể không bị nhàm chán.
+
+
+
+111111111111111111 smart schedule and reliability (bị mất kết nối thì reconnect lại)
+6. Smart Schedule theo giờ Mỹ
+
+Tự thay đổi nội dung:
+
+    Morning Prayer.
+
+    Afternoon Bible Study.
+
+    Evening Worship.
+
+    Night Prayer.
+
+Tự điều chỉnh theo múi giờ Mỹ, không phải chạy một kịch bản suốt ngày.
+Diosesis di Willemstad
+ 
+
+7. Reliability & Auto Recovery
+
+    Tự khởi động lại Piper nếu worker lỗi.
+
+    Tự reconnect TikTok khi mất kết nối.
+
+    Theo dõi CPU/RAM.
+
+    Kiểm tra file nhạc bị thiếu.
+
+    Cảnh báo khi âm thanh bị im lặng.
+
+
+
+Mình sẽ gộp hai chức năng thành một yêu cầu nâng cấp cho Freebuff, nhưng yêu cầu nó làm theo nguyên tắc không phá source đang chạy, không xóa tính năng cũ, không làm gián đoạn TikTok LIVE.
+
+Có thêm một điểm quan trọng: app nên mặc định dùng múi giờ `America/Chicago` (Houston), nhưng phải cho phép chọn các múi giờ Mỹ khác trong Admin.
+
+Dưới đây là prompt hoàn chỉnh, bạn copy nguyên khối vào Freebuff.
+
+## PROMPT FREEBUFF — SMART SCHEDULE + RELIABILITY & AUTO RECOVERY
+
+Writing
+
+# CHRISTIAN PRAYER LIVE — SMART SCHEDULE & RELIABILITY UPGRADE
+
+You are working on my existing Christian Prayer Live application.
+
+IMPORTANT: This is an existing, functional production application. Do not rebuild it from scratch.
+
+The current application already has:
+
+- Bun + Node.js-compatible server architecture
+- TikTok Live connector
+- JSON-RPC and WebSocket pipeline
+- 1080x1920 OBS livestream stage
+- English Piper TTS and Vietnamese Piper TTS
+- Background music player and music manifest
+- Christian prayer program with approximately 35-minute rotation
+- Bible verses and reflections
+- Bible Quiz with 150 questions
+- Prayer Wall and moderation
+- Gift announcements and effects
+- Interactive congregation system
+- Cathedral/church backgrounds and automatic scene rotation
+- Admin dashboard
+- Copyright and licensing audit system
+
+Preserve all existing features, APIs, RPC methods, event names, settings and compatibility.
+
+Your task is to implement TWO major upgrades.
+
+# ================================================== MODULE 1 — SMART SCHEDULE BASED ON US TIMEZONES
+
+Goal: Automatically adapt the livestream content to the time of day in the United States.
+
+Do not run the same 35-minute program throughout the entire day.
+
+Create four intelligent programming modes:
+
+1. MORNING PRAYER Suggested hours: 5:00 AM – 11:00 AM
+
+Content:
+
+- Morning gratitude prayers
+- Thanking God for a new day
+- Family blessings
+- Daily Bible verses
+- Hope, strength and encouragement
+- Morning worship music
+- Welcoming people starting their day
+
+Suggested atmosphere: Warm sunrise, golden church light, peaceful cathedral backgrounds.
+
+2. AFTERNOON BIBLE STUDY Suggested hours: 11:00 AM – 5:00 PM
+
+Content:
+
+- Bible teaching and explanations
+- Bible Quiz
+- Scripture reflection
+- Questions about Christian faith
+- Short educational segments
+- Community discussions
+- Interactive Bible challenges
+
+Suggested atmosphere: Open Bible, church interiors, natural daylight.
+
+3. EVENING WORSHIP Suggested hours: 5:00 PM – 9:00 PM
+
+Content:
+
+- Evening worship
+- Gratitude prayers
+- Family prayers
+- Community prayer sessions
+- Bible readings
+- Worship music
+- Personal prayer invitations
+
+Suggested atmosphere: Cathedral interiors, golden stained glass, warm candles.
+
+4. NIGHT PRAYER Suggested hours: 9:00 PM – 5:00 AM
+
+Content:
+
+- Peaceful night prayers
+- Anxiety and stress relief prayers
+- Protection and family prayers
+- Forgiveness and gratitude
+- Sleep peacefully with God
+- Gentle Bible reflections
+- Soft instrumental background music
+
+Suggested atmosphere: Dimly lit cathedral, candles, peaceful church interiors, moonlight.
+
+IMPORTANT: All prayer content must be original or properly licensed. Never promise guaranteed healing, wealth, miracles or specific supernatural outcomes.
+
+TIMEZONE REQUIREMENTS
+
+Create a timezone-aware scheduling engine.
+
+Default timezone: America/Chicago
+
+Allow Admin to choose:
+
+- America/New\_York
+- America/Chicago
+- America/Denver
+- America/Los\_Angeles
+- America/Phoenix
+- America/Anchorage
+- Pacific/Honolulu
+
+Use IANA timezone identifiers and a reliable timezone library or native Intl.DateTimeFormat.
+
+Requirements:
+
+- Automatically handle daylight saving time.
+- Never hardcode UTC offsets.
+- Correctly handle midnight transitions.
+- Recalculate the active program when timezone settings change.
+- Recalculate after server restart.
+- Avoid duplicate schedule transitions.
+- Do not restart the TikTok connection when switching programs.
+
+ADMIN DASHBOARD
+
+Create a new panel named:
+
+SMART DAILY SCHEDULE
+
+Display:
+
+- Current US timezone
+- Current local time
+- Current program
+- Next program
+- Time remaining until next transition
+- Schedule enabled/disabled
+- Automatic/manual mode
+
+Controls:
+
+- Enable/disable smart schedule
+- Timezone selector
+- Edit each program's start/end times
+- Preview each program
+- Manually switch to Morning Prayer
+- Manually switch to Afternoon Bible Study
+- Manually switch to Evening Worship
+- Manually switch to Night Prayer
+- Return to automatic schedule
+
+MANUAL OVERRIDE
+
+If the administrator manually selects a program:
+
+- Pause automatic program switching.
+- Allow the selected program to run.
+- Provide an override duration.
+- Automatically return to the correct scheduled program after the override expires.
+
+Do not confuse switching the program with restarting the entire application.
+
+CONTENT ENGINE
+
+Create separate editable content configurations for each program.
+
+Each program should control:
+
+- Program title
+- Welcome messages
+- Prayer themes
+- Bible verse selection
+- Bible reflections
+- Quiz frequency
+- Narration pacing
+- Music category
+- Background image categories
+- Gift announcement style
+- Community engagement settings
+
+Reuse existing program, prayer, quiz, music and background engines wherever possible.
+
+Do not duplicate existing systems unnecessarily.
+
+Persist settings across restarts.
+
+# ================================================== MODULE 2 — RELIABILITY & AUTO RECOVERY
+
+Goal: Make Christian Prayer Live resilient during long-running broadcasts.
+
+The application should detect failures, recover automatically when safe and report all incidents in Admin.
+
+A. PIPER TTS WORKER AUTO RECOVERY
+
+Monitor:
+
+- Python worker process
+- Worker startup
+- Worker readiness
+- Unexpected process exit
+- Synthesis timeouts
+- Broken pipes
+- Invalid WAV output
+- Repeated synthesis failures
+
+If Piper crashes:
+
+1. Record the error.
+2. Mark TTS as temporarily unavailable.
+3. Restart the worker automatically.
+4. Wait for worker readiness.
+5. Resume queued narration safely.
+6. Avoid duplicate narration.
+7. Apply exponential backoff.
+
+Suggested restart delays: 2s, 5s, 10s, 30s, 60s.
+
+Add a maximum restart rate to prevent infinite crash loops.
+
+If repeated restarts fail:
+
+- Stop automatic retries temporarily.
+- Show a clear Admin warning.
+- Keep the livestream running.
+- Do not crash the main server.
+
+Preserve both English and Vietnamese Piper configurations.
+
+B. TIKTOK LIVE AUTO RECONNECT
+
+Monitor the existing TikTok connector.
+
+Detect:
+
+- WebSocket disconnection
+- Unexpected connection close
+- Network timeout
+- Room connection failure
+- Stale connection
+- Authentication errors
+- Room ID retrieval failures
+
+When disconnected:
+
+1. Update connection status.
+2. Log the reason.
+3. Attempt reconnection with exponential backoff.
+4. Reuse the existing configured TikTok username.
+5. Prevent multiple simultaneous connection attempts.
+6. Reset stale connection state safely.
+7. Restore event listeners exactly once.
+8. Resume processing incoming events after successful reconnection.
+
+IMPORTANT:
+
+- Never create duplicate TikTok connections.
+- Never reconnect aggressively.
+- Do not bypass authentication, CAPTCHA or platform restrictions.
+- Authentication failures must require administrator intervention when necessary.
+- Do not fabricate viewers, comments, likes, gifts or LIVE events.
+- Never replay stale gifts or comments after reconnect.
+
+Add Admin controls:
+
+- Auto reconnect ON/OFF
+- Retry now
+- Maximum retries
+- Retry interval
+- Connection status
+- Last disconnect reason
+- Last successful connection time
+- Reconnection attempt count
+
+C. CPU AND RAM MONITORING
+
+Create a server health monitor.
+
+Display:
+
+- CPU usage percentage
+- Process RAM usage
+- Total system RAM if available
+- Node/Bun process uptime
+- Python worker status
+- Event loop lag
+- WebSocket client count
+- TTS queue length
+- Music playback status
+- TikTok connection status
+
+Suggested thresholds:
+
+- CPU warning: above 80% for 60 seconds.
+- CPU critical: above 95% for 30 seconds.
+- RAM warning: above 80% of available system memory.
+- RAM critical: above 90% of available system memory.
+- Event loop lag warning: above 200ms.
+- Event loop lag critical: above 1000ms.
+
+Use lightweight monitoring.
+
+Avoid excessive polling and unnecessary CPU consumption.
+
+Do not automatically kill the server just because CPU usage increases.
+
+D. MUSIC FILE INTEGRITY MONITOR
+
+Use the existing music-manifest.json.
+
+On startup and when the administrator requests a scan:
+
+- Verify every referenced music file exists.
+- Verify file paths remain inside the permitted audio directory.
+- Detect missing files.
+- Detect unreadable files.
+- Detect invalid audio formats.
+- Detect manifest entries pointing to deleted files.
+- Identify orphaned audio files not present in the manifest.
+
+Display the results in Admin.
+
+Add buttons:
+
+- SCAN MUSIC FILES
+- REFRESH MUSIC MANIFEST
+- VIEW MISSING FILES
+- VIEW UNUSED FILES
+
+IMPORTANT: Never automatically delete music files. Never overwrite the existing manifest without making a backup. Preserve track metadata, volume settings, playlists and licensing information.
+
+E. SILENT AUDIO DETECTION
+
+Detect when the broadcast audio becomes unexpectedly silent.
+
+Monitor:
+
+- Music playback state
+- Music audio output
+- TTS playback state
+- Audio generation failures
+- Audio playback errors
+- Unexpectedly silent WAV files
+
+Where technically possible, calculate RMS audio levels from actual audio samples.
+
+Do not treat intentional silence between TTS messages as an error.
+
+Do not report silence when:
+
+- Music is intentionally disabled.
+- TTS is idle.
+- The administrator has muted audio.
+- A program intentionally includes a quiet segment.
+
+If music should be playing but audio is silent:
+
+1. Record an incident.
+2. Check whether the music file exists.
+3. Check whether the audio player is still active.
+4. Attempt a safe playback recovery.
+5. Notify Admin if recovery fails.
+
+Do not create overlapping music players or duplicate playback loops.
+
+F. CENTRALIZED HEALTH DASHBOARD
+
+Create a new Admin panel:
+
+SYSTEM HEALTH & AUTO RECOVERY
+
+Show individual status indicators:
+
+- Bun Server: ONLINE / WARNING / ERROR
+- TikTok Connector: CONNECTED / RECONNECTING / DISCONNECTED
+- Piper TTS: READY / RESTARTING / ERROR
+- Background Music: PLAYING / PAUSED / SILENT / ERROR
+- Music Files: HEALTHY / MISSING FILES
+- CPU: NORMAL / WARNING / CRITICAL
+- RAM: NORMAL / WARNING / CRITICAL
+- OBS Stage: CONNECTED / DISCONNECTED
+- WebSocket: HEALTHY / WARNING
+
+Add:
+
+- Current uptime
+- Last health check
+- Last error
+- Last recovery action
+- Total automatic recoveries
+- Failed recovery count
+- Incident history
+
+Create an incident log with:
+
+- Timestamp
+- Component
+- Severity
+- Error description
+- Recovery action
+- Recovery result
+
+Add buttons:
+
+- RUN HEALTH CHECK
+- RETRY FAILED COMPONENT
+- CLEAR RESOLVED ALERTS
+- EXPORT DIAGNOSTIC REPORT
+
+Do not expose API secrets, tokens, private user information or environment variables in diagnostic reports.
+
+# ================================================== ARCHITECTURE AND SAFETY REQUIREMENTS
+
+1. Preserve all existing working functionality.
+2. Do not remove existing files unless absolutely necessary.
+3. Make backups before modifying important files.
+4. Reuse the current architecture and conventions.
+5. Keep all existing JSON-RPC methods backward compatible.
+6. Use existing WebSocket broadcasting for real-time dashboard updates.
+7. Validate all Admin settings on the server.
+8. Prevent overlapping timers and duplicate recovery jobs.
+9. Use atomic writes for configuration and manifest files.
+10. Ensure the application works on Windows.
+11. Do not introduce Linux-only commands.
+12. Do not require Docker.
+13. Do not interrupt an active LIVE session during deployment or testing.
+14. Do not simulate successful recovery or pretend a real TikTok connection was tested.
+
+# ================================================== TESTING REQUIREMENTS
+
+Run tests for:
+
+SMART SCHEDULE:
+
+- All four programs.
+- All configured US timezones.
+- Daylight saving transitions.
+- Midnight transitions.
+- Manual override.
+- Automatic return after override.
+- Server restart persistence.
+- No duplicate program transitions.
+
+PIPER:
+
+- Normal startup.
+- Worker crash.
+- Automatic restart.
+- Restart backoff.
+- Recovery after restart.
+- No duplicate narration.
+
+TIKTOK:
+
+- Connection loss.
+- Network timeout.
+- Successful reconnect.
+- Authentication failure.
+- Duplicate connection prevention.
+- No duplicate event listeners.
+- No replay of stale events.
+
+SYSTEM HEALTH:
+
+- CPU monitoring.
+- RAM monitoring.
+- Event loop monitoring.
+- Missing music files.
+- Invalid manifest entries.
+- Silent audio detection.
+- False-positive prevention.
+
+DASHBOARD:
+
+- All status indicators.
+- Manual recovery controls.
+- Incident history.
+- Configuration persistence.
+- No browser console errors.
+
+Run the existing smoke-test suite and all new tests.
+
+Do not claim real-world TikTok recovery or OBS audio verification unless actually tested.
+
+# ================================================== FINAL REPORT
+
+When finished, provide:
+
+1. Features implemented.
+2. Files created and modified.
+3. Backup locations.
+4. New configuration settings.
+5. New Admin dashboard controls.
+6. Test results with actual numbers.
+7. Known limitations.
+8. Windows startup instructions.
+9. Whether a server restart is required.
+10. Whether the current LIVE session was interrupted.
+
+MOST IMPORTANT:
+
+Do not sacrifice the existing working Christian Prayer Live application just to add these features.
+
+Implement incrementally, test each module, preserve backward compatibility and prioritize broadcast stability over visual complexity.
+
+## Lưu ý khi Freebuff thực hiện
+
+Mình muốn bạn để ý 3 điều:
+
+1. Không cho nó tự restart toàn bộ server khi TikTok mất kết nối. Chỉ reconnect connector.
+2. Không tự restart Piper liên tục. Phải có giới hạn retry để tránh CPU/RAM tăng cao.
+3. Không để Smart Schedule reset chương trình đang phát giữa chừng. Chuyển chương trình ở ranh giới segment phù hợp, trừ khi Admin chủ động chuyển ngay.
+
+Đặc biệt, hãy yêu cầu Freebuff chạy test trên bản backup trước và không đụng vào phiên LIVE thật đang hoạt động.
+
+Sau khi Freebuff hoàn thành, gửi mình báo cáo nó thực hiện. Mình sẽ giúp bạn kiểm tra xem có điểm nào nó làm thiếu hoặc có nguy cơ ảnh hưởng livestream không.
+
+
+
+Smart Schedule & Reliability Upgrade — complete
+Both modules are implemented in the existing architecture, tested on an isolated instance on port 3100, and documented. The running production process on port 3000 was not restarted or interrupted; it still serves the previous server code until you restart normally.
+
+Module 1 — Smart Daily Schedule
+Four programming modes: Morning Prayer, Afternoon Bible Study, Evening Worship, Night Prayer, covering the full day (Night wraps midnight).
+Seven US timezones with IANA ids, default America/Chicago. Wall-clock boundaries come from Intl.DateTimeFormat, so DST and midnight transitions need no hardcoded offsets.
+Each program drives prayer themes, tagged Scripture selection, quiz cadence, narration pace, music categories, background categories, welcome/gift/community settings. It reuses the existing show, quiz, music and stage engines.
+Transitions are signature-based, so a boundary, an override start and an override expiry each fire exactly once. Switching never restarts TikTok, the show timer or playback.
+Manual override runs a program for 15–120 minutes then returns to the schedule automatically. Preview applies content without creating an override.
+Editing one program's start/end automatically moves the neighbour's shared boundary, keeping the day continuous.
+The 20 KJV verses now carry tags (morning, comfort, night, strength, …) so each mode draws relevant Scripture.
+Module 2 — Reliability & Auto Recovery
+Piper recovery: unexpected exits, spawn failures, readiness timeout and synthesis timeouts are detected; worker restarts with 2s → 5s → 10s → 30s → 60s backoff, pending speech is rejected once (never replayed), 8 restarts/hour pauses retries, and Retry Piper resets the limit. Generated WAV files are checked for a silent payload.
+TikTok reconnect: single-flight connections, exponential backoff, reuse of the configured @username, 30s stale-socket watchdog, 2-minute hung-connect detection, auth/captcha/session errors pause retries for an admin, and listeners/gift combos are reset per session so stale events are not replayed.
+CPU / RAM / event-loop monitoring with sustained thresholds (CPU 80%/60s and 95%/30s; RAM 80%/60s and 90%/30s; loop 200ms/1000ms). No component is killed because of load.
+Music integrity: read-only checks for missing entries, path escapes, unreadable files, invalid containers, duplicate ids and orphans. Refreshing the manifest keeps a backup and never deletes audio.
+Silent audio detection: the OBS stage reports music-bus RMS every 15s. Three silent reports while music should be audible raise an incident and send audio.recover, which reloads the same track without a second player. Paused/disabled/ducked/narration states and unmeasured levels are never false positives.
+Health dashboard with nine status indicators, metrics, recovery controls, incident history and a sanitised diagnostic export.
+Admin dashboard
+New Smart Daily Schedule and System Health & Auto Recovery panels, plus auto-reconnect controls in the TikTok panel.
+
+Files
+Created: lib/schedule.js, lib/health.js, lib/music-integrity.js, config/schedule.json, scripts/test-reliability.js, admin-smart-schedule.png, admin-system-health.png.
+
+Modified: server.js, lib/show.js, config/messages.en.json, public/admin.html, public/css/admin.css, public/js/admin.js, public/js/audio.js, public/js/live.js, scripts/smoke-test.js, README.md.
+
+Backups: backup/pre-reliability-20261101-005133/ contains the previous server.js, lib/show.js, config/config.js, config/app.config.json, public/admin.html, public/js/admin.js, public/js/audio.js and scripts/smoke-test.js. backup/.last-backup names the folder.
+
+Configuration / controls
+Schedule file: config/schedule.json with an automatic schedule.backup.json; enabled, timezone, per-program windows/content and override.
+Incident history: data/health-state.json (newest 200, atomic writes).
+New RPC: schedule.get|update|program.update|override|auto|preview|test, health.get|check|retry|alerts.clear|export|audio, music.integrity|refresh, live.setReconnect|retryNow.
+New broadcasts: schedule.state, health.state, health.incident, audio.recover, music.integrity.updated. New read-only GET /api/diagnostics.
+Tests actually run
+Suite	Result
+Smoke suite on final code	166/166 passed
+Schedule / reliability suite	77/77 passed
+Covered: all 7 timezones, DST spring-forward (08:00Z → 03:00 CDT), fall-back (07:30Z → 01:30 CST), midnight rollover, continuous-window edits, override/auto/preview, single-fire transitions; CPU/RAM/loop sustained thresholds; silent-audio raise/recover and false-positive prevention; missing/orphan/path-traversal music fixtures; Piper worker killed mid-broadcast → auto-restarted after 2s, ready again, recovery counter incremented, pending speech not replayed; duplicate TikTok connect ignored, failed lookup scheduled one retry, auto-reconnect off cancelled it; dashboard at 1440px with all panels rendering and no console errors after a clean reload.
+
+Not verified: a real TikTok disconnect/reconnect against a live account (no live session used for that test), audio silence inside OBS Studio itself, the 8-restarts-per-hour suspension limit, and multi-hour soak behavior.
+
+Windows startup
+bat
+Copy
+cd /d "C:\xampp\htdocs\ai\fbpage\banhang\tiktok y tuong marketing\1"
+bun run start
+Then reload http://localhost:3000/?obs=1 and http://localhost:3000/admin.
+
+A restart is required for the new server-side schedule/health features — /api/health on the currently running port 3000 shows no schedule block, confirming it is still on the old process. The live session was not intentionally interrupted; the isolated test instance briefly auto-connected to the configured channel before being disconnected, and it shares data/prayer-state.json, which now holds the last test-run settings.
+
+The natural next step is to restart the broadcast process and confirm the smart schedule and health panels inside OBS.
+
+
+111111111111111 quét lại thư mục ảnh khi thêm ảnh, "AI_..." là ảnh generate từ AI
+cái ảnh lúc nãy tạo tôi copy vào thư mục rồi mà nó chưa hiện lên app, promp cho nó có button quét lại thư mục ảnh, file name "AI_..." đầu là generate bằng AI ko cần check bản quyền
+
+
+Dưới đây là prompt đầy đủ để đưa cho Freebuff (DeepSeek V4.1 Flash). Mục tiêu là thêm nút SCAN IMAGE FOLDER trong Admin, tự động quét 7 thư mục ảnh và cập nhật manifest + giao diện ngay, không cần restart server.
+
+Writing
+
+# FEATURE: AUTO-SCAN CHRISTIAN IMAGE LIBRARY
+
+Please upgrade the existing Christian Prayer Live application.
+
+## 1\. Main objective
+
+I manually add AI-generated images into:
+
+`public/assets/christian/`
+
+However, newly added images do not automatically appear in the application.
+
+Add a new **SCAN IMAGE FOLDER** button to the Admin Dashboard that scans all Christian image folders, discovers new images, updates the image manifest, and refreshes the background catalog without requiring a server restart.
+
+## 2\. Scan all 7 categories
+
+Scan these folders recursively:
+
+- `public/assets/christian/backgrounds/`
+- `public/assets/christian/bible/`
+- `public/assets/christian/candles/`
+- `public/assets/christian/cathedral/`
+- `public/assets/christian/church/`
+- `public/assets/christian/cross/`
+- `public/assets/christian/jesus/`
+
+Supported extensions:
+
+- .jpg
+- .jpeg
+- .png
+- .webp
+
+Ignore:
+
+- Hidden files
+- Thumbnails
+- Temporary files
+- Unsupported formats
+
+## 3\. Special AI-generated image rule
+
+IMPORTANT:
+
+Any image whose filename starts with `AI_` (case-insensitive) is considered AI-generated.
+
+Examples:
+
+- `AI_church_prayer_01.jpg`
+- `AI_jesus_sunrise.png`
+- `AI_cathedral_interior.webp`
+- `AI_bible_study_01.jpg`
+
+For these files:
+
+- Automatically classify as `AI_GENERATED`.
+- Set copyright status to `VERIFIED`.
+- Set author/source to `AI Generated`.
+- Set attributionRequired to false.
+- Set commercialUse to true.
+- Set socialMediaUse to true.
+- Do NOT perform internet searches.
+- Do NOT require external copyright verification.
+- Do NOT classify as UNKNOWN or NEEDS\_REVIEW.
+
+These rules apply only to files explicitly prefixed with `AI_`.
+
+Do not automatically classify other images as AI-generated.
+
+## 4\. Image manifest synchronization
+
+When scanning:
+
+1. Discover all existing images.
+2. Identify newly added images.
+3. Identify deleted images.
+4. Identify renamed files.
+5. Preserve existing licensing metadata for images already registered.
+6. Automatically register new AI-generated images.
+7. Register non-AI images as NEEDS\_REVIEW if their licensing information is missing.
+8. Prevent duplicate entries.
+9. Generate stable unique IDs.
+10. Update `asset-manifest.json`.
+11. Update `copyright-manifest.json` and copyright audit data without overwriting unrelated music records.
+
+Never delete physical image files.
+
+Never overwrite existing attribution or license information.
+
+Use atomic writes and create backups before modifying manifests.
+
+## 5\. Admin Dashboard UI
+
+Add a new panel:
+
+**CHRISTIAN IMAGE LIBRARY**
+
+Include:
+
+- SCAN IMAGE FOLDER button.
+- Total images.
+- Total AI-generated images.
+- Total licensed images.
+- Images requiring review.
+- Number of images in each of the 7 categories.
+- Last scan timestamp.
+
+Example:
+
+| Category | Images |
+| --- | --- |
+| Backgrounds | 10 |
+| Bible | 8 |
+| Candles | 6 |
+| Cathedral | 12 |
+| Church | 15 |
+| Cross | 8 |
+| Jesus | 10 |
+
+The numbers above are examples. Display actual scanned counts.
+
+When clicking SCAN IMAGE FOLDER:
+
+- Show scanning progress.
+- Display newly discovered files.
+- Display deleted files.
+- Display updated files.
+- Display AI-generated image count.
+- Display errors, if any.
+- Show a success notification when finished.
+
+## 6\. Automatic background catalog refresh
+
+This is essential.
+
+After scanning:
+
+- Update the backend background catalog.
+- Refresh the frontend background selector.
+- Refresh admin image thumbnails.
+- Make new images immediately available for manual selection.
+- Include new images in automatic background rotation.
+- Preserve the currently selected background if its file still exists.
+- If the current image was deleted, automatically select another valid image.
+
+Do not require restarting Bun or refreshing the entire server.
+
+If the browser needs to reload its image list, update it through the existing WebSocket mechanism.
+
+## 7\. Security and reliability
+
+- Only scan inside `public/assets/christian/`.
+- Reject paths escaping the image directory.
+- Validate file extensions.
+- Handle corrupted images gracefully.
+- Avoid duplicate manifest entries.
+- Never modify music manifests.
+- Never download external images.
+- Never delete user-created assets.
+
+## 8\. Testing
+
+Test the following:
+
+1. Add `AI_test_church.jpg` to the church folder.
+2. Click SCAN IMAGE FOLDER.
+3. Verify it is registered as AI\_GENERATED.
+4. Verify copyright status is VERIFIED.
+5. Verify attributionRequired is false.
+6. Verify it appears in the Admin thumbnail grid.
+7. Verify it appears in the OBS background selector.
+8. Verify it can be selected manually.
+9. Verify it participates in automatic rotation.
+10. Delete the test image and scan again.
+11. Verify the catalog removes the deleted image without deleting unrelated records.
+12. Verify all existing music, Piper, TikTok RPC, quiz, prayer, congregation and Smart Schedule features remain functional.
+
+Run the complete existing smoke-test suite.
+
+## 9\. Final report
+
+After implementation, report:
+
+- Files created and modified.
+- Number of images discovered in each category.
+- Number of AI-generated images.
+- Number of licensed images.
+- Number requiring review.
+- Test results.
+- Whether restart is required.
+
+IMPORTANT: Modify the existing application in place. Do not rebuild the project, replace its architecture, or remove existing features.
+
+Lưu ý quan trọng: Quy tắc `AI_ = VERIFIED` ở đây là quy ước quản lý nội bộ cho ảnh AI do bạn tạo, không phải chứng nhận pháp lý tuyệt đối. Nếu ảnh AI sử dụng ảnh người thật, nhân vật có bản quyền hoặc tài liệu tham chiếu có bản quyền thì vẫn cần xem xét quyền sử dụng.
+
+Mình khuyên giữ nguyên quy tắc này để những ảnh AI mới của bạn được đưa vào livestream nhanh chóng mà không phải kiểm duyệt thủ công từng ảnh.
+
+
+What was added
+Auto-scan of the seven existing folders — backgrounds, bible, candles, cathedral, church, cross, jesus are walked recursively for .jpg/.jpeg/.png/.webp. Hidden files, thumb*/‑thumb, temporary files, unsupported extensions and unreadable images are skipped and reported as scan errors.
+
+AI_ registration rule — a filename starting with AI_ (case-insensitive) is registered as AI_GENERATED with source/author “AI Generated”, Verified commercial + social + livestream + TikTok + OBS permissions and no attribution. Nothing is inferred for any other filename: new non-AI files are registered as NEEDS_REVIEW with license Unknown. No network lookups are performed.
+
+Manifest synchronization — stable IDs, preserved title/source/license/attribution for already-registered files, technical fields (dimensions, size, SHA-256) refreshed, duplicate entries prevented, deletions removed from the catalog without touching the files, and renames detected by content hash so licensing survives. Writes are atomic, with asset-manifest.backup.json before every write and a timestamped copy in docs/backups/image-manifests/ whenever an entry is removed. The music manifest is never modified.
+
+Instant catalog refresh — after a scan the copyright audit re-runs, the background catalog is rebuilt in memory, the current background is kept if its file still exists (otherwise a broadcast-eligible fallback is selected), rotation is reconfigured, and clients receive images.updated over the existing WebSocket. No server restart, no page reload.
+
+Dashboard panel — Christian Image Library with SCAN IMAGE FOLDER, totals, per-category counts with AI counts, last-scan time, scan progress/results, and a clickable thumbnail grid that marks AI assets and blocked images.
+
+Files
+Created: lib/image-library.js, data/image-library-state.json.
+
+Modified: server.js, lib/copyright-audit.js, public/admin.html, public/css/admin.css, public/js/admin.js, README.md, asset-manifest.json, copyright-manifest.json (+ backup), copyright-audit.json, COPYRIGHT_AUDIT.md, ASSET_ATTRIBUTION.md.
+
+Current library (after the final clean scan)
+Category	Images	AI-generated
+Backgrounds	5	2
+Bible	4	2
+Candles	6	2
+Cathedral	4	2
+Church	4	0
+Cross	6	2
+Jesus	2	0
+Total	31	10
+Licensed / broadcast-eligible: 16. Requiring review: 15 (the CC BY-SA photographs already flagged by the audit; AI images are all Verified). The first scan also registered 10 pre-existing AI_-prefixed images that were on disk but absent from the manifest.
+
+Tests actually run
+Check	Result
+Existing smoke suite	166/166 passed
+Reliability/schedule suite	77/77 passed
+AI_test_church.jpg added → scan	Registered AI_GENERATED, status VERIFIED, attributionRequired: false, appears in /api/backgrounds, selectable via stage.setBackground, and chosen by stage.nextBackground (sequential rotation into it)
+Non-AI local_test_no_license.jpg	Registered NEEDS_REVIEW, blocked by Copyright Safe Mode with the reason logged
+Delete test images → scan	Both removed from manifest and catalog; current background fell back automatically; unrelated records and music manifest unchanged (SHA-1 check)
+Rename a registered image → scan	Reported as a rename, id/title/license/generatedAt preserved, 0 added / 0 removed
+Duplicate copy while original exists	Registered as a new file, not a false rename
+Nested folder, thumbnail, hidden and corrupt files	Nested AI image registered; thumbnail/hidden ignored; corrupt file skipped with an error and not registered
+Dashboard at 1440×1000	Panel rendered 31 cards, category counts, status line; scan button completed with “31 images, 10 AI-generated, 0 added…” and refreshed the background grid
+WebSocket refresh	A scan triggered by curl while the dashboard was open updated it from 31 → 32 cards without interaction
+Console	No console messages or errors during load and scan
+Notes and limitations
+Restart required to load the new server code. Until then the running production process rejects images.scan, and the panel shows a clear “restart to load” message.
+The screenshot could not be captured: the browser tool reported the page “has not been drawn yet” because the app window is minimized/covered. The panel was verified through the DOM, the RPC responses and the WebSocket update instead.
+data/prayer-state.json was shared with the isolated test instance; its settings were restored to the pre-test snapshot afterwards. Test servers on 3120/3121 are stopped.
+A corrupted already-registered file stays in the manifest (dimensions retained) but drops out of the stage catalog, so it cannot appear broken on air.
+Rename detection needs a stored SHA-256; every entry now has one, so renames are detected from the next scan onward.
+The most useful next step is to give the 15 review-required images a proper licence editor in the dashboard so they can be cleared without hand-editing JSON.
+
+
+
+11111111111111111111 docs summary
+I have the full picture from the source, config, manifests and runtime. Writing the handoff document now.
+
+The handoff document is written: docs/summary.md — 746 lines, ~7,200 words, 14 major sections plus three appendices. I built it from the actual source, configs, manifests and runtime probes, then did a review pass that corrected five claims I had initially stated too generously.
+
+What it documents
+
+Overview & architecture — what the app does, its Buddhist-origin conversion, the single-process Express + ws + JSON-RPC design, and an ASCII data-flow diagram.
+Stack — verified versions on this machine (Bun 1.4.4, Node 20.18.3, Python 3.12.2, Express 4.22.3, ws 8.22.0, tiktok-live-connector 2.5.0), npm scripts, browser APIs in use.
+Structure — annotated directory tree with line counts and the role of every module, plus how modules interact.
+Feature status — every feature marked ✅ / 🟡 / ⛔ / ❓ across 10 areas (TikTok, Piper, music, stage, program, schedule, reliability, copyright, admin).
+Data & APIs — no database (JSON files with their exact schemas), all HTTP routes, 94 RPC methods grouped, 27 WebSocket notifications, request/response envelopes, and the business rules that matter (copyright gate, image registration, schedule application, quiz, congregation, silence detection).
+Configuration — environment variable names only, no values; config files; external services (none paid); Windows setup commands.
+History & decisions — git timeline, 12 architectural decisions with rationale, coding conventions, and 14 concrete gaps.
+Status, files, instructions — uncommitted working-tree inventory, blockers, prioritized next steps, 17 must-read files, and rules for the next model (what not to touch, how to verify, warnings).
+Corrections made during the accuracy review
+
+data/prayer-state.json uses a 1 s debounced plain write, not atomic — only manifests, schedule and health state are atomic.
+data/merit-state.json is never loaded; the code only logs that it exists.
+Quiz reveal window clamps to 10–90 s (not 20–90).
+Reconnect disposes the old socket but has no timestamp-based stale-event filter — I removed the stronger claim.
+server.js section numbers repeat (10, 10b, 10c), so the file map now reflects the actual labels.
+Limits stated in the document: no test suites were re-run (both mutate a live server's state and nothing was listening on port 3000 at analysis time), real TikTok gift/comment behaviour is marked unverified, and 15 CC BY-SA images remain legally unresolved.
+
+The document also records the biggest actionable gap: the admin dashboard, /rpc, /api/* and /ws have no authentication and bind to all interfaces.
+
+Securing that surface is the highest-value change before the project is exposed beyond this machine.
+
+
+
+111111111111
+
