@@ -1,0 +1,3163 @@
+Mình đã mở và đọc được file đầy đủ trên GitHub. File có khoảng 4.819 dòng, 187 KB, không chỉ là đoạn hội thoại ban đầu mà còn ghi lại quá trình Freebuff chỉnh sửa, chạy thử, sửa lỗi và nâng cấp Sunny Side Sips.
+
+[Đọc toàn bộ lịch sử Freebuff – 2 freebuffFoodTructChangeToUS.txt](<https://raw.githubusercontent.com/nguyenlekhanh/tmp/main/2%20freebuffFoodTructChangeToUS.txt?utm_source=chatgpt.com>)
+
+Mình đã đọc các phần quan trọng và có một nhận xét: chúng ta nên kế thừa phiên bản Coffee/Drink Shop đã phát triển hoàn chỉnh, không nên quay lại source chùa ban đầu rồi làm lại từ đầu.
+
+## 1. Những gì dự án Coffee đã tích lũy
+
+Đây là các phần mình xác định được từ lịch sử phát triển:
+
+| Module | Tình trạng ghi nhận |
+| --- | --- |
+| TikTok LIVE connector | Đã tích hợp |
+| Bun.js + Express | Đã sử dụng |
+| WebSocket + JSON-RPC 2.0 | Đã kiểm thử |
+| Gameplay engine | Đã có |
+| Customer movement / queue | Đã có |
+| Gift combo tracking | Đã có |
+| Supporter leaderboard | Đã có |
+| Admin dashboard | Đã có |
+| Piper TTS | Đã tích hợp |
+| AI announcer | Đã phát triển |
+| Voice profiles | Đã phát triển |
+| AI conversations | Đã phát triển |
+| High-volume event handling | Có yêu cầu nâng cấp trong phần cuối |
+
+Một điểm rất đáng giữ là kiến trúc xử lý event và hàng đợi. Nó giúp livestream không bị hàng trăm comment hoặc gift làm rối gameplay.
+
+GitHub
+
++2
+
+## 2. Những nâng cấp quan trọng mà trước đó mình chưa đề cập
+
+Đọc đến cuối file mới thấy Coffee đã phát triển xa hơn một game mô phỏng cửa hàng.
+
+- AI Seller Conversations: nhân vật có hội thoại và phản ứng với người xem.
+- Reactive Seller AI: phản ứng theo ngữ cảnh comment.
+- AI Shop Announcer: phát thông báo bằng giọng nhân vật.
+- Multiple AI Providers: có quản lý provider, model, primary/fallback.
+- Voice Character Profiles: quản lý nhiều giọng nói riêng.
+- Piper + Kokoro: có kiến trúc giọng đọc local và phương án fallback.
+- VIP / Supporter system: ưu tiên tương tác và ghi nhận người tặng quà.
+- Crowd optimization: đã ghi nhận thử nghiệm mô phỏng đến 200 nhân vật.
+- Event Engine: có xử lý MEMBER, LIKE, SHARE, FOLLOW, CHAT, GIFT; gom LIKE theo batch để giảm spam giọng đọc.
+
+Đặc biệt, phần cuối ghi nhận đã thêm `live-event-engine.js`, hệ thống thống kê event, deduplication, gift combo tracking và automated tests.
+
+GitHub
+
++1
+
+Có hai giới hạn cần nhớ: báo cáo cuối file chưa xác nhận kiểm thử trên một phiên TikTok LIVE thực tế; phần benchmark 200 nhân vật là mô phỏng engine, không phải phép đo FPS thực tế trên mọi máy.
+
+GitHub
+
+## 3. Chuyển sang Mystic Witch: giữ gì, thay gì?
+
+Mình đề xuất không đụng vào những hệ thống nền đang hoạt động.
+
+| Coffee hiện tại | Mystic Witch mới |
+| --- | --- |
+| Food shop background | Gothic witch chamber |
+| Male/Female sellers | Một nữ Mystic Witch |
+| Customers | Floating magical spirits |
+| Drinks | 78 Tarot cards |
+| Drink orders | Tarot reading requests |
+| Seller conversations | Witch AI readings |
+| Shop announcer | Mystic narrator |
+| Customer queue | Tarot reading queue |
+| Drink serving animation | Card drawing animation |
+| Coins / Tips | Gift / Mystic energy |
+| Top supporters | Top supporters |
+| Shop statistics | Tarot LIVE statistics |
+
+Quan trọng: Không cần giữ hệ thống khách hàng đi mua nước, xếp bàn, ngồi uống. Nhưng nên giữ lại event engine, queue infrastructure, audio engine và RPC framework.
+
+## 4. Kiến trúc Mystic Witch mình muốn hướng đến
+
+## MYSTIC WITCH LIVE
+
+Proposed system architecture
+
+TikTok LIVE Event Engine
+
+Member · Like · Share · Follow · Chat · Gift
+
+Tarot Engine
+
+78 cards · Random draw · Spread · Reversed
+
+AI Witch
+
+Question understanding · Interpretation · Personality
+
+Spirit Animation
+
+Floating spirits · Magic effects · Particles
+
+Voice Engine
+
+Witch voice · TTS queue · Music · SFX
+
+Mystic Witch Stage + Admin
+
+OBS 1080 × 1920 · English UI · Controls · Statistics
+
+## 5. Một điểm mình muốn làm khác biệt
+
+Đừng để phù thủy chỉ là một hình ảnh tĩnh.
+
+Mình muốn có một nhân vật nữ photorealistic, phong cách điện ảnh, với các animation riêng:
+
+- Idle: tóc, áo choàng, ánh sáng và khói chuyển động.
+- Spirit interaction: các linh hồn bay quanh, thay đổi quỹ đạo.
+- Reading: phù thủy đưa tay, các lá bài bay lên.
+- Card reveal: lá bài xoay và lật trước camera.
+- Interpretation: quả cầu pha lê phát sáng, phù thủy nói chuyện.
+- Gift event: nghi thức phép thuật lớn, tất cả linh hồn hội tụ.
+
+Về kỹ thuật, có thể dùng một background điện ảnh làm nền, sau đó tách nhân vật, spirit, khói, bài Tarot thành các layer animation. Như vậy sẽ đẹp và linh hoạt hơn việc tạo một ảnh duy nhất rồi phóng to thu nhỏ.
+
+## 6\. Trước khi làm, mình muốn thống nhất một nguyên tắc
+
+Không phá những thứ Coffee đã xây dựng tốt.
+
+Mình sẽ yêu cầu Freebuff kiểm tra source thực tế, lập bảng đối chiếu từng module, rồi mới chuyển đổi. File chat này là lịch sử phát triển và báo cáo kiểm thử, không thay thế source code hiện tại.
+
+Có một việc mình cần bạn xác nhận:
+
+Bạn định dùng chính source `Sunny Side Sips` hiện tại làm nền tảng, tạo một bản sao riêng tên `Mystic Witch LIVE`, và vẫn giữ Coffee nguyên vẹn để có thể quay lại bất cứ lúc nào, đúng không?
+
+Mình khuyên chọn cách này. Như vậy chúng ta có thể phát triển Tarot thoải mái mà không ảnh hưởng dự án Coffee đang có.
+
+
+
+tôi sẽ clone source ra, giờ chuẩn bị hình ảnh trước bạn cần ảnh gì đưa prompt văn bản cho tôi, tôi sẽ tạo tay or dùng AI comfyui tạo từng ảnh dc ko?, ảnh phải cho kích thước 9:16 hay 16:9 hay...
+
+
+thôi tạo ảnh khổ quá tôi có cai máy comfyui ở đây 10.0.0.142, làm sao ở máy khác có freebuff dùng freebuff gọi vào đó tự dùng comfyui tạo ảnh dc?
+
+cấu hình máy comfyui
+Tốt. Với cấu hình này, mình đề xuất không cài thêm bất kỳ thứ gì vào máy ComfyUI ngoài việc mở API LAN. Toàn bộ logic tích hợp sẽ nằm ở máy Freebuff.
+
+## Bước 1. Chỉnh máy ComfyUI
+
+Trên máy `10.0.0.142`:
+
+1. Mở thư mục `ComfyUI_windows_portable`.
+2. Tìm file `run_nvidia_gpu.bat` (nếu dùng NVIDIA).
+3. Sao lưu file này.
+4. Mở bằng Notepad.
+5. Thêm `--listen 0.0.0.0 --port 8188` vào lệnh chạy.
+
+Ví dụ:
+
+bat
+
+```bat
+.\python_embeded\python.exe -s ComfyUI\main.py --windows-standalone-build --listen 0.0.0.0 --port 8188
+pause
+```
+
+Nếu dùng AMD hoặc CPU thì giữ nguyên file khởi động tương ứng và chỉ thêm hai tham số mạng.
+
+Tài liệu: [ComfyUI Startup Flags](<https://github.com/Comfy-Org/docs/blob/main/development/comfyui-server/startup-flags.mdx?utm_source=chatgpt.com>).
+
+## Bước 2. Kiểm tra kết nối
+
+Trên máy Freebuff, mở:
+
+`http://10.0.0.142:8188`
+
+Nếu giao diện xuất hiện là thành công.
+
+Tiếp theo thử:
+
+`http://10.0.0.142:8188/system_stats`
+
+Phải nhận được JSON.
+
+Nếu không kết nối được:
+
+- Kiểm tra hai máy có cùng LAN không.
+- Kiểm tra IP máy ComfyUI có còn là `10.0.0.142` không.
+- Cho phép TCP 8188 trong Windows Defender Firewall, chỉ trên Private network và giới hạn nguồn là IP máy Freebuff.
+
+Không mở port 8188 ra Internet. ComfyUI mặc định không có lớp xác thực người dùng đầy đủ.
+
+## Bước 3. Tích hợp với Freebuff
+
+Mình muốn Freebuff có một công cụ riêng tên `comfyui`.
+
+Đề xuất giao diện công cụ:
+
+text
+
+```text
+comfyui.status
+comfyui.list_models
+comfyui.list_workflows
+comfyui.generate
+comfyui.generate_from_reference
+comfyui.get_progress
+comfyui.get_result
+comfyui.cancel
+```
+
+Freebuff sẽ có thể tự thực hiện yêu cầu như:
+
+> Create a photorealistic gothic witch character, save it to Mystic Witch assets, and show me the result.
+
+Mình đề xuất làm một MCP server nhỏ hoặc plugin tương thích cơ chế tool của Freebuff, tùy API mà app hỗ trợ. Không nên giả định Freebuff hỗ trợ MCP chỉ vì nó có AI agent.
+
+## Bước 4. Xác định cách Freebuff mở rộng công cụ
+
+Mình cần bạn làm thêm một việc nhỏ:
+
+Trong app Freebuff, tìm phần Settings hoặc Plugins/Tools/Integrations.
+
+Chụp màn hình phần đó gửi mình.
+
+Mình muốn biết Freebuff hiện hỗ trợ:
+
+- MCP Server;
+- Custom Tools;
+- OpenAPI;
+- Hay chỉ có Terminal và khả năng chạy script.
+
+Từ đó mình sẽ thiết kế đúng phương thức tích hợp, không bắt bạn cài những thứ không cần thiết.
+
+Mục tiêu cuối cùng: Freebuff có thể tự thiết kế prompt, gọi ComfyUI GPU của bạn, tạo nhân vật và hiệu ứng, kiểm tra ảnh, rồi lưu trực tiếp vào thư mục `Mystic Witch LIVE` trên máy dự án.
+
+
+
+inspect the project
+À, hiểu rồi. 😁 Xin lỗi, nãy mình đi hơi xa và nói nhiều về kiến trúc khiến bạn khó theo dõi.
+
+Bây giờ mình sẽ hướng dẫn bạn làm trực tiếp trên Freebuff, từng bước một. Bạn chỉ cần copy yêu cầu cho Freebuff, chờ nó làm xong rồi gửi kết quả lại cho mình.
+
+Mục tiêu hiện tại:
+
+- Có source Coffee đã clone.
+- Tạo bản Mystic Witch riêng, không ảnh hưởng Coffee gốc.
+- Tận dụng ComfyUI ở `10.0.0.142`.
+- Biến cửa hàng nước thành thế giới phù thủy Tarot.
+
+## Bước 1 — Mở source trong Freebuff
+
+1. Mở ứng dụng Freebuff.
+2. Chọn Open Folder (hoặc mở project).
+3. Chọn thư mục `coffee` mà bạn vừa clone.
+4. Kiểm tra Freebuff đã đọc được các file source.
+
+Chưa yêu cầu Freebuff sửa bất kỳ code nào.
+
+## Bước 2 — Cho Freebuff đọc và hiểu source Coffee
+
+Khi đã mở đúng thư mục `coffee`, copy nguyên yêu cầu này vào khung chat Freebuff:
+
+Writing
+
+I have cloned the original repository: https://github.com/nguyenlekhanh/coffee
+
+I want to create a new project called MYSTIC WITCH LIVE based on this codebase.
+
+Before changing anything, I want you to understand the entire existing project.
+
+TASK:
+
+1. Inspect the complete project structure.
+2. Read package.json, README, server files, game engine, TikTok LIVE integration, event handling, audio engine, admin dashboard and frontend.
+3. Identify the existing architecture and how all modules communicate.
+4. Identify which features are working and which are incomplete.
+5. Identify all modules we can reuse for Mystic Witch.
+6. Identify modules that need to be replaced.
+7. Check how the project is started and how to run its tests.
+
+IMPORTANT RULES:
+
+- Do NOT modify any files yet.
+- Do NOT delete anything.
+- Do NOT install new packages.
+- Do NOT change the TikTok integration.
+- Do NOT start implementing Tarot.
+- Do NOT make assumptions without checking the actual source code.
+
+First, produce a clear technical report in Vietnamese with: A. Project architecture. B. Important files and their functions. C. Existing features. D. Reusable modules. E. Modules to replace for Mystic Witch. F. Recommended migration plan.
+
+I want to discuss the report before implementation.
+
+Đây là bước quan trọng nhất. Để Freebuff đọc source thật trước khi chúng ta quyết định sửa gì.
+
+## Sau đó làm gì?
+
+Bạn gửi lại cho mình câu trả lời của Freebuff (copy text hoặc chụp màn hình).
+
+Mình sẽ cùng bạn quyết định bước tiếp theo, theo thứ tự:
+
+1. Kiểm tra source và tạo bản sao an toàn.
+2. Kết nối ComfyUI `10.0.0.142`.
+3. Tạo ảnh phù thủy và căn phòng.
+4. Thay giao diện Coffee bằng Mystic Witch.
+5. Xây Tarot Engine và tương tác TikTok.
+
+Mình sẽ không đưa thêm code hay prompt dài cho đến khi bước 2 hoàn thành.
+
+Tham khảo: [Freebuff – cách hoạt động của coding agent](<https://github.com/CodebuffAI/freebuff?utm_source=chatgpt.com>). Freebuff Desktop có thể đọc project local, sửa file và chạy kiểm tra trong project.
+
+GitHub
+
++1
+
+
+I have the first section. Now I'll map server.js precisely and read the remaining modules in parallel.
+
+Tôi đã đọc xong toàn bộ mã nguồn. Không có file nào bị sửa, không cài package, không đụng vào tích hợp TikTok. Dưới đây là báo cáo kỹ thuật.
+
+---
+
+# BÁO CÁO KỸ THUẬT — COFFEE / SUNNY SIDE SIPS → MYSTIC WITCH LIVE
+
+## 0. Xác nhận môi trường (đã kiểm chứng)
+
+| Hạng mục | Kết quả thực tế |
+|---|---|
+| Runtime | Node **v20.18.3**, Bun **1.4.4**, Python **3.12.2** |
+| Khởi động | `bun start` → `bun run server.js`; dev: `bun run dev` (`bun --watch`) |
+| Test | `node --test test/*.test.js` → **11/11 pass, exit 0** (~0.88s) |
+| Cổng | 3000 (hoặc `PORT`) |
+| Endpoint | `/`, `/admin`, `POST /rpc`, `ws://…/ws`, `/api/state`, `/api/tts`, `/api/tts/voices`, `/api/tts/engines`, `/tts-cache/*` (static) |
+| Git | **Thư mục này KHÔNG phải git repo** (không có `.git`) → không thể `git diff`/rollback; cần sao lưu thủ công trước khi sửa |
+| Cảnh báo | `config/piper/` nằm trong `.gitignore` → **giọng Piper chỉ tồn tại trên máy này**, không có trong repo clone |
+| Bí mật | `data/llm-secrets.json` (đã gitignore) chứa API key; `.env` có tồn tại nhưng tôi **không đọc** theo quy tắc |
+
+---
+
+## A. Kiến trúc dự án
+
+### A.1. Mô hình tổng thể — 3 tầng, server là "trọng tài"
+
+```
+TikTok LIVE ──(tiktok-live-connector v2, sign qua Euler)──┐
+                                                          ▼
+                                   server.js  (Express + ws, 6.041 dòng)
+                                   ├─ normalize event (user, uniqueId, avatar, coins…)
+                                   ├─ LiveEventEngine: queue theo loại + dedupe + priority
+                                   ├─ LikeBatcher: gộp tim theo cửa sổ 3/5/10/15s
+                                   ├─ GiftComboTracker: chỉ tính repeat mới
+                                   ├─ Actions.*: mutate state (authoritative)
+                                   └─ broadcast: temple.event / temple.state (throttle 350ms)
+                                                          │
+                                          WebSocket JSON-RPC 2.0 (/ws)
+                                                          ▼
+                         public/index.html (stage 9:16 1080×1920)
+                         ├─ js/live.js      : RPC controller + HUD + fit stage
+                         ├─ js/game.js      : ShopGame (canvas 2D, 2.313 dòng)
+                         ├─ js/audio.js     : WebAudio SFX + hàng đợi TTS
+                         ├─ js/music.js     : playlist 8 track
+                         ├─ js/particles.js : hearts/confetti/firework
+                         ├─ js/announcer.js : MC tự động (BroadcastChannel)
+                         └─ js/conversations.js + js/reactive-seller.js
+                                                          ▲
+                                     BroadcastChannel      │ (music, announcer, crowd metrics)
+                                                          │
+                                              public/admin.html (3.258 dòng, 17 card)
+```
+
+**Nguyên tắc quan trọng:** server quyết định **sự thật** (điểm, VIP, đơn hàng, text TTS). Browser chỉ **render + phát âm thanh**. Đây là điểm rất tốt để tái sử dụng: Tarot phải rút bài ở server, không rút ở client.
+
+### A.2. Giao thức & bus nội bộ
+
+- JSON-RPC 2.0 qua **cả** HTTP `POST /rpc` và WebSocket `/ws` (dùng chung `handleRpcCall`, dòng 5546+).
+- **Notification (server → client):**
+  - `temple.state` — snapshot công khai, gộp tối đa 350ms (`scheduleStateBroadcast`).
+  - `temple.event` — 1 sự kiện gameplay (gift, serve, join, leave…).
+  - `temple.viewerCount`, `tts.play`, `tts.status`, `shop.reset` (soft/hard).
+- **Client → server:** mọi nút bấm = 1 RPC (`shop.join`, `live.connect`, `shop.leave`, `shop.viewerServed`…).
+- Bảo vệ tải: bỏ qua client có `bufferedAmount > 2MB` (dòng ~5957).
+- Method namespace: **`shop.*` / `game.*` mới + `temple.*` legacy vẫn chạy** (alias). Rất thuận lợi: có thể thêm `tarot.*` mà không phá automation cũ.
+
+### A.3. Luồng một sự kiện gift (ví dụ đầy đủ)
+
+1. `WebcastEvent.GIFT` → chuẩn hoá `giftCoins = gift.diamondCount`, `groupId`, `repeatCount`.
+2. `queueTikTokEvent('GIFT', …)` → `LiveEventEngine.push` (dedupe theo `msgId:groupId:repeat`).
+3. `handleQueuedEvent` → `processGiftEvent` → `GiftComboTracker.apply()` lấy `delta`.
+4. `coinTier(coins)` — **khớp chính xác** 1/5/10/15/20/25; giá trị khác **bị bỏ** (không tạo đơn).
+5. `Actions.giftOrder` cập nhật `state.*`, `supporter`, `viewer` (VIP 25/50/100), celebration 25/50/100/500, enqueue đơn vào `viewer.orders`.
+6. `pushEventLog` → `broadcastNotification('temple.event')` + state throttled.
+7. `live.js` → `game.handleEvent` (hoạt cảnh), `audio.playCoin`, banner, `audio.enqueueTts(ev.ttsText, {profile…})`.
+
+### A.4. Lưu trữ trạng thái
+
+- `data/game-state.json`: aggregate (served, drinks, tips, likes, supporters, settings, voiceProfiles, conversations, reactive, likeBatching). Ghi debounce 1s.
+- **Không** lưu: `tiktok` state, danh sách viewer đang hoạt động (chỉ trong RAM, `viewerSessions` Map, giữ 15 phút sau khi rời).
+- Cache TTS: `data/tts-cache/` + `data/kokoro-cache/` (đều gitignore).
+
+---
+
+## B. Các file quan trọng và chức năng
+
+| File | Dòng | Chức năng chính |
+|---|---|---|
+| `server.js` | 6.041 | **Monolith 9 phần**: (1) menu đồ uống + gift icon; (2) bộ bài "Mystery Sip"; (3) `PiperTTSManager`; (4) state mặc định + `loadState/saveState` + voice profiles + conversations + reactive; (5) viewer/VIP/leaderboard + `Actions`; (6) TikTok connector + event engine; (7) auto-sim; (8) RPC dispatcher; (9) Express + WS + boot |
+| `live-event-engine.js` | 607 | **Module độc lập, không phụ thuộc Express/game**: `LiveEventEngine` (6 loại event, queue có giới hạn, weighted rotation, dedupe TTL 10', budget 8ms/batch), `LikeBatcher` (một cửa sổ chung, threshold, cooldown, `deferSpeech`), `GiftComboTracker` (delta combo) |
+| `llm-provider-manager.js` | 718 | Quản lý provider LLM (OpenRouter/OpenAI/Ollama/custom): CRUD, key trong `data/llm-secrets.json`, health, chain fallback, fetch models |
+| `conversation-catalog.js` | 534 | 12 nhóm + khoảng 65 câu thoại 2 người bán (male/female/followUp), seed vào state |
+| `piper_worker.py` | — | Worker Python thường trú cho Piper ONNX (local, không tải mạng) |
+| `kokoro_worker.py` | — | Worker Kokoro (tuỳ chọn, cần `.venv-kokoro` + model cache) |
+| `public/index.html` | 212 | Stage 9:16: background, 2 canvas, top bar, sign, gift ticker, coin menu, mystery card, party banner, HUD, dock điều khiển |
+| `public/admin.html` | 3.258 | 17 card điều khiển, **JS inline** (không có `public/js/admin.js`), RPC qua WS, bridge BroadcastChannel |
+| `public/js/live.js` | 1.120 | Fit stage theo `?obs=1`, RPC client + reconnect, `applyServerState`, map event → visual/audio, HUD, dock |
+| `public/js/game.js` | 2.313 | `ShopGame`: tách nền trắng bằng flood-fill, sprite khách/đồ uống/người bán, hàng đợi + bàn + đám đông (spatial hash, LOD), depth sort, `handleEvent`, `syncViewers` |
+| `public/js/audio.js` | 481 | WebAudio SFX tổng hợp, hàng đợi TTS có priority (0 gift / 1 reply / 2 announce), duck nhạc khi nói |
+| `public/js/music.js` | 412 | Playlist 8 track gốc, `BroadcastChannel('sunny-side-music')`, lưu volume/track |
+| `public/js/particles.js` | 269 | hearts, confetti, sparkle, fireworks trên `fxCanvas` |
+| `public/js/announcer.js` | 546 | MC tự động: 5 nhóm, 31 câu mặc định, interval 5–20s, không lặp câu trước, `BroadcastChannel('sunny-side-announcer')`, catalog trong `localStorage` |
+| `public/js/conversations.js` | 531 | Scheduler hội thoại 2 người bán, đồng bộ snapshot từ server, nhường lời cho gift/VIP |
+| `public/js/reactive-seller.js` | 94 | Chỉ phát các câu trả lời **đã được server kiểm duyệt** |
+| `public/js/asset-manifest.js` | 122 | Danh sách file asset **sinh thủ công** (không tự động) |
+| `public/css/live.css` | 1.127 | Theme "cartoon drink shop" |
+| `test/live-event-engine.test.js` | 188 | 11 test cho engine (batch, dedupe, combo, queue bound, lỗi handler) |
+| `docs/.../temple-rpc-design.md` | 90 | Spec **cũ** (chùa, ZeroTTS, `tts_worker.py`) — không còn khớp code |
+
+---
+
+## C. Hiện trạng tính năng
+
+### C.1. Đang hoạt động (đọc code + test xác nhận)
+
+- **TikTok LIVE**: connect/disconnect, kiểm tra live trước khi mở WS, chống double-connect, auto-reconnect 5 lần backoff 4→30s, liveness error rõ ràng, viewer count.
+- **Event engine**: 6 loại (GIFT/FOLLOW/MEMBER/SHARE/CHAT/LIKE), ưu tiên + evict loại thấp, dedupe theo msgId, chịu được flood (test 5.000 CHAT).
+- **Like**: gộp theo cửa sổ, 1 reaction/batch, cooldown, hoãn lời khi có gift.
+- **Gift**: combo delta chính xác, map coin → drink, VIP + celebration theo mệnh giá.
+- **Viewer identity**: 1 viewer = 1 nhân vật bền (uniqueId), join/leave/reconnect, giữ 15 phút, VIP 3 cấp, leaderboard phiên + lifetime, hàng đợi đơn riêng.
+- **TTS**: Piper local thật (worker thường trú, cache WAV, quét giọng + watch folder), 4 profile giọng (maleSeller/femaleSeller/announcer/customer), snapshot profile gắn vào event (sửa profile không làm đổi câu đã xếp hàng), Kokoro có fallback Piper.
+- **Nội dung**: announcer tự động, hội thoại 2 người bán, reactive seller phân loại intent + rate limit + tuỳ chọn LLM.
+- **Frontend**: stage 9:16 chuẩn OBS, mystery card, gift ticker, coin menu, notice stack, celebration, nhạc 8 track, SFX.
+- **Admin**: điều khiển game, TikTok, TTS, voice profiles, conversations, reactive, LLM manager, music, gift board, RPC console, VIP/supporters.
+
+### C.2. Chưa hoàn thiện / nợ kỹ thuật (bằng chứng cụ thể)
+
+1. **Test coverage rất mỏng**: chỉ `live-event-engine.js`. Không có test cho `Actions`, RPC, persistence, TTS.
+2. **Kokoro là tuỳ chọn "mềm"**: cần `.venv-kokoro` + model trong `data/kokoro-cache`; nếu thiếu thì fallback Piper (đúng thiết kế, nhưng không phải đường chạy mặc định đã kiểm chứng).
+3. **Tài liệu lệch code**: spec nhắc `public/js/admin.js`, `tts_worker.py`, ZeroTTS — **không tồn tại**.
+4. **Di sản chùa**: `data/merit-state.json` (795KB) **không được tham chiếu ở bất kỳ đâu**; asset `buddha.png`, `temple_stage_bg.png`, `amitabha_stage.*`, `devotee*.png` **không được HTML/CSS/JS nào dùng**.
+5. **Đặt tên lẫn lộn**: `temple.*` alias vẫn tồn tại song song `shop.*`.
+6. **Persist hạn chế**: viewer/VIP/đơn hàng chỉ trong RAM → restart là mất. Với Tarot, lịch sử trải bài **phải** lưu DB/file nếu muốn tra cứu.
+7. **Không có event "viewer leave" từ TikTok** — phải gọi `shop.leave` thủ công (README nói rõ).
+8. **Coin tier khớp tuyệt đối**: gift 2, 3, 7 xu… bị bỏ hoàn toàn, không có "quy đổi gần nhất".
+9. **Announcer/conversations lưu ở `localStorage`** (client), trong khi voice profiles lại ở server → hai nguồn sự thật khác nhau.
+10. **Monolith**: `server.js` 6.041 dòng, không tách module → rủi ro khi thêm Tarot.
+11. **Không có build step**: 9 thẻ `<script>` IIFE toàn cục, thứ tự load quan trọng; thêm module mới phải sửa `index.html`.
+12. **`asset-manifest.js` sinh thủ công** → thêm ảnh Tarot phải regenerate đúng tên file.
+
+---
+
+## D. Module có thể tái sử dụng cho Mystic Witch
+
+| Module | Mức tái sử dụng | Ghi chú |
+|---|---|---|
+| `live-event-engine.js` | **Nguyên bản 100%** | Không có chữ "shop/drink" nào; chỉ đổi tên trong comment. Đây là tài sản giá trị nhất |
+| Khối TikTok trong `server.js` (dòng ~5000–5500) | **Nguyên bản (theo yêu cầu: không đổi)** | `connectTikTokLive`, reconnect, liveness, mapping WebcastEvent → queue |
+| RPC + WS + `broadcastNotification`/throttle | Nguyên bản | Thêm namespace `tarot.*` bên cạnh method cũ |
+| `LikeBatcher` / `GiftComboTracker` | Nguyên bản | Logic "năng lượng/thiện cảm" hoặc "nến" cho witch |
+| `PiperTTSManager` + `synthesizeSpeech` + 4 voice profile | Nguyên bản, chỉ đổi **nội dung câu** | Có sẵn giọng nữ/nam/announcer/customer, cache, watch folder |
+| `llm-provider-manager.js` + pipeline reactive | Nguyên bản | Rất phù hợp: "phù thuỷ trả lời comment" thay vì "người bán" |
+| `audio.js` (WebAudio SFX + hàng đợi TTS priority + duck) | Tái dùng khung, **thay âm sắc** | Thêm `playChime`, `playCardFlip`, `playIncense`… |
+| `particles.js` | Tái dùng gần nguyên bản | hearts/confetti/sparkle/firework → nến, khói, tia sao, bụi phép |
+| `music.js` + 8 track | Tái dùng khung | Có thể giữ track cũ hoặc thay bằng ambient mới |
+| `announcer.js` | Tái dùng khung | Đổi catalog + 5 category (welcome / reading / CTA / atmosphere / supporter) |
+| `conversations.js` + `conversation-catalog.js` | Tái dùng khung | 2 nhân vật (Witch + Familiar/Apprentice) thay 2 người bán |
+| Hệ viewer / VIP / supporter / leaderboard | **Nguyên bản** | "Seeker" thay "customer", VIP = "Moon-touched" các cấp |
+| `saveState`/`loadState` (debounce + merge default) | Nguyên bản | Cần thêm `schemaVersion` + migration |
+| Fit stage 9:16 + `?obs=1` (`live.js` đầu file) | Nguyên bản | Đã xử lý fractional pixel, ResizeObserver, DPR |
+| Admin scaffolding (card, RPC console, test buttons) | Tái dùng khung | Đổi nhãn + thêm card Tarot |
+| Sanitizer/rate-limit comment (`sanitizeReactiveComment`, cooldown) | Nguyên bản | Giữ nguyên để chống spam |
+| Mystery card UI (`mysteryDrink` → `card`) | **Rất gần Tarot** | Đã có rank/title/poem/meaning/ttsText/img — chính là "lá bài" |
+| `tools/generate_music.py` | Tái dùng | Sinh nhạc ambient mới nếu cần |
+
+---
+
+## E. Module cần thay cho Mystic Witch
+
+| Thay thế | Hiện tại | Ghi chú phạm vi |
+|---|---|---|
+| **Dữ liệu bài** | `DRINK_MENU`, `COIN_MENU`, `GIFT_ICONS`, `MYSTERY_DECK` (6 lá) | Cần bộ 22 Major (hoặc 78) + spread definitions; **không** đụng code TikTok |
+| **Actions shop** | `serveDrink`, `giftOrder`, `partyOrder`, `freeDrink`… | Thay bằng `tarot.draw`, `tarot.spread`, `tarot.reveal`, `ritual.candle`, `ritual.bless` |
+| **Stage** | `game.js` (quầy, bàn, khách đi bộ) | **Phải viết mới** — đây là phần lớn nhất. Có thể giữ `SpatialHashGrid`, `cutOutBackground`, `wrapCanvasText`, `depthScale` |
+| **Layout/theme** | `index.html` + `live.css` | Thay toàn bộ: bàn trải bài, đèn nến, gương, bầu trời đêm |
+| **Asset** | `customers/`, `drinks/`, `seller/`, `background/street.jpg` | Thêm `tarot/`, `witch/`, `candles/`, `background/night.jpg`; regenerate `asset-manifest.js` |
+| **Nội dung thoại** | 65 câu quán nước, 31 câu announcer | Viết lại theo giọng huyền bí (giữ EN + VI) |
+| **Branding** | `SHOP_NAME`, title, dock, README, `package.json` | `MYSTIC WITCH LIVE` |
+| **State schema** | `customersServed/drinksSold/totalTips` | `seekers/readings/donations/energy` + `schemaVersion` |
+| **Nhạc/SFX** | 8 track summer + ka-ching | Ambient tối, chuông, xào bài |
+| **Admin labels** | 17 card "shop" | Đổi nhãn, thêm "Tarot Deck", "Spread builder", "Reading history" |
+| **Test** | 1 file | Thêm test cho tarot engine (rút bài, không lặp, seed, dedupe) |
+
+**Không được thay (theo yêu cầu):** toàn bộ tích hợp `tiktok-live-connector`, cách ký Euler, mapping event, reconnect. Tarot chỉ **tiêu thụ** event đã chuẩn hoá.
+
+---
+
+## F. Kế hoạch migration đề xuất
+
+> Nguyên tắc: **strangler pattern** — thêm hệ Tarot song song, chỉ xoá code shop khi Tarot đã chạy. Không "big bang rewrite".
+
+### Phase 0 — Bảo toàn (làm ngay, trước mọi thay đổi)
+1. Vì **không có `.git`**, tạo bản sao lưu thư mục hiện tại (hoặc `git init` + commit baseline) — nếu không sẽ không thể so sánh/rollback.
+2. Quyết định: copy `config/piper/` (đang bị gitignore) sang project mới; **không** copy `data/llm-secrets.json`, `data/game-state.json`, `data/merit-state.json`.
+3. Ghi lại baseline: `bun install` (nếu cần), `bun start` OK, `node --test` 11/11.
+
+### Phase 1 — Đổi nhận diện, không đổi hành vi
+- `SHOP_NAME`, `<title>`, dock, README, `package.json` (name/description).
+- Thêm `tarot.*` vào dispatcher **bên cạnh** `shop.*`; giữ nguyên alias cũ.
+- Thêm `schemaVersion` vào state + migration mặc định.
+- ✅ Kiểm tra: stage cũ vẫn chạy, event TikTok vẫn vào, test vẫn 11/11.
+
+### Phase 2 — Tách lõi (giảm rủi ro cho Phase 3)
+- Trích `tarot-engine.js` (deck, shuffle có seed, spread, interpret) **module thuần** như `live-event-engine.js` → test được ngay bằng `node --test`.
+- Trích state/action shop thành `game-actions.js` (tuỳ chọn; nếu làm, làm từng bước, giữ export y nguyên).
+- ✅ Test: engine 22/78 lá, không rút trùng trong 1 spread, seed tái lập, dedupe theo gift id.
+
+### Phase 3 — Bản Tarot chạy được (vertical slice)
+- 3 RPC: `tarot.getState`, `tarot.draw` (`user`, `spread`, `question`), `tarot.reading` (lịch sử).
+- Gift → spread mapping **mới** (bảng riêng, không sửa `coinTier` của shop): ví dụ 1 xu = 1 lá, 5 = 3 lá, 10 = Cross, 25 = Celtic-lite…
+- Stage mới tối thiểu: nền đêm + bàn + lật bài + tên seeker + TTS đọc lời giải.
+- ✅ Test: comment "rút bài cho tôi" → 1 reading; gift 5 xu → 3 lá; spam 100 gift không tạo 100 reading (combo dedupe).
+
+### Phase 4 — Nội dung & âm thanh
+- Catalog Tarot (78 lá: name, arcana, upright/reversed, keywords, poem, ttsText EN/VI).
+- Announcer + conversations theo giọng phù thuỷ; voice profile: Witch (nữ), Oracle (nam/announcer), Seeker (customer).
+- SFX/SFX mới; nhạc ambient (có thể dùng `tools/generate_music.py`).
+
+### Phase 5 — Admin + vận hành
+- Card Tarot: xem deck, test draw, lịch sử reading, thống kê top seeker, bật/tắt LLM.
+- Kiểm tra 9:16 ở 1080×1920, `?obs=1`, FPS khi 100 viewer, reconnect TikTok.
+
+### Phase 6 — Dọn dẹp
+- Xoá code shop + asset chùa/quán (chỉ sau khi xác nhận không còn dùng).
+- Cập nhật README, xoá spec cũ hoặc viết spec Tarot mới.
+
+### Rủi ro & biện pháp
+
+| Rủi ro | Biện pháp |
+|---|---|
+| Không có git → mất baseline | Backup/`git init` ở Phase 0 |
+| `server.js` monolith dễ vỡ khi sửa | Chỉ **thêm** nhánh `tarot.*`; không refactor cùng lúc |
+| Xung đột `temple.*`/`shop.*`/`tarot.*` | Giữ alias, tài liệu hoá bảng method |
+| Mất giọng Piper khi chuyển máy | Copy `config/piper`, kiểm tra `GET /api/tts/voices` |
+| Rút bài "không công bằng" | Seed server-side, log reading id, dedupe combo |
+| Gift giá trị lạ bị bỏ | Quyết định: exact-match hay quy đổi gần nhất (hiện là exact) |
+| Reading mất khi restart | Lưu vào `data/readings.json` (hoặc D1 nếu deploy cloud) |
+
+### Câu hỏi cần chốt trước khi code
+1. **Deck**: 22 Major hay 78 lá đầy đủ? Có dùng lá ngược (reversed) không?
+2. **Ngôn ngữ**: EN + VI như hiện tại, hay VI là chính?
+3. **Gift → spread**: bạn muốn bảng nào? (1 xu = 1 lá, 5 = 3 lá, 25 = Celtic Cross…)
+4. **LLM**: giữ "reactive seller" thành "phù thuỷ trả lời comment" (tốn credit) hay chỉ dùng catalog tĩnh trước?
+5. **Stage**: giữ nhân vật walk-in (seeker bước vào rồi rời đi) hay chỉ ngồi trước bàn?
+6. **Dữ liệu**: lịch sử reading lưu file JSON (đơn giản) hay DB?
+7. **Tên/username TikTok** hiển thị trên stream.
+
+---
+
+**Tóm lại:** khoảng **60–70% hạ tầng là tái dùng được gần như nguyên bản** (event engine, TikTok, RPC/WS, TTS, LLM, viewer/VIP, admin, audio/particles/music, fit stage). Phần phải viết mới tập trung ở **dữ liệu bài + luật Tarot**, **stage canvas**, **nội dung thoại**, và **theme**. Rủi ro lớn nhất không phải TikTok mà là (a) không có git để rollback, (b) `game.js`/`index.html` phải thay gần như toàn bộ, (c) trạng thái viewer/reading hiện chỉ nằm trong RAM.
+
+Tôi chưa thay đổi file nào. Bạn muốn chốt các câu hỏi ở trên rồi tôi bắt đầu Phase 0–1 chứ?
+
+
+
+OK, từ giờ toàn bộ yêu cầu gửi Freebuff sẽ viết bằng tiếng Anh. Mình và bạn vẫn thảo luận bằng tiếng Việt.
+
+Mình đã đọc báo cáo. Freebuff phân tích khá kỹ, và mình đồng ý với hướng migration của nó. Tuy nhiên, mình muốn điều chỉnh một số quyết định để tránh làm dự án quá phức tạp ngay từ đầu.
+
+## 1. Chốt thiết kế sản phẩm
+
+Đây là cấu hình mình đề xuất:
+
+| Hạng mục | Quyết định |
+| --- | --- |
+| Tarot deck | 78 lá đầy đủ |
+| Reversed cards | Có |
+| Ngôn ngữ livestream | English (US) |
+| Ngôn ngữ admin | English |
+| Gift interaction | Có, thiết kế riêng |
+| AI Witch | Có, dùng LLM |
+| Reading history | JSON trước |
+| Stage | Phù thủy ngồi tại bàn Tarot |
+| Visual | Photorealistic Gothic Fantasy |
+| Spirits | Bay quanh phù thủy |
+| Stream | 1080 × 1920 |
+
+Đặc biệt, chưa cần cho seeker đi bộ vào phòng như khách Coffee. Tập trung vào phù thủy, bàn bài và linh hồn sẽ tạo hình ảnh điện ảnh hơn.
+
+## 2. Một số quyết định gameplay
+
+- Comment `LOVE`: yêu cầu trải bài tình yêu.
+- Comment `CAREER`: trải bài sự nghiệp.
+- Comment câu hỏi tự nhiên: AI phân loại và chọn trải bài.
+- Gift: mở khóa lượt đọc hoặc hiệu ứng phép thuật.
+- Follow: linh hồn xuất hiện chào mừng.
+- Like: linh hồn bay và phát sáng.
+
+Không nên biến mọi comment thành một lượt đọc bài vì sẽ gây spam và làm trải nghiệm kém.
+
+## 3. Gửi yêu cầu tiếp theo cho Freebuff
+
+Mình muốn Freebuff thực hiện Phase 0 trước, rồi Phase 1. Chưa xây Tarot Engine và chưa thay stage.
+
+Writing
+
+We have reviewed the architecture report. I want to proceed with the Mystic Witch LIVE migration.
+
+PRODUCT DECISIONS:
+
+- Project name: MYSTIC WITCH LIVE
+- Visual style: Photorealistic dark gothic fantasy.
+- Main character: Powerful, mysterious female witch.
+- Environment: Gothic tarot chamber, antique tarot table, crystal ball, candles and purple magical atmosphere.
+- Spirits: Ethereal glowing magical spirits floating around the witch.
+- Tarot deck: Full 78-card Rider-Waite-style deck.
+- Reversed cards: Enabled.
+- Stream language: American English.
+- Admin interface: English.
+- Stage: Witch seated at the tarot table. No walking customer gameplay.
+- Reading history: JSON persistence initially.
+- AI Witch: LLM-powered interpretation.
+- ComfyUI server: http://10.0.0.142:8188
+
+IMPLEMENTATION INSTRUCTIONS:
+
+PHASE 0 — PROJECT SAFETY
+
+1. Create a complete backup of the current project.
+2. Initialize Git if the project is not already a Git repository.
+3. Create a baseline commit before modifications.
+4. Preserve the original Coffee functionality in the backup.
+5. Preserve required local Piper voice assets.
+6. Never copy API secrets into Git.
+7. Run the existing tests and record the baseline results.
+
+PHASE 1 — PROJECT IDENTITY
+
+1. Change the application branding to MYSTIC WITCH LIVE.
+2. Update application title and visible branding.
+3. Update package metadata where appropriate.
+4. Do not replace the existing gameplay yet.
+5. Do not modify the TikTok connector or event engine.
+6. Keep existing RPC methods working.
+7. Add no unnecessary dependencies.
+
+PHASE 1.5 — COMFYUI CONNECTIVITY
+
+1. Add a reusable ComfyUI API client.
+2. Connect to http://10.0.0.142:8188.
+3. Test system\_stats, queue and WebSocket connectivity.
+4. Do not generate images yet.
+5. Do not change the existing frontend.
+
+IMPORTANT: Work incrementally. After each phase, run tests. Report all modified files and test results. If any unexpected issue occurs, stop and report it instead of making unrelated changes.
+
+Do not start Phase 2 until I explicitly approve it.
+
+## 4. Sau khi Freebuff làm xong
+
+Bạn gửi mình kết quả nó báo.
+
+Mình sẽ kiểm tra 3 điều:
+
+1. Backup và Git baseline có an toàn không.
+2. Coffee còn chạy bình thường không.
+3. ComfyUI đã được Freebuff kết nối thành công chưa.
+
+Chưa cần trả lời 7 câu hỏi kỹ thuật của Freebuff lúc này. Mình muốn đưa dự án đến trạng thái an toàn và kết nối được xưởng ảnh trước. Sau đó chúng ta mới xây phần Tarot thật sự.
+
+
+I'll start with Phase 0. First let me inspect the current state — git status, project size, and the ignore rules that matter for what must not enter the repo.
+
+Git is absent, as expected. The `ls`/`du` didn't run because the chain broke on the git exit code — let me measure the project before choosing a backup strategy, since `config/piper` (ONNX voices) and caches can be large.
+
+Project is 2.2 GB (1.2 GB Piper voices, 1.1 GB TTS caches) and has no `node_modules`. Let me check free disk space and available archive tools so the backup is complete but not wasteful.
+
+Disk has 31 GB free, `tar` is available, and git identity is already configured. I'll create a browsable full backup (including the Piper voices), then initialize git and commit the untouched baseline before touching any code.
+
+Timeout is capped at 300s; a local 2.2 GB copy should finish well within that.
+
+Backup verified: 999 files on both sides, 2.2 GB, all 18 Piper `.onnx` voices preserved. Now initializing git, confirming no secrets or voice models get staged, and committing the untouched baseline.
+
+Clean stage (78 files, no secrets, no voice models). Committing the baseline now, then recording the test baseline and probing the ComfyUI host — all read-only.
+
+Phase 0 complete: baseline commit `24317d8`, 11/11 tests passing. ComfyUI at `10.0.0.142:8188` answers — version 0.34.0, empty queue. Now Phase 1 identity + Phase 1.5 client. Let me read the exact spots I need to edit and the project's module style.
+
+Phase 0 is locked in. Now the Phase 1 brand rename (text-only, no logic) plus the Phase 1.5 ComfyUI client — writing all of it in one batch.
+
+
+
+
+Brand rename is clean and consistent (45 lines across 17 files, no leftovers, channel names aligned). Now installing the project's existing dependencies (respecting `package-lock.json` via `npm ci`, no new deps) so I can smoke-test the RPC and run the ComfyUI WebSocket check.
+
+Dependencies install cleanly from the existing lockfile (`ws 8.22`, `express 4.22`, `tiktok-live-connector 2.5`); only `package.json` shows modified, which is my rename. Finishing the metadata edits and running the full Phase 1 + 1.5 verification in one pass.
+
+
+
+
+Two issues surfaced, both diagnosable: one of my new client tests fails, and `node server.js` can't load `tiktok-live-connector` 2.5 because that package is ESM-only (the project is documented to run under Bun, which allows `require` of ESM). Let me get the exact test failure and retry the smoke test with the documented runtime.
+
+Both failures are mine, not the app's: my `normalizeQueue` mis-read ComfyUI's queue entry shape (`[number, prompt_id, ...]`), and I left `timer.unref()` on the WebSocket probe so a short timeout let the loop drain before resolving. Fixing both, then re-verifying everything including a Bun smoke test.
+
+
+
+
+All green: 20/20 tests, ComfyUI passes all three checks, and under Bun the server boots with the new brand while `shop.*`/`temple.*` RPC and the 18 Piper voices still work. Now finishing the brand polish and committing Phase 1 and Phase 1.5 as separate increments.
+
+Phase 0, 1 and 1.5 are complete and committed. Nothing from Phase 2 was started.
+
+## Phase 0 — Project safety
+
+| Action | Result |
+|---|---|
+| Full backup | `backup/phase0-baseline/` — **999 files, 2.2 GB**, verified equal count to live tree (`server.js` byte-identical) |
+| Piper assets in backup | **18/18 `.onnx` voices** + their `.json` configs (`en` 303 MB, `vn` 848 MB) |
+| Backup is inside Git? | No — `backup/` is already in `.gitignore`; Git history holds source only |
+| Git initialised | Yes (repo did not exist), identity already configured |
+| Baseline commit | `24317d8` — **78 tracked files** |
+| Secret leak guard | Verified **nothing** staged matching `.env`, `llm-secrets`, `llm-health`, `config/piper/`, `.venv*`, `*-cache/`, `backup/`, `node_modules` |
+| Baseline tests | **11/11 pass, exit 0** (~875 ms) → saved to `backup/phase0-baseline-tests.log` |
+
+Two pre-existing facts worth knowing: `config/piper/` is gitignored, so the voices only exist in the backup folder and on disk; and `data/game-state.json` / `data/merit-state.json` *are* tracked (app state, not secrets) — I reverted the state file after the smoke test so commits stay clean.
+
+## Phase 1 — Project identity
+
+45 changed lines across 17 tracked files, all string-level brand tokens — no logic touched, no dependencies added:
+
+- `server.js` — `SHOP_NAME`, boot banner, LLM system prompt, greeting, mock-reply fixture
+- `public/index.html` — `<title>`, stage sign `MYSTIC WITCH LIVE`, dock title
+- `public/admin.html` — `<title>`, panel header, 13 sample TTS strings, 3 BroadcastChannel names
+- `public/css/live.css`, `public/js/{game,live,music,announcer,conversations,reactive-seller}.js` — header comments + channel names
+- `package.json` — name `mystic-witch-live`, description, `comfy:check` script
+- `package-lock.json` — root package name
+- `README.md` — new title + explicit "migration in progress" note
+- `piper_worker.py`, `kokoro_worker.py`, `conversation-catalog.js`, `live-event-engine.js`, `tools/generate_music.py` — doc headers
+- Emoji `🥤 → 🔮` in the three visible surfaces
+
+Verification (Bun server on port 3111): `/api/state` reports `shop: "MYSTIC WITCH LIVE"`, menu still 6 drinks; `shop.getState` **and** legacy `temple.getState` both return valid results; `tts.refreshVoices` returns 18 voices (en:4, vi:14); titles/sign/dock/admin header all render the new brand. BroadcastChannel names are consistent across admin ↔ stage (`mystic-witch-{music,announcer,crowd}`) so the paired tabs still talk.
+
+## Phase 1.5 — ComfyUI connectivity
+
+New: `comfyui-client.js` (transport only, CommonJS, no new deps — `ws` loaded lazily), `tools/comfyui-check.js` (`npm run comfy:check`, `--url=`, `--json`), `test/comfyui-client.test.js` (9 network-free tests via local fixture server + injected fake socket).
+
+Live check against `http://10.0.0.142:8188`:
+
+```
+[PASS] system_stats   ComfyUI 0.34.0 · win32 · 65.8 GB free of 79.7 GB · devices 1
+[PASS] queue          running 0 · pending 0
+[PASS] websocket      status message in 21 ms · queue_remaining 0
+✅ ComfyUI is reachable and ready.
+```
+
+API surface ready for later phases: `systemStats()`, `getQueue()`, `getHistory()`, `objectInfo()`, `probeWebSocket()`, `checkHealth()`, plus `enqueuePrompt()`/`interrupt()` which are **defined but never called** — no image was generated and no frontend file was touched. Base URL defaults to `10.0.0.142:8188` and honours `COMFYUI_BASE_URL`.
+
+## Test results
+
+- Baseline: **11/11 pass**
+- After Phase 1 + 1.5: **20/20 pass, exit 0** (11 engine + 9 ComfyUI client)
+- Commits: `24317d8` baseline → `2dbdbe9` phase 1 → `5fe7202` phase 1.5. Working tree clean.
+
+Two real bugs I introduced were caught by the tests and fixed rather than papered over: my `normalizeQueue` mis-read ComfyUI's entry shape (`[number, prompt_id, …]`), and `timer.unref()` on the socket probe let the event loop drain before a short timeout could reject.
+
+## Issues found (reported, not fixed — outside these phases)
+
+1. **`node server.js` cannot start**: `ERR_REQUIRE_ESM` — the lockfile pins `tiktok-live-connector@2.5.0`, which is ESM-only, while `server.js` uses `require`. Documented runtime `bun start` works fine (verified). Pre-existing; I did not touch the connector. Node 20 also warns `got@15` wants Node ≥ 22.
+2. **README overstates RPC**: it lists `live.*` aliases, but only `live.connect/disconnect/join/leave/setAutoSim/status/testVip/testCelebration/viewerServed/viewers` exist; `live.getState` returns "Unknown JSON-RPC method".
+3. **Gameplay text is still drink-shop** ("AMERICAN DRINK SHOP · OPEN DAILY", 6-drink menu) — intentional, that is Phase 2+ work.
+4. `npm ci` installed the existing lockfile deps into gitignored `node_modules`; `package-lock.json` was not modified.
+
+I am stopping here as instructed. Phase 2 (78-card deck, reversals, tarot engine, gothic stage) is not started — say the word and I'll spec it before coding.
+
+
+
+1111111111111111111 test thử 1 ảnh với comfyui
+Haha, Freebuff làm khá tốt đấy\! :)) Đặc biệt là nó đã hoàn thành kết nối ComfyUI mà chưa tạo ảnh hay phá gameplay Coffee.
+
+Mình xác nhận: có thể chuyển sang bước tiếp theo. Nhưng chưa nên làm Tarot Engine vội.
+
+## Kết quả hiện tại
+
+Mystic Witch LIVE
+
+Phase 1.5 hoàn thành
+
+# 20/20 tests passed
+
+- Đã backup 2.2 GB.
+- Đã tạo Git và 3 commits.
+- Đã đổi branding.
+- ComfyUI kết nối thành công.
+- Giữ nguyên TikTok integration.
+- 18 giọng Piper vẫn hoạt động.
+- Chưa tạo ảnh, chưa thay gameplay.
+
+## Bây giờ làm gì?
+
+Mình muốn làm đúng một việc: tạo hình ảnh đầu tiên bằng Freebuff gọi ComfyUI.
+
+Chưa cần xây MCP, chưa cần 78 lá Tarot, chưa cần sửa giao diện.
+
+Gửi Freebuff yêu cầu sau:
+
+Writing
+
+Phase 1 and Phase 1.5 are approved.
+
+Next, I want a minimal real image-generation test using our remote ComfyUI server.
+
+TASK:
+
+1. Inspect the installed ComfyUI models using its API.
+2. Identify available checkpoints, LoRAs and VAEs.
+3. Check which existing workflow templates are compatible.
+4. Recommend the simplest working text-to-image workflow for the installed models and RTX 3060 12GB.
+5. Implement a small test script that submits one workflow to ComfyUI.
+6. Generate exactly ONE test image.
+7. Save the result to:
+
+assets/mystic-witch/tests/
+
+Image concept: A mysterious, powerful female witch in a dark gothic fantasy chamber, photorealistic cinematic lighting, purple magical smoke, glowing crystals and floating ethereal spirits.
+
+Image size: 832x1216 or a suitable resolution supported by the installed model.
+
+IMPORTANT:
+
+- Do not modify the existing frontend.
+- Do not modify server.js.
+- Do not modify TikTok integration.
+- Do not install additional models automatically.
+- Do not download large files.
+- Do not generate multiple images.
+- Reuse installed models and workflows.
+- Report the exact checkpoint, workflow, generation settings and output filename.
+- Run relevant tests after implementation.
+
+Stop after the single image is successfully generated.
+
+## Sau đó
+
+Bạn gửi mình ảnh mà Freebuff tạo ra.
+
+Mình sẽ xem chất lượng hình, phong cách và độ phù hợp. Nếu ổn, chúng ta mới làm bộ nhân vật Witch và các linh hồn cùng phong cách.
+
+Một ảnh đẹp trước, rồi mới xây cả thế giới. Không chạy marathon tới năm sau đâu 🤣
+
+
+
+Installed models (via API)
+Category	Count	Notable entries
+Checkpoints	12	RealVisXL_V5.0_Lightning_fp16, sd_xl_base_1.0, sd_xl_refiner_1.0, flux1-schnell-fp8, v1-5-pruned-emaonly-fp16, NetaYumev35_pretrained_all_in_one, plus video/audio ones (LTX, SAM, Stable Audio)
+UNET/diffusion	53	flux1-dev, flux1-krea-dev_fp8_scaled, qwen_image_fp8_e4m3fn, ideogram4_fp8_scaled, krea2_turbo_*, and mostly Wan 2.1/2.2 video models
+LoRAs	25	Qwen-Image-Lightning-8steps, Qwen-Image-Edit-2511-Lightning-4steps, krea2_darkbrush, uso-flux1-dit-lora, Wan accelerate/distill LoRAs
+VAEs	24	ae.safetensors (Flux), flux2-vae, qwen_image_vae, wan2.2_vae, taesdxl, pixel_space
+Hardware	—	cuda:0 NVIDIA GeForce RTX 3060, 12.0 GB total / 11.0 GB free
+No LoRA is a witch/gothic style LoRA, so I used none rather than forcing an unrelated one.
+
+Template compatibility: /api/workflow_templates exists but only publishes custom-node packs (BSAI FastH3, Hyperflow, KJNodes, MiniMax-H3, QwenVL, RMBG…). None reference RealVisXL, sd_xl or any text-to-image graph, so no shipped template applied. Instead I verified each core node exists (CheckpointLoaderSimple, CLIPTextEncode, EmptyLatentImage, KSampler, VAEDecode, SaveImage → all HTTP 200) and used the canonical 6-node graph.
+
+Recommended (and used) workflow
+RealVisXL_V5.0_Lightning_fp16 — single-checkpoint SDXL Lightning. One file supplies MODEL + CLIP + VAE, it is photorealistic, and it is distilled for few steps, so 12 GB is comfortable. Rejected: flux1-schnell-fp8 (needs ae.safetensors + DualCLIP encoders, slower and heavier for no test benefit), sd_xl_base + refiner (two-pass, ~3× the time), any Wan/LTX model (video, wrong task).
+
+Graph: CheckpointLoaderSimple → CLIPTextEncode ×2 → EmptyLatentImage → KSampler → VAEDecode → SaveImage
+
+Setting	Value
+Checkpoint	RealVisXL_V5.0_Lightning_fp16.safetensors
+Resolution	832 × 1216 (SDXL-native portrait), batch 1
+Steps / CFG	8 / 1.5
+Sampler / scheduler	dpmpp_sde / karras
+Seed	20261103
+Denoise	1.0
+Duration	81.8 s wall clock
+Output
+File: assets/mystic-witch/tests/test-01-witch-832x1216.png — 832×1216, 1315 KB
+Server-side copy: output/mystic-witch-test/test-01-witch_00001_.png
+prompt_id: 12927e09-aee9-49e7-a025-62abe32d502e
+Exactly one image: the script refuses to run if the target already exists (needs --force), submits one prompt, asserts the history contains exactly one output, and the server queue was empty afterwards (0 running / 0 pending).
+The frame matches the brief: photorealistic witch, black lace gown, purple magical smoke from her hand, crystal ball, candles, gothic library chamber, cinematic low-key lighting. The one weak element is floating ethereal spirits — they did not materialise, so the prompt needs "glowing translucent spirit wisps around her" strengthened (or a dedicated pass) later.
+
+Files and checks
+New: tools/comfyui-generate-test.js (--dry-run, --force, --url=). server.js, public/*, TikTok integration: unchanged (verified with git status).
+Tests: node --test test/*.test.js → 20/20 pass, exit 0.
+Commit: 7385684 on top of 5fe7202; working tree clean.
+One issue worth recording
+The first submission was rejected with HTTP 400 — KeyError in execution.py: prompt[o_id]['class_type'] at VAEDecode. This ComfyUI build resolves link ids against JSON object keys (always strings), so numeric link ids like [5, 0] fail validation; string ids (["5", 0]) work. That failed attempt produced no image (validation precedes queueing). The fix is documented in the script's doc comment so
+
+
+test ảnh phù thủy huyền bí
+We need to refine the Mystic Witch visual direction.
+
+The first test image was too focused on a beautiful female face. This is NOT the desired character design.
+
+NEW ART DIRECTION:
+
+Create a mysterious supernatural witch entity, not a beautiful woman dressed as a witch.
+
+CHARACTER:
+
+Full black gothic hooded robe.
+Deep oversized hood.
+Face completely hidden in darkness.
+Absolutely no visible eyes, nose, lips or facial features.
+The character should feel ancient, mysterious, powerful and supernatural.
+Elegant but intimidating silhouette.
+Long flowing dark robe.
+
+MAGICAL ATMOSPHERE:
+
+Glowing purple magical energy.
+Floating translucent ghost spirits surrounding the witch.
+Ethereal souls with soft glowing eyes or abstract ghostly forms.
+Purple smoke and magical particles.
+Ancient tarot chamber.
+Crystal ball, candles and mysterious symbols.
+
+VISUAL STYLE:
+
+Photorealistic dark gothic fantasy.
+Cinematic lighting.
+Deep shadows.
+Purple and violet highlights.
+High detail.
+Atmospheric and supernatural.
+
+NEGATIVE PROMPT: beautiful woman, pretty face, visible face, portrait, fashion model, makeup, glamour photography, cosplay, smiling, exposed skin, anime, cartoon, illustration, low quality.
+
+IMPORTANT:
+
+Keep the same RealVisXL checkpoint.
+Keep the existing working workflow.
+Generate exactly ONE new test image.
+Save as test-02-hooded-witch.png.
+Do not overwrite test-01.
+Do not modify frontend or gameplay.
+Stop after generation and report the result.
+
+
+
+Result
+Item	Value
+File	assets/mystic-witch/tests/test-02-hooded-witch.png — 832×1216, 1085 KB
+Checkpoint	RealVisXL_V5.0_Lightning_fp16.safetensors (unchanged)
+Workflow	Same 7-node graph (unchanged; only prompts, seed and filename prefix differ)
+Sampler	dpmpp_sde / karras · 8 steps · cfg 1.5 · seed 20261104
+prompt_id	be856298-65f2-4746-b408-45c2b2ae3125
+Duration	14.8 s (model already resident)
+Server copy	output/mystic-witch-test/test-02-hooded-witch_00001_.png
+Exactly one image was submitted and the queue is empty (0 running / 0 pending). test-01 is byte-identical before and after — SHA-1 d40cec19043c124ba814ef87daf054d631ad8df1 both times. Implementation is a --variant=test-01|test-02 switch on the same script, so the workflow stays shared.
+
+server.js, public/* and the TikTok integration are unchanged; node --test test/*.test.js → 20/20 pass; committed as f214179, working tree clean.
+
+Honest art-direction audit — it does not fully meet the brief
+Requirement	Result
+Full-length black hooded robe, deep hood	✅ Strong: layered floor-length robe, oversized peaked hood, wide symmetrical stance
+Ancient, intimidating silhouette	✅ Reads as an entity, not a model pose
+Purple magical energy	✅ Violet light in both palms, purple fog
+Candles, occult symbols	✅ Ritual circle with runes, candle cluster
+Cinematic, deep shadows, violet highlights	✅
+Face completely hidden	❌ Failed — eyes, nose and lips are clearly readable inside the hood
+Floating ghost spirits	❌ Failed — only smoke; no discrete souls/wisps
+Crystal ball	❌ Not present
+So the framing fix worked (no more beauty portrait), but the core "faceless" requirement did not hold.
+
+Why, technically:
+
+CFG 1.5 is the main culprit. Lightning checkpoints are distilled for cfg 1–2, but negative prompts only bite through CFG. Your negative list was effectively muted at 1.5.
+RealVisXL's prior is strong for "photorealistic woman" — at 832×1216 it paints a face even with "face hidden in darkness" unless the negative is weighted and enforced.
+8 steps is very low for a multi-subject prompt (witch + spirits + crystal ball), so secondary elements like the ghosts and crystal ball get dropped.
+Concrete fix for the next single image (test-03), any of which I can apply:
+
+cfg 2.2–2.5, steps 12–16 (Lightning tolerance is fine), same checkpoint/workflow shape
+Positives: black void inside the hood, absolute darkness where the face should be, no head visible, shadow entity
+Negatives add: woman, girl, female face, feminine, chin, jawline, neck, skin texture, hair
+Optional decisive step: two-pass — generate, then inpaint the head region with black void / faceless shadow (guaranteed removal, and no extra image count since it edits the same canvas)
+Alternative if negatives still lose: sd_xl_base_1.0 at cfg 6–7 tolerates strong negatives far better than Lightning
+I did not regenerate, per your instruction. Tell me whether to run that test-03 iteration with the stronger settings, and whether you want the head inpaint path.
+
+
+11111111111111111111 viết code Mystic WItch Live
+OK\! Chốt, không mất thời gian chỉnh ảnh nữa. :)))
+
+Bắt đầu xây Mystic Witch LIVE thật sự. Có ảnh đẹp đến đâu thì cũng phải đưa lên sân khấu và chạy được TikTok LIVE trước đã.
+
+Mình đề xuất làm theo kiểu MVP: mỗi giai đoạn đều có sản phẩm chạy được, không đại tu toàn bộ Coffee.
+
+## Thứ tự triển khai
+
+1. Mystic Witch Stage
+   - Phù thủy ngồi trước bàn Tarot.
+   - Background gothic, nến, quả cầu pha lê.
+   - Khói tím, linh hồn bay quanh.
+   - Bài Tarot xuất hiện và lật trên bàn.
+   - Stage 9:16, tương thích OBS.
+2. Tarot Engine
+   - Bộ bài 78 lá, xuôi và ngược.
+   - Comment yêu cầu trải bài.
+   - Server rút bài ngẫu nhiên.
+   - Giải bài bằng nội dung có sẵn kết hợp LLM.
+   - Lưu lịch sử reading.
+3. TikTok LIVE interaction
+   - Comment → yêu cầu đọc bài.
+   - Gift → mở trải bài hoặc kích hoạt phép thuật.
+   - Like → linh hồn phát sáng.
+   - Follow → linh hồn xuất hiện chào mừng.
+   - TTS đọc kết quả trực tiếp.
+
+## Gửi Freebuff bắt đầu code
+
+Mình muốn nó triển khai theo từng phần nhưng không dừng lại chờ chúng ta duyệt từng phần nhỏ. Hoàn thành MVP chạy được cả 3 chức năng rồi mới báo cáo.
+
+Writing
+
+We are moving into implementation.
+
+The project is now officially MYSTIC WITCH LIVE.
+
+I approve moving forward with the three core features:
+
+1. MYSTIC WITCH STAGE
+2. TAROT ENGINE
+3. TIKTOK LIVE INTERACTION
+
+Keep the implementation practical and incremental. Do not over-engineer or rewrite the existing application.
+
+## PHASE 2 — MYSTIC WITCH STAGE
+
+Replace the existing drink-shop visual experience with a gothic fantasy tarot chamber.
+
+Visual elements:
+
+- Main witch character seated behind an antique tarot table.
+- Gothic dark fantasy chamber.
+- Purple magical smoke.
+- Floating glowing spirits around the witch.
+- Crystal ball.
+- Candles and mystical decorations.
+- Tarot cards displayed on the table.
+- Magical particles and purple lighting.
+
+Requirements:
+
+- 1080x1920 portrait stage.
+- Compatible with OBS and existing ?obs=1 behavior.
+- Use existing generated images in assets/mystic-witch/.
+- Inspect available images before implementation.
+- Do not generate more images.
+- Reuse existing canvas, particles and audio infrastructure where practical.
+- Create a visually attractive stage even if some assets are temporary placeholders.
+
+## PHASE 3 — TAROT ENGINE
+
+Implement a real Tarot engine.
+
+Requirements:
+
+- Complete 78-card deck.
+- 22 Major Arcana and 56 Minor Arcana.
+- Upright and reversed orientations.
+- Server-side random card selection.
+- Three-card spread: Past, Present, Future.
+- One-card reading for simple requests.
+- Prevent duplicate cards within the same spread.
+- Store reading history in JSON.
+- Each reading must have a unique ID.
+- Keep the card selection independent from LLM interpretation.
+
+Create a reusable tarot-engine.js module and automated tests.
+
+For the first version, card interpretations can use structured built-in data. LLM interpretation should be optional, with a reliable static fallback.
+
+## PHASE 4 — TIKTOK LIVE INTERACTION
+
+Reuse the existing TikTok event integration without rewriting it.
+
+Comment interaction:
+
+- Detect requests for Tarot readings.
+- Recognize simple commands such as TAROT, LOVE, CAREER and FUTURE.
+- Allow natural-language questions.
+- Generate a reading on the server.
+- Display the reading on the stage.
+- Announce the result using existing TTS.
+
+Gift interaction:
+
+- Gifts trigger magical visual effects.
+- Selected gifts can trigger Tarot readings or larger spreads.
+- Use actual normalized gift data.
+- Make gift-to-spread mappings configurable.
+- Preserve existing gift event deduplication.
+
+Like interaction:
+
+- Trigger purple particles and floating spirit animations.
+- Batch likes to prevent excessive effects.
+
+Follow interaction:
+
+- Trigger a welcoming spirit animation.
+- Display the follower's username.
+
+IMPORTANT:
+
+- Do not modify the underlying TikTok connection, signing, reconnect or event normalization logic.
+- Reuse the existing LiveEventEngine and GiftComboTracker.
+- Prevent duplicate readings from gift combos.
+- Add rate limiting and a queue for reading requests.
+- Do not allow chat spam to overwhelm TTS or animations.
+
+## PHASE 5 — ADMIN
+
+Add a simple Tarot control section to the existing admin panel:
+
+- Enable/disable Tarot.
+- Enable/disable AI interpretation.
+- Test one-card reading.
+- Test three-card reading.
+- View recent reading history.
+- Configure gift-to-spread mapping.
+- Configure comment cooldown.
+
+Keep the existing admin functionality working.
+
+## IMPLEMENTATION RULES
+
+1. Inspect the current source and actual assets first.
+2. Make small, logical changes.
+3. Preserve all existing TikTok functionality.
+4. Do not add unnecessary dependencies.
+5. Keep the existing application startup process.
+6. Back up important data before migrations.
+7. Add automated tests for Tarot engine and RPC functionality.
+8. Run the existing test suite after every major implementation step.
+9. Commit working milestones to Git.
+10. Fix regressions before moving forward.
+
+Do not spend time generating or refining images. Do not redesign unrelated parts of the application. Do not build unnecessary abstractions.
+
+## FINAL ACCEPTANCE TEST
+
+The application must demonstrate this complete flow:
+
+1. Start the application.
+2. Connect to TikTok LIVE.
+3. A viewer comments: "LOVE".
+4. The server creates a Tarot reading.
+5. Three Tarot cards are selected.
+6. The witch stage displays and reveals the cards.
+7. TTS announces the reading.
+8. A viewer sends a gift.
+9. Magical effects appear on stage.
+10. A viewer likes the LIVE and purple spirits react.
+11. A new follower triggers a welcome animation.
+12. Reading history is saved and survives server restart.
+
+Implement the MVP, test it, and report:
+
+- What works.
+- What remains incomplete.
+- Files changed.
+- Test results.
+- How to run the application.
+
+Start implementation now.
+
+Một điều quan trọng: Đừng để Freebuff làm lại TikTok connector. Nó đang chạy tốt rồi. Ta chỉ cần thay thế phần quán nước bằng thế giới Tarot và nối các sự kiện LIVE vào thế giới đó.
+
+Bạn cứ gửi kết quả Freebuff khi nó hoàn thành. Mình sẽ kiểm tra xem MVP thực sự chạy được đến đâu, đặc biệt là luồng comment → rút bài → lật bài → đọc kết quả. 😁
+
+
+All five phases are implemented, tested, and committed. Here is where things stand.
+
+What now works
+Phase 2 — MYSTIC WITCH STAGE (verified in a real browser) public/index.html is a fixed 1080×1920 portrait stage: gothic chamber backdrop (your test-01 art), witch figure (test-02), CSS-built antique table, three candles, crystal ball, card frames, purple smoke layers, drifting spirits on their own canvas, and gift/like particles routed through the existing DrinkShopFX engine on #fxCanvas. ?obs=1 hides the control dock and scales the stage to the viewport (measured: dock display:none, transform: scale(0.30) on a small window, zero console errors). No images were generated.
+
+Phase 3 — TAROT ENGINE (tarot-engine.js, no dependencies) Full 78-card deck (22 Major + 56 Minor), upright/reversed, server-side selection, one and three (Past/Present/Future) spreads, no duplicate cards within a spread, unique reading IDs, structured built-in interpretation with optional LLM narration that always falls back to the static text. History persists to data/tarot-history.json atomically and survived a server restart (5 readings before and after).
+
+Phase 4 — TIKTOK INTERACTION Reuses LiveEventEngine, GiftComboTracker and the untouched connector/signing/reconnect code. Chat commands (TAROT, LOVE, CAREER, FUTURE) plus natural language are detected before the drink-shop parser so they never double-speak; gifts map coins→spread (1+ → one card, 25+ → three cards, editable); follows broadcast a welcome; likes spawn spirits and sparkles. A gift combo cannot double-read (duplicate groupId rejected, confirmed), and a paid gift is no longer throttled by the chat cooldown — a bug the acceptance run caught and I fixed. Queue cap 8, global 20 s, per-viewer 120 s.
+
+Phase 5 — ADMIN A Tarot Control panel was added to the existing public/admin.html (~223 lines) without altering current markup: enable/disable Tarot, enable/disable AI interpretation, cooldowns and queue size, editable gift→spread table, test one-card/three-card, live history list, clear history.
+
+Checks actually run
+node --test test/*.test.js → 30/30 pass (10 new tarot tests + 20 existing).
+node --check clean on server.js and js/stage.js.
+Live server, port 3112/3113: /, /admin, both witch PNGs → 200; chat CAREER → accepted, one-card career reading; gift 25 coins right after → accepted, three-card reading; queue served 2, dropped 0; Piper TTS produced fresh .wav clips; history survived restart.
+Browser: triggered a reading over RPC and confirmed PAST/PRESENT/FUTURE cards, all three .revealed, narration visible, readingQuestion = “LOVE” — Stage Check.
+Network: every asset and script 200, no console errors.
+What is not verified / incomplete
+No real TikTok session was connected (needs your account). Chat/gift/follow/like were exercised through tarot.simulateComment / tarot.simulateGift and shop.* RPCs, which run the same handlers the live pipeline calls.
+AI narration is off by default and untested against a live provider — it needs your LLM key in the existing provider settings; failures fall back to static text.
+The stage is composed from your two existing frames plus CSS props; the hooded witch still shows a visible face, and there is no true photoreal chamber plate — that would need new image generation, which you excluded.
+data/game-state.json is modified locally (runtime counters); I left it uncommitted. Old game.js/live.js/announcer.js remain on disk but are no longer loaded.
+Files changed (commit 690adb3)
+tarot-engine.js (new, 406) · test/tarot-engine.test.js (new, 157) · public/js/stage.js (new, 422) · public/css/stage.css (new, 737) · public/index.html (rewritten) · server.js (+495) · public/admin.html (+223) · .gitignore.
+
+How to run
+text
+Copy
+bun start                     # or: PORT=3111 bun server.js
+Stage: http://localhost:3000 (add it to OBS as a 1080×1920 browser source with ?obs=1)
+Admin: http://localhost:3000/admin
+Tests: node --test test/*.test.js (Node is fine here; the server itself needs Bun because Node 20 can't require the ESM connector)
+A Tarot Control panel now exists in the admin page, and a natural next step is tuning the reading voice so gift readings feel ceremonial rather than read out.
+
+
+
+111111111111111 check
+Ủa, vậy là đã có MVP khá hoàn chỉnh rồi\! :))) Freebuff làm nhanh hơn dự kiến nhiều.
+
+Mình đánh giá đây là một milestone tốt. Đặc biệt đã có đủ ba luồng chính:
+
+- Stage: phù thủy, bàn Tarot, nến, khói tím, linh hồn.
+- Tarot: 78 lá, xuôi/ngược, trải bài, lưu lịch sử.
+- TikTok: comment, gift, like, follow đều có handler.
+
+Tuy nhiên, có một điểm cần phân biệt: đã test qua RPC và simulation chưa có nghĩa là đã xác nhận chạy ổn trên TikTok LIVE thật.
+
+## Mình muốn làm tiếp theo theo thứ tự này
+
+| Ưu tiên | Công việc |
+| --- | --- |
+| 1 | Kiểm tra sân khấu thực tế trong OBS |
+| 2 | Test TikTok LIVE bằng tài khoản thật |
+| 3 | Chỉnh giọng Witch TTS cho huyền bí |
+| 4 | Chỉnh hiệu ứng gift và linh hồn |
+| 5 | Tối ưu trải nghiệm người xem |
+
+## Bước 1 — Kiểm tra thực tế
+
+Trước khi thêm tính năng, hãy chạy:
+
+bash
+
+```bash
+bun start
+```
+
+Mở:
+
+- Stage: `http://localhost:3000/?obs=1`
+- Admin: `http://localhost:3000/admin`
+
+Kiểm tra stage có bị mất ảnh, lệch bàn, sai tỷ lệ hoặc animation bị giật không.
+
+## Bước 2 — Gửi Freebuff nhiệm vụ tiếp theo
+
+Mình muốn nó kiểm tra production readiness, chưa code thêm tính năng.
+
+Writing
+
+The Mystic Witch MVP implementation is approved.
+
+Before adding more features, perform a practical production-readiness audit.
+
+Check:
+
+1. Stage rendering at 1080x1920 and OBS mode.
+2. Animation performance and canvas rendering.
+3. Image loading and missing asset handling.
+4. Tarot reading queue under concurrent comments.
+5. TTS queue behavior when multiple readings arrive.
+6. Gift combo deduplication.
+7. TikTok reconnect and event handling remain unchanged.
+8. Reading history persistence and recovery after restart.
+9. Admin controls correctly update server state.
+10. Memory usage and CPU/GPU usage during operation.
+
+Do not redesign the application. Do not generate images. Do not add dependencies. Do not refactor working code.
+
+Run automated tests and report any actual bugs found.
+
+Only fix small, clearly reproducible bugs. Commit fixes separately.
+
+Do not claim real TikTok LIVE verification unless an actual TikTok session is connected and tested.
+
+## Một điều mình muốn giữ cho dự án
+
+Đừng vội thêm quá nhiều thứ. Hiện tại chúng ta cần một livestream có thể chạy liên tục vài tiếng, tương tác ổn định và không bị đứng khi nhiều người comment hoặc tặng quà.
+
+Sau khi audit xong, mình sẽ cùng bạn tập trung vào phần quan trọng nhất: giọng nói và thần thái của Witch. Phù thủy phải giống một Oracle đang đọc vận mệnh, chứ không phải robot đọc kết quả Tarot. 😁
+
+
+
+Verdict
+The MVP holds up under load with two real bugs found and fixed. Nothing required a redesign, and no dependencies were added.
+
+Stage rendering and OBS mode — pass
+At a 1080×1920 viewport with ?obs=1, the stage measured exactly 1080×1920, scale(1), offset 0/0, dock display:none, paused overlay hidden. Both canvases have a 1080×1920 backing store. Both photographs decoded at their native 832×1216 and are upscaled to fill the frame — slightly soft, not a bug, but worth knowing.
+
+Animation and canvas — pass, one costly pattern left alone
+Frame pacing over 150 frames: p50 16.7 ms, p95 16.8 ms, ~55 fps, single 116 ms outlier. An earlier run reported ~25 fps, but that average was dominated by one 1.9 s stall while the automation was driving the page; the clean re-measure shows no sustained jank. Two 30 fps loops run side by side, with hard caps at 280 particles and 90 spirits. The spirit renderer builds a radial gradient per spirit per frame (up to ~2,700/s at the cap) — measurable in principle, not visible in the numbers, so I left the working code alone rather than refactor it.
+
+Image loading and missing assets — bug fixed
+test-01 (1.35 MB) and test-02 (1.11 MB) serve as 200 image/png; a missing path returns 404. Previously nothing handled that, so a deleted asset would have painted a broken-image icon on stream. Both <img> tags now hide themselves on error and leave the CSS chamber layers visible (commit 8980f96).
+
+Queue under concurrent comments — pass
+20 simultaneous TAROT comments: 1 accepted, 19 rejected global_cooldown, counter dropped 19. Six simultaneous: 1 accepted, 5 global_cooldown. Same viewer twice: second refused. Pending never exceeded the cap of 8 (observed peak 4), and drainTarotQueue serializes with a processing guard, so no two readings interleave.
+
+TTS when readings pile up — bug fixed
+The server synthesizes inside the serialized drain, but the stage played each tts.play by pausing the previous clip, so a reading arriving a second later cut its predecessor off mid-sentence — the network log showed three clips fetched back-to-back. Clips are now queued and played in order (commit b1070d5). Verified by instrumenting Audio: at 6.5 s the first clip was still playing, only one clip existed, zero overlap. Tradeoff to know: a long gift burst now serializes narration, so audio can trail the cards.
+
+Gift combo deduplication — pass
+The same groupId twice returns handled:false; the registry is capped at 1,000 entries. 12 concurrent gifts from distinct groups: 9 served, 3 refused queue_full, confirming the cap protects TTS.
+
+TikTok connection and event handling — unchanged
+Diff against the phase-0 baseline 24317d8: no changes to the connector import, reconnect, signing, session or ControlEvent handling — the only grep hit was signal: controller.signal in new LLM code. live-event-engine.js differs by exactly one comment line.
+
+History persistence and recovery — pass with a caveat
+Restarts preserve readings (20 intact). A deliberately corrupted JSON file boots, logs [Tarot] Could not read history … JSON Parse error, reports 0 readings, and rewrites valid JSON on the next reading. The caveat: the damaged history is discarded rather than quarantined, so the data is lost — graceful, but silent.
+
+Admin controls — pass (after fix)
+enabled:false immediately refuses readings with tarot_disabled; cooldown, queue size and gift rules persist through /api/state and were restored to defaults after testing. The stage previously ignored the tarot.state broadcast (it is the settings object itself, not a wrapped state), leaving the toggle label and paused overlay stale; that is fixed and verified flipping OFF → overlay shown → ON.
+
+Memory and CPU — pass
+Server RSS went 68.9 → 75.9 MB across 32 events; server CPU 0.43 s. Every growing structure is bounded: history 200, recent events 30, per-viewer cooldowns 500, gift groups 1,000, particles 280, spirits 90.
+
+Checks run
+node --test test/*.test.js → 30/30 pass. Syntax checks on server.js and stage.js. Browser verification of layout, asset loading, card rendering, TTS ordering, and admin toggle propagation.
+
+Bugs fixed (separate commits)
+b1070d5 — queue TTS clips; apply tarot.state snapshots.
+8980f96 — hide missing chamber/witch images.
+Limitations
+No real TikTok LIVE session was connected, so connector behavior is verified only as unchanged-by-diff; chat, gift, follow and like flows were exercised through the tarot.simulateComment / tarot.simulateGift RPC hooks, which call the same handlers. AI narration stays off and untested against a provider. Frame pacing came from dev Chromium, not OBS's capture pipeline, and GPU utilization was judged by frame pacing rather than profiled. data/game-state.json is modified in the working tree from runtime counters and left uncommitted.
+
+Two follow-ups are worth considering after this audit. The corrupted-history path is the one place where a bad file quietly costs you data, so quarantining the bad file instead of discarding it would make recovery auditable.
+
+
+
+111111111111111 fix
+fix này trước 1/ hiện tại giao diện đang bị ở bottom ko thấy gì hết
+2/ chưa có list nhạc nền, auto all list nhạc nền
+3/ chuyển qua voice kokoro đã có trong hệ thống
+
+
+Đúng rồi. Mystic Witch là TikTok LIVE dọc, chỉ cần 9:16 (1080×1920). Không cần hỗ trợ 16:9, cũng không cần responsive cho desktop ngang.
+
+Bổ sung yêu cầu này cho Freebuff:
+
+Writing
+
+Correction for TASK 1:
+
+Mystic Witch is exclusively a vertical livestream application.
+
+- Target aspect ratio: 9:16.
+- Design resolution: 1080x1920.
+- OBS Browser Source: 1080x1920.
+- Do not support or optimize for 16:9.
+- Do not create a separate desktop layout.
+- Smaller screens may scale the complete 9:16 stage proportionally.
+- Never crop or hide the witch, tarot table, cards, candles or crystal ball.
+- Keep all important elements inside the 9:16 safe area.
+
+Focus entirely on fixing the existing vertical stage layout.
+
+Vậy là giữ một layout duy nhất, dễ kiểm soát và tối ưu cho OBS.
+
+Task 1 — Stage layout
+Root cause. fitStage() compensated for the unscaled 1080×1920 box with negative margin-right/margin-bottom, but CSS zoomed the stage around its centre. Flexbox centred the shrunken margin box while the transform scaled around the unscaled border box, so the visual stage landed at H/2 + 960(1−scale) instead of 0. At a 1282×720 viewport that put a 405×720 stage at top: 600 — only its top 120 px on screen, which is exactly the "stuck at the bottom" symptom. The negative margins could never fix it because the two offsets never cancel.
+
+Fix. A .stage-frame wrapper is sized to 1080px × scale / 1920px × scale, and the stage scales from top left. Flexbox now centres the real visual box. Measured after the fix: 1282×720 → stage 370×657 at top: 0; 554×723 (stacked dock) → 370×657 at top: 0 with everything inside; ?obs=1 at 1080×1920 → exactly 1080×1920, scale(1), dock hidden, header/reading/table/footer/witch/crystal ball/candles all within the frame.
+
+Files: public/css/stage.css, public/index.html, public/js/stage.js.
+
+Task 2 — Background playlist
+There were 8 tracks already bundled (public/assets/music): Sunny Morning, Summer Lemonade, Happy Café, Weekend Vibes, Beachside Drive, Coffee Break, Good Times, Little Sunshine. The player existed in music.js but the stage never loaded the script, so a stream had no music at all.
+
+Now the stage owns one audio element and starts the playlist; verified in the browser it advanced 0→7 unattended, then wrapped, with the next track preloaded (range requests visible in the network log). Admin lists all eight with the active one marked, plus Play/Pause/Next/Previous, volume, progress, Shuffle and Repeat, and "8 tracks available on disk" from a new /api/music scan. Volume, track, shuffle and repeat persist in localStorage. Ducking measured during real narration: 0.55 → 0.165 → 0.55, with music never pausing.
+
+Files: public/js/music.js, public/js/stage.js, public/index.html, public/admin.html, server.js, test/music-player.test.js.
+
+Task 3 — Kokoro
+Kokoro was not actually installed: no kokoro module in any Python, no .venv-kokoro. The model weights were already cached in data/kokoro-cache, so I created the project-local venv the server expects and installed the kokoro 0.9.4 package plus soundfile — no models downloaded.
+
+It then failed with repeats can not be negative. Bisecting showed the cause was the worker's own torch.set_num_threads(8): that configuration makes the duration predictor emit NaN, and NaN.long() becomes INT64_MIN (negative). Single-threaded synthesis works, so the worker now stays at one thread.
+
+A second real bug: Tarot narration passed the Piper voice id to Kokoro, which silently fell back to af_heart. It now sends the Kokoro voice.
+
+Voice: I synthesised the same line in all eleven female voices and measured median F0 — af_alloy 146.3 Hz is the deepest (next: af_sky 156.9, af_kore 158.9, af_heart 196.7), so it's the oracle. Engine output verified: engine: kokoro, voice: af_alloy, 24 kHz WAV, fallback: false.
+
+Piper fallback verified by forcing a Kokoro failure — the request returned engine: piper, fallback: true with valid audio.
+
+Narration test through the real browser audio: welcome 6.4 s, one-card 7.5 s, three-card 6.4 s, all kokoro_af_alloy_*.wav, max 1 clip at a time, zero overlap, music ducked throughout.
+
+Files: kokoro_worker.py, server.js.
+
+Tests
+node --test test/*.test.js → 38/38 pass (30 existing + 8 new music tests covering playlist completeness, next/previous wrap, auto-advance, repeat-off stopping, shuffle never repeating the current track, duck/restore, and one-audio-element-at-a-time).
+
+Commits
+c237ae8 — fix(stage): keep the 9:16 stage on screen at every viewport
+aa57a10 — feat(music): play the background playlist on the stage
+4a863f9 — feat(tts): narrate with Kokoro and keep Piper as the fallback
+1a9a47b — fix(stage): close the stage frame wrapper (the closing tag sat in a separate hunk and missed the split)
+The server is still running at http://localhost:3116/ (?obs=1 for OBS, /admin for controls). data/game-state.json stays modified from runtime counters, as before.
+
+Two things worth knowing
+Kokoro synthesises at roughly 2–3× realtime on one thread (6.5 s for a 3 s line) — fine because clips are pre-generated inside the queue, but a burst of readings will lag audio behind cards. And the short welcome/follow lines still speak through the announcer voice profiles (af_heart); only Tarot narration was switched to af_alloy, because those profile voices are a separate existing feature.
+
+If you want the Oracle to sound consistent everywhere, the announcer profiles are the one remaining place where the voice differs.
+
+
+
+1111111111111 xóa hết nhạc cũ lấy nhạc mới về bói làm nhạc nền
+Chuẩn\! Nhạc Sunny Morning, Happy Café, Summer Lemonade... không còn hợp với Mystic Witch nữa. 😁
+
+Mình đề xuất thay toàn bộ bằng nhạc nền Tarot / Gothic Fantasy / Dark Ambient.
+
+## Phong cách nhạc mới
+
+Plague Doctor, nebula sky, luminous colorful sparkles, ominous, eldritch, macabre, spooky; by James - Arthub.ai
+
+1. Mystic Chamber
+
+Nhạc nền chính, huyền bí, chậm, tạo cảm giác bước vào căn phòng tiên tri.
+
+AI Generated Supernaturalbeings Photos and Artwork | Deep Dream Generator
+
+2. Spirit Realm
+
+Âm thanh linh hồn, tiếng ngân, không gian ma thuật.
+
+Understanding the Accuracy of Tarot Readings – TEVADA Tarot
+
+3. Tarot Reading
+
+Nhẹ nhàng, sâu lắng, thích hợp lúc phù thủy giải bài.
+
+無料のAI画像・動画生成と投稿コミュニティ | SeaArt AI
+
+4. Dark Oracle
+
+Hơi u tối, quyền lực, có chiều sâu, dành cho những khoảnh khắc cao trào.
+
+## Gửi Freebuff yêu cầu này
+
+Writing
+
+Replace the entire old Sunny Side Sips music collection with a new Mystic Witch LIVE soundtrack.
+
+The old music is completely unsuitable for the Tarot atmosphere.
+
+## 1\. REMOVE OLD MUSIC
+
+- Back up the existing music folder first.
+- Remove all old Sunny Side Sips tracks from the active playlist.
+- Remove old track names and references from the UI.
+- Do not leave any old café or summer music in the active playlist.
+
+## 2\. GET NEW ROYALTY-FREE MUSIC
+
+Find and download 8-12 suitable royalty-free tracks for Mystic Witch.
+
+Use legitimate sources such as Pixabay Music or other sources with clearly documented commercial livestream usage rights.
+
+IMPORTANT:
+
+- Verify the license of every downloaded track.
+- Keep a source URL and license record for every track.
+- No copyrighted commercial music.
+- No YouTube audio ripping.
+- No music with unclear licensing.
+- Do not download video files.
+
+## 3\. MUSIC ART DIRECTION
+
+The music must match a dark gothic fantasy Tarot livestream.
+
+Target categories:
+
+1. Mystic Chamber — primary ambient background.
+2. Dark Oracle — mysterious and powerful.
+3. Spirit Realm — ethereal ghostly atmosphere.
+4. Tarot Reading — calm, magical and contemplative.
+5. Witch Ritual — occult ceremonial atmosphere.
+6. Enchanted Forest — mystical ambient.
+7. Moonlight Prophecy — dreamy and supernatural.
+8. Ancient Mystery — dark cinematic atmosphere.
+
+Musical characteristics:
+
+- Instrumental only.
+- No vocals.
+- No lyrics.
+- No sudden loud sounds.
+- No aggressive percussion.
+- No distracting melodies.
+- Smooth seamless transitions.
+- Suitable for continuous looping.
+- Background-friendly, not cinematic trailer music.
+
+## 4\. PLAYLIST
+
+- Add all downloaded tracks to the existing playlist system.
+- Automatically discover all valid audio files.
+- Update Admin to display the new playlist.
+- Keep play/pause, next, previous, shuffle and repeat.
+- Preserve volume settings.
+- Automatically play all tracks sequentially.
+- Keep TTS ducking functional.
+- Ensure only one music track plays at a time.
+
+## 5\. AUDIO MIXING
+
+Recommended default levels:
+
+- Background music: 25-30%.
+- Witch narration: clear and prominent.
+- During TTS: reduce music to approximately 30% of its current volume.
+- Restore the previous music level after narration.
+
+## 6\. VERIFICATION
+
+- Verify all tracks actually play.
+- Test playlist auto-advance.
+- Test shuffle and repeat.
+- Test TTS ducking and restoration.
+- Verify OBS browser audio.
+- Run all existing tests.
+
+Do not modify Tarot logic. Do not modify TikTok integration. Do not modify Kokoro or Piper. Do not generate images. Do not add unnecessary dependencies.
+
+Commit the completed music replacement separately.
+
+Report:
+
+- Number of downloaded tracks.
+- Track names and durations.
+- Source and license for every track.
+- Test results.
+- Git commit hash.
+
+Mình chọn hướng Dark Ambient làm nhạc chủ đạo, không nên dùng nhạc kinh dị quá mạnh. Người xem cần cảm thấy đang bước vào một căn phòng bói Tarot huyền bí, có phù thủy đang chờ đọc vận mệnh cho họ. 🔮
+
+Tracks downloaded: 10
+All instrumental, no vocals, dark-ambient/occult character, from Pixabay. I harvested 12 candidates and dropped two whose dynamic range (LRA ≈ 10) would have produced sudden swells under quiet narration, keeping the ten with LRA 2–8.
+
+#	Player name	File	Length	Source	Artist
+1	Mystic Chamber	mystic-chamber.mp3	2:05	Dark Ambient Atmosphère 1	danydory
+2	Dark Oracle	dark-oracle.mp3	2:54	Mystical	leberch
+3	Spirit Realm	spirit-realm.mp3	5:54	Ethereal	leberch
+4	Tarot Reading	tarot-reading.mp3	2:42	Parlor of Secrets – Vintage Witchy Tarot Instrumental	MoonpetalMedia
+5	Witch Ritual	witch-ritual.mp3	2:58	Blue Hour Archive — Dark Academia Ambient	The217AMLibrary
+6	Enchanted Forest	enchanted-forest.mp3	6:28	Fantasy Ambient	leberch
+7	Moonlight Prophecy	moonlight-prophecy.mp3	1:42	Moonlight In The Water	JuliusH
+8	Ancient Mystery	ancient-mystery.mp3	2:34	Ancient Mystery	Sonican
+9	Dark Sanctum	dark-sanctum.mp3	1:26	Dark Ambient Atmosphère 2	danydory
+10	Deep Trance	deep-trance.mp3	5:31	Ambient Deep Session 3	Michael-X_Studio
+Licence for every track: the Pixabay Content License (https://pixabay.com/service/license-summary/) — free for commercial use including monetised livestreams, no attribution required. Full source URLs, licence note, processing recipe and the rejected candidates are recorded in docs/MUSIC-LICENSES.md. No YouTube rips, no videos downloaded, nothing with unclear terms.
+
+Each file was re-encoded once with ffmpeg to −21 LUFS / −2 dBTP, 2 s fade-in and 3 s fade-out, 44.1 kHz stereo 128 kbps — so tracks sit politely under the Witch and transitions never click.
+
+Old collection
+The eight Sunny Side Sips tracks are removed from public/assets/music/ and backed up to backups/music-sunny-side-sips-20261102/ (9.7 MB, git-ignored). Worth knowing: they were never licensed third-party music — they were original instrumentals from tools/generate_music.py, so nothing licence-wise forced the change, only the mood. I deleted that generator since it could only rebuild the removed set, and updated the playlist header, README table and tests to match. No old café names remain in the UI or active playlist.
+
+Verification in the browser
+All 10 tracks actually play: each selected in turn, every one reached readyState 4 with the correct duration and audibly playing.
+Auto-advance: track 0 finished → advanced to track 1 (Dark Oracle) on its own.
+Repeat: from the last track it wrapped back to Mystic Chamber.
+Shuffle: toggles on, persists (shop_music_shuffle = 1), and always picks a different track.
+One track at a time: single audible element, never two.
+TTS ducking: with a real Kokoro narration playing, music went 0.28 → 0.084 (exactly 30%), stayed playing the whole time, then restored to 0.28 after speech.
+OBS: the ?obs=1 view loaded all 10 tracks, dock hidden, frame 405×720, playing at 0.28 with a live playhead.
+Admin: "10 tracks available on disk", full new playlist listed, current track highlighted, volume 28%, Shuffle/Repeat live.
+Tests: node --test test/*.test.js → 38/38 pass (I added an assertion that café-era ids can never re-enter the playlist).
+One real bug surfaced during verification and was fixed rather than worked around: the duck fade used requestAnimationFrame, which browsers pause in a backgrounded tab, so the bed could stay at full volume while the Witch spoke. The fade now applies instantly when the tab is hidden, with a timer safety net, and the ramp still animates when visible.
+
+Default music level is now 28% (was 55%) in the player, the audio engine, server defaults and admin label — you can still drag it anywhere.
+
+Commit
+4e4f5aa — feat(music): replace the café playlist with a dark gothic soundtrack
+Tarot logic, TikTok integration, Kokoro/Piper and images were left untouched. The server is still running at http://localhost:3116/, and data/game-state.json remains modified with runtime counters as before.
+
+Since the bed is much quieter now, the balance between music and narration is worth a listen on a real stream — especially whether 28% is enough presence under the Witch's voice.
+
+
+
+111111111111111111
+chẳng lẽ app vào ko nói gì phải có CONVERSATION SYSTEM giống app chưa có ai cũng phải nói, nói chung là phải nói liên tục á...
+
+Đồng ý. Phải dọn hệ thống cũ trước, tránh hai Conversation System chạy song song và tranh nhau TTS.
+
+Gửi Freebuff thực hiện task này theo đúng thứ tự:
+
+Writing
+
+# Task: Replace Legacy Seller Conversation System
+
+## Objective
+
+Completely remove the old Coffee / Sunny Side Sips Seller Conversation System and replace it with a Mystic Witch Conversation System.
+
+## Step 1 — Audit legacy system
+
+Inspect:
+
+- `public/js/conversations.js`
+- `conversation-catalog.js`
+- `public/js/announcer.js`
+- `public/js/reactive-seller.js`
+- Related sections in `server.js`
+- Conversation-related UI in `public/admin.html`
+- TTS queue and BroadcastChannel integrations.
+
+Identify every reference, scheduler, timer, RPC method, state field and event listener belonging to the old Seller Conversation System.
+
+## Step 2 — Remove legacy Seller Conversation
+
+Remove:
+
+- Two-seller dialogue scheduler.
+- Male/female seller dialogue catalog.
+- Coffee shop greetings and sales dialogue.
+- Seller-specific conversation categories and prompts.
+- Legacy seller conversation admin controls.
+- Unused timers, listeners and obsolete state fields.
+
+IMPORTANT:
+
+- Do not remove the existing Kokoro/Piper TTS engine.
+- Do not remove the shared TTS playback queue.
+- Do not remove TikTok LIVE integration.
+- Do not remove Tarot Engine.
+- Do not remove music player or playlist.
+- Do not remove useful announcer infrastructure unless it is exclusively tied to the old seller system.
+- Preserve the existing RPC and WebSocket architecture.
+
+## Step 3 — Implement Mystic Witch Conversation System
+
+Create a new independent system:
+
+- `mystic-conversation.js`
+- `public/js/conversation.js`
+
+The new system must support:
+
+1. Always-on ambient dialogue, even with zero viewers.
+2. Welcome messages.
+3. Mystical stories.
+4. Tarot knowledge.
+5. Audience engagement.
+6. Reading promotion.
+7. Viewer greetings.
+8. Follow reactions.
+9. Gift reactions.
+10. Return to ambient conversation after Tarot readings.
+
+All dialogue must be English.
+
+Use existing Kokoro TTS with `af_alloy` as the primary Oracle voice.
+
+## Step 4 — Priority
+
+Priority order:
+
+1. Tarot reading narration.
+2. Gift reactions.
+3. Viewer interactions.
+4. Ambient conversation.
+
+Ambient conversation must pause while higher-priority speech is playing and resume automatically afterwards.
+
+Never interrupt an active Tarot reading.
+
+Prevent duplicate dialogue and overlapping audio.
+
+## Step 5 — Admin
+
+Replace old Seller Conversation controls with Mystic Conversation controls:
+
+- Enable/disable.
+- Enable/disable AI dialogue.
+- Dialogue interval.
+- Category selection.
+- Test dialogue.
+- Current dialogue status.
+- Dialogue history.
+
+## Step 6 — Verification
+
+- No legacy seller dialogue remains active.
+- No duplicate conversation scheduler.
+- Zero-viewer mode continuously speaks.
+- Conversation pauses during Tarot narration.
+- Conversation resumes afterwards.
+- No overlapping TTS clips.
+- Kokoro uses `af_alloy`.
+- Existing music ducking continues working.
+- TikTok integration unchanged.
+- All existing tests pass; add focused tests for the new scheduler.
+
+Keep the implementation minimal. Do not redesign the stage or refactor unrelated modules.
+
+Commit the completed work and report changed files, tests, and commit hash.
+
+Lưu ý: Xóa logic Seller cũ, không xóa hạ tầng TTS dùng chung. Đây là ranh giới quan trọng để không làm hỏng những phần đang chạy tốt.
+
+Khi Freebuff hoàn thành, gửi tôi báo cáo và các lỗi test nếu có. Tôi sẽ review trước khi cho làm tiếp.
+
+
+
+Changed files
+Added
+
+mystic-conversation.js — server catalog: 9 categories, 49 English lines, contexts, normalization, ORACLE_VOICE = af_alloy
+public/js/conversation.js — the single MysticConversationEngine scheduler
+test/mystic-conversation.test.js — 11 focused scheduler/catalog tests
+Deleted
+
+conversation-catalog.js (male/female café exchanges)
+public/js/conversations.js (two-seller scheduler)
+public/js/announcer.js (second scheduler + coffee/drink announcement catalog)
+Modified
+
+server.js — conversation store rebuilt for single Oracle lines (v2 migration drops the café list automatically), conversation.speak/conversation.test handlers, composeMysticLine for AI dialogue, af_alloy synthesis via the existing tts.play broadcast
+public/js/stage.js — engine actually wired: speak → server, isBusy → the real TTS queue, reading hold/drain, gift/follow/viewer priorities, state snapshot
+public/js/live.js, public/js/reactive-seller.js — pointed at the new engine, announcer removed
+public/index.html — loads conversation.js
+public/admin.html — seller card and announcer card replaced by one Mystic Conversation card
+README.md — announcer section replaced
+Verification (real browser, real Kokoro)
+Zero-viewer speech: at 0 viewers the Oracle spoke ambient_1 on its own, then ambient_3 on the next interval, both recorded in server history.
+Tarot priority: triggered a real reading (tarot.testOne, 1 card, ok) — 12 samples while reading = true, 0 ambient lines started; after narration drained it returned to scheduled with ambient resuming.
+Voice: conversation.test returns engine: kokoro, voice: af_alloy; the audio files served are tts-cache/kokoro_af_alloy_*.wav.
+No overlap: ambient lines only start when the shared queue is empty (isBusy: ttsPlaying || ttsQueue.length > 0), plus a server-side duplicate/throttle guard so two stage tabs can't double-speak.
+Admin: 🔮 MYSTIC CONVERSATION SYSTEM renders 49/49 lines, 9 category switches, interval options 45–180 s; no seller/announcer controls remain anywhere.
+Music untouched: 10 tracks, playing, same ducking path through tts.play.
+Tests: node --test test/*.test.js → 49/49 pass (11 new).
+One honest limitation: the AI dialogue toggle now really does call the configured LLM provider, but no provider key is set here, so only its fallback path is verified — with the toggle on, the Oracle still speaks the curated line. With a key configured it will rephrase those lines and reject anything mentioning drinks/prices/shops.
+
+data/game-state.json stays uncommitted as usual (runtime counters), and the server is running on http://localhost:3116/.
+
+Natural next step is giving the Oracle a second voice for contrast on long ambient stretches.
+
+
+
+Bug Fix: Mystic Conversation Interval Ignored
+
+The Oracle currently waits only 5 seconds after finishing a dialogue, even when the configured interval is 45–180 seconds.
+
+Requirements
+Inspect mystic-conversation.js and public/js/conversation.js.
+Trace the interval value from Admin → server state → browser scheduler.
+Find every 5000ms timeout or fallback that might trigger the next dialogue.
+Fix the scheduler so the configured interval is respected.
+Expected behavior
+
+If interval = 45 seconds:
+
+Oracle finishes speaking.
+Wait 45 seconds.
+Start the next ambient dialogue.
+
+If interval = 60 seconds:
+
+Wait 60 seconds after the previous dialogue finishes.
+Start the next ambient dialogue.
+
+Important:
+
+Measure the interval from the END of the previous audio, not its start.
+Do not schedule multiple timers.
+Do not let state broadcasts reset the countdown.
+Tarot/gift priority must still pause ambient conversation.
+Resume the normal interval after higher-priority speech finishes.
+Keep the existing Kokoro TTS queue and music ducking unchanged.
+Verification
+
+Set interval to 45 seconds and record timestamps:
+
+Dialogue 1 start/end.
+Dialogue 2 start.
+Dialogue 3 start.
+
+Verify that each next dialogue starts approximately 45 seconds after the previous audio ends.
+
+Add automated tests for interval persistence, timer reset and pause/resume.
+
+Do not change unrelated functionality.
+
+
+Root cause
+Tracing Admin → server.js → public/js/conversation.js showed the configured value was never lost; it was misapplied:
+
+The countdown started at synthesis, not at audio end. startLine() set nextAt = Date.now() + intervalMs() when the conversation.speak RPC resolved — that happens as soon as Kokoro finishes generating, seconds before the clip finishes playing. So the real gap after the audio was interval − clipLength, and with a short clip plus a retry it collapsed to a few seconds.
+Every temple.state broadcast could re-base the countdown. applySnapshot() ran on every state push (gifts, likes, settings) and reset nextAt from "now" whenever the interval value differed in type or timing, restarting the wait — and if a stale 5 s-ish deadline was in play, lines bunched up.
+A reading release used a 4 s shortcut (Date.now() + 4000) rather than the normal interval, so post-reading dialogue came back almost immediately.
+Every open stage tab had its own independent countdown, so two tabs (OBS source + preview) could interleave their lines a few seconds apart. The server only blocked identical text.
+Changes
+public/js/conversation.js
+
+lastSpeechEndedAt is recorded when the clip actually ends; nextAt = lastSpeechEndedAt + intervalMs().
+New waitForSilence() keeps the engine in "speaking" state until the shared TTS queue reports idle (bounded to 45 s so a blocked clip can't stall forever), then schedules.
+New scheduleFrom(anchor) — the only way the deadline is computed. applySnapshot() re-bases on the last speech end, never on "now", and only when the interval genuinely changed. notifyReading(false) uses the same helper.
+A server busy response now waits retryInMs instead of recording a line and restarting the interval.
+server.js
+
+oracleLeaseUntil reserves the Oracle voice for one full interval after each successful line, so a second stage tab gets {ok:false, busy:true, retryInMs} instead of speaking its own line.
+Verification
+Live browser, interval 45 s (instrumented startLine + real ended events):
+
+Dialogue 1	Dialogue 2
+Audio start	03:02:31 (engagement_1)	03:03:30 (engagement_2)
+Audio end	03:02:44	—
+Gap after previous audio end	—	46 s
+Start-to-start = 59 s (13 s clip + 45 s wait), and zero snapshot resets were logged across the window.
+
+Server-side history (independent of the page) shows the same cadence: 02:57:49 → 02:58:40 (51 s) → 02:59:32 (52 s) → 03:00:22 (50 s) → 03:01:15 (53 s) — each start is the clip length plus the 45 s interval. One 89 s gap appears where the tab was backgrounded mid-wait.
+
+Automated tests — 17 conversation tests, 55/55 in the suite:
+
+three consecutive dialogues each wait the interval after their audio — asserts 45 s ± 0.5 s after each clip's end for dialogues 1, 2 and 3, and ~53 s start-to-start.
+interval measured from audio end (not from synthesis)
+repeated state broadcasts leave nextAt untouched
+interval change re-bases on the last speech end
+pause/resume waits a full interval
+busy-lease response waits retryInMs and records nothing
+Tarot/gift priority, Kokoro af_alloy, the TTS queue and music ducking are untouched; nothing outside the conversation scheduler changed. The live setting is currently 45 s from this test and can be changed in Admin.
+
+One limitation: a third live dialogue could not be captured because the preview tab reports document.hidden: true and Chrome throttles the 500 ms scheduler tick (and suspends background playback) there — the same environment that likely exaggerated the original symptom. Dialogue 1 and 2 were measured end-to-end in the browser; dialogue 3's timing is covered by the deterministic test above rather than a live sample.
+
+
+
+
+
+
+111111111111111111111
+Điều mình nghĩ nên học từ app này
+
+Đây không đơn thuần là một app hiển thị ba lá Tarot. Nó có một quy trình tương tác rất rõ:
+
+    Chờ người xem bình luận hoặc tặng quà.
+
+    Gọi tên người tham gia.
+
+    Xác định chủ đề bói.
+
+    Rút bài.
+
+    Lật bài với hiệu ứng.
+
+    Oracle đọc và giải thích kết quả.
+
+    Hiển thị nội dung giải bài trên màn hình.
+
+    Quay lại trạng thái chờ người tiếp theo.
+
+
+thêm 1 box 3 line line 1: Bàn bói đang trống /đang bói [user] ví dụ 84/100 chờ
+                  line 2: tiếp theo [user] - [user]
+                  line 3: đã nhích lên [user]-... này nạp xu là dc nhích lên
+thêm 1 box có 2 line 1 line loop: "Comment + 2 cái list bên dưới" phải có loop list trong admin bạn có thể nghĩ thêm tiếng anh
+1/ "Bói gia đình"
+2 "bói tính cách"
+3/ "Bói tên" 
+4 "bói tuần này"
+5/ "Bói hôm nay" 
+6/ "bói + điều em muốn hỏi"
+7/ "Bói tình yêu" 
+8/ "bói crush"
+9/ "Bói người yêu tương lai" 
+10/ "bói công việc"
+11/ "Bói tài lộc" 
+12/ "bói học tập"
+13/ "Bói tài lộc" 
+14/ "bói học tập"
+15/ "Bói tính cách" 
+16/ "bói tên"
+...
+1 line dưới ô đó thì có cái này: "chờ lâu tự lên" 1xu-icon rose.webp or 100xu-icon rosa10.webp .. tự lên 1 người
+icon nằm trong: public\assets\gift_icon
+
+thêm 2 line cứ đẩy lên rồi mất nói về [user] thả tim nhiệt tình - nhích từ số 77-71... or [user] tặng quà - nhích từ 75-74...
+
+sau khi lật bài thì phải ghi có thanh chạy thuận lợi % cần lưu ý % và nội dung bài là gì và để ở box bên dưới ví dụ giống vầy (tự làm 1 list trước or dùng AI provider trong admin đã có sẵn openrouter or olama ở 10.0.0.142 ...)
+TÌnh yêu của [tên user]
+user ơi, nhìn quả cầu thầy thấy màu hồng nhạt, em đang ôm những
+hy vọng ngại ngùng về học tập lẫn tình cảm. Lá chiếc lá xanh báo hiệu thời gian qua
+em học hành rất bền bỉ, đã tạo được nền tảng khá vững chắc. Nhờ đó, là trái tim ấm áp
+cho thấy em đang tỏa sức hút khiến người xung quanh ai cũng mến. Lá thư tay tới, báo hiệu một người
+
+tất cả phải là tiếng anh
+
+
+
+Hiểu rồi. Mình sẽ định hướng phần này thành một LIVE TAROT QUEUE + INTERACTION SYSTEM, lấy cảm hứng từ 5 hình bạn gửi, nhưng giữ nguyên Mystic Witch Stage 9:16 hiện tại.
+
+Toàn bộ nội dung hiển thị, lời thoại Oracle và Admin sẽ dùng tiếng Anh.
+
+## 1. Box – LIVE Tarot Queue
+
+Box có 3 dòng, luôn hiển thị trên màn hình:
+
+LIVE TAROT QUEUE
+
+LIVE
+
+# The reading table is waiting
+
+Or: Reading for Emily · 84/100 waiting
+
+NEXT IN LINE
+
+1. Sophia
+
+2. Olivia
+
+MOVED UP THE QUEUE
+
+✨ Daniel moved up: #77 → #71
+
+Các trạng thái:
+
+- Không có người: `The reading table is waiting`
+- Đang bói: `Reading for [username]`
+- Chờ: `84/100 waiting`
+- Tiếp theo: hiển thị hai người tiếp theo.
+- Nhích lên: hiển thị người vừa được tăng thứ tự.
+
+## 2. Box – COMMENT TO GET A READING
+
+Box này có hai phần:
+
+## 🔮 CHOOSE YOUR DESTINY
+
+### COMMENT + YOUR QUESTION
+
+Choose a reading topic and comment below
+
+Family Reading
+
+Personality Reading
+
+Name Reading
+
+This Week's Fortune
+
+Today's Fortune
+
+My Question
+
+Love Reading
+
+Crush Reading
+
+Future Partner
+
+Career Reading
+
+Wealth Reading
+
+Study Reading
+
+TikTok LIVE | TikTok LIVE | Know Your Meme
+
+WAITING? MOVE UP AUTOMATICALLY
+
+A rose gift can move one viewer forward in the queue.
+
+Gift priority: 1 Rose = 1 position · 10 Roses = 1 priority boost (configurable)
+
+Danh sách chủ đề sẽ được quản lý trong Admin, có thể:
+
+- Thêm, sửa, xóa chủ đề.
+- Bật/tắt từng chủ đề.
+- Sắp xếp thứ tự.
+- Chỉnh nội dung comment mẫu.
+- Chọn chủ đề xuất hiện luân phiên trên Stage.
+
+Mình sẽ gộp các mục trùng như Wealth Reading, Study Reading và Personality Reading.
+
+## 3. Queue promotion ticker
+
+Hai dòng thông báo chạy lần lượt, đẩy lên rồi biến mất:
+
+✨ QUEUE MOVEMENT
+
+💗 Emily sent lots of likes\! Moved up from #77 to #71.
+
+🎁 Sophia sent a gift\! Moved up from #75 to #74.
+
+Animated upward ticker · One message at a time
+
+Có thể lấy tên người dùng, loại quà, số lượt nhích lên từ sự kiện TikTok thực tế.
+
+## 4. Tarot Reading Result – phần quan trọng nhất
+
+Sau khi lật bài, xuất hiện một box kết quả bên dưới bàn Tarot.
+
+# LOVE READING
+
+## For Emily ❤️
+
+【鑑定レポート】「彼は私をどう思っている？」── 片思い女性のタロット鑑定｜ひかり｜西洋占星術×タロット占い師
+
+THE STAR
+
+Tarotshop - Radiant Rider-Waite® in a Tin
+
+THE EMPRESS
+
+Паж Кубків — значення карти Таро, тлумачення в коханні, роботі та розкладах
+
+PAGE OF CUPS
+
+GOOD FORTUNE
+
+# 78%
+
+POINTS TO WATCH
+
+# 22%
+
+THE ORACLE'S MESSAGE
+
+Emily, I see a soft pink light surrounding your crystal ball. You have been carrying quiet hopes in your heart, especially about love and your future.
+
+The Star reveals that your patience and kindness are beginning to attract positive energy. The Empress suggests that someone around you appreciates your warmth more than you realize.
+
+The Page of Cups brings a message of unexpected affection. Someone may soon find the courage to express their feelings.
+
+The future is not written. Your choices shape your destiny.
+
+Phần này có hai nguồn nội dung:
+
+- Built-in Reading Library: soạn sẵn các diễn giải cho 78 lá bài, chiều xuôi/ngược và từng chủ đề. Luôn hoạt động kể cả khi AI lỗi.
+- AI Interpretation: sử dụng OpenRouter hoặc Ollama đã cấu hình trong Admin để viết lời giải cá nhân hóa. Có giới hạn độ dài, giữ đúng ý nghĩa lá bài và không bịa thông tin.
+
+Phần trăm thuận lợi và cần lưu ý phải được tính từ dữ liệu trải bài và quy tắc diễn giải, không phải số ngẫu nhiên.
+
+## 5. Admin – các chức năng cần bổ sung
+
+| Module | Chức năng |
+| --- | --- |
+| Queue Manager | Theo dõi, xóa, ưu tiên người chờ |
+| Gift Priority | Rose, Rosa10 và các gift khác |
+| Auto Promotion | Tự động nhích người chờ |
+| Reading Topics | Quản lý danh sách chủ đề |
+| Topic Rotation | Chạy danh sách luân phiên |
+| Queue Ticker | Điều chỉnh nội dung ticker |
+| Reading Result | Cấu hình thanh phần trăm và box giải bài |
+| AI Provider | OpenRouter / Ollama |
+| Reading Library | Nội dung dự phòng 78 lá |
+
+## 6. Nguyên tắc triển khai
+
+Mình muốn giữ đúng các thành phần đang chạy ổn định:
+
+- Mystic Witch Stage 9:16.
+- Tarot Engine 78 lá.
+- Mystic Conversation System.
+- Kokoro `af_alloy`.
+- 10 nhạc nền Tarot.
+- TikTok LIVE connector.
+- Hệ thống TTS queue và chống đọc chồng.
+
+Không tạo lại toàn bộ app, không xóa hệ thống cũ đang hoạt động. Chỉ bổ sung Queue, Topic Selection, Gift Priority, Ticker và Reading Result, tích hợp vào engine hiện tại.
+
+Mục tiêu cuối cùng: người xem vào LIVE có thể nhìn thấy ai đang được bói, mình đang đứng thứ mấy, comment gì để tham gia, tặng quà thì được nhích lên thế nào, và khi đến lượt sẽ được Oracle gọi tên, rút bài, giải bài bằng giọng nói và hiển thị kết quả bằng tiếng Anh.
+
+
+
+Đây là prompt hoàn chỉnh để đưa cho AI coding agent làm trực tiếp trên project Mystic Witch Live. Mình viết theo hướng làm từng phần, tận dụng code hiện tại, không redesign hoặc phá hệ thống đang chạy.
+
+Writing
+
+# MYSTIC WITCH LIVE — QUEUE & INTERACTIVE TAROT UPGRADE
+
+## OBJECTIVE
+
+Upgrade the existing MYSTIC WITCH LIVE application with an interactive TikTok LIVE Tarot experience inspired by the five reference screenshots.
+
+IMPORTANT:
+
+- Work directly on the existing project.
+- Inspect the current implementation before changing anything.
+- Do not rebuild the application.
+- Do not remove working features.
+- Keep the stage strictly 9:16 portrait. No 16:9 layout is needed.
+- ALL user-facing content must be in ENGLISH, including stage text, admin labels, Oracle dialogue, queue messages, and reading results.
+- Keep the existing gothic witch visual identity.
+
+## PHASE 0 — SAFETY FIRST
+
+Before coding:
+
+1. Check the current Git status and recent commits.
+2. Create a backup or confirm an existing verified backup.
+3. Inspect:
+   - server.js
+   - tarot-engine.js
+   - mystic-conversation.js
+   - public/js/stage.js
+   - public/js/conversation.js
+   - public/js/music.js
+   - public/index.html
+   - public/admin.html
+   - public/css/stage.css
+   - Existing TikTok event handlers
+4. Identify the existing RPC methods and state persistence mechanisms.
+5. Do not overwrite uncommitted user changes.
+6. Do not generate any images.
+7. Do not add dependencies unless absolutely necessary.
+
+## PHASE 1 — LIVE TAROT QUEUE BOX
+
+Add a three-line LIVE queue information box to the 9:16 stage.
+
+Line 1 — CURRENT READING:
+
+- Idle: "THE READING TABLE IS WAITING"
+- Active: "NOW READING: \[USERNAME\]"
+- Queue count: "84 / 100 WAITING"
+
+Line 2 — NEXT IN LINE:
+
+- Display the next two usernames.
+- Example: "NEXT: SOPHIA → OLIVIA"
+
+Line 3 — RECENT QUEUE MOVEMENT:
+
+- Display the latest priority movement.
+- Example: "✨ EMILY MOVED UP: #77 → #71"
+
+Requirements:
+
+- Update in real time.
+- Never display undefined or empty usernames.
+- Handle an empty queue gracefully.
+- Queue capacity configurable in Admin.
+- Persist queue state safely.
+- Keep the box compact and readable on mobile and OBS.
+
+## PHASE 2 — COMMENT TO GET A READING
+
+Add a second stage box.
+
+Header: "🔮 CHOOSE YOUR DESTINY"
+
+Instruction: "COMMENT + YOUR QUESTION"
+
+Create a configurable rotating list of Tarot topics:
+
+1. Family Reading
+2. Personality Reading
+3. Name Reading
+4. This Week's Fortune
+5. Today's Fortune
+6. My Question
+7. Love Reading
+8. Crush Reading
+9. Future Partner
+10. Career Reading
+11. Wealth Reading
+12. Study Reading
+
+Remove duplicate topics.
+
+Requirements:
+
+- Topics must be managed through Admin.
+- Enable/disable topics.
+- Add, edit and delete topics.
+- Configure rotation speed.
+- Show two topic lists or columns beneath the instruction.
+- Rotate topics automatically.
+- Accept natural English comments.
+- Match comments to the appropriate Tarot topic.
+- Custom questions should be preserved.
+- Do not trigger multiple readings for one comment.
+
+## PHASE 3 — AUTOMATIC QUEUE PROMOTION
+
+Implement automatic priority promotion.
+
+A viewer can move up the queue by:
+
+- Waiting for a configurable amount of time.
+- Sending supported TikTok gifts.
+- Receiving configured priority boosts.
+
+Example automatic promotion message:
+
+"🌹 SOPHIA MOVED UP: #75 → #74"
+
+Gift promotion message:
+
+"🎁 EMILY SENT A GIFT\! MOVED UP: #77 → #71"
+
+Like interaction:
+
+"💗 OLIVIA SENT LOTS OF LOVE\! MOVED UP: #77 → #71"
+
+Gift icons must be loaded from: public/assets/gift\_icon/
+
+Inspect actual filenames before using them.
+
+Support configurable gift mappings:
+
+- rose.webp
+- rosa10.webp
+- Other available gift icons.
+
+Admin settings:
+
+- Gift ID/name.
+- Coin value.
+- Promotion amount.
+- Automatic waiting promotion interval.
+- Enable/disable each promotion type.
+
+IMPORTANT:
+
+- Never allow a gift to trigger duplicate promotions.
+- Use actual TikTok gift events.
+- Respect existing gift combo deduplication.
+- Do not invent usernames or gift events.
+- Keep queue movement fair and deterministic.
+
+## PHASE 4 — QUEUE MOVEMENT TICKER
+
+Add two animated message lines.
+
+Messages move upward and disappear.
+
+Examples:
+
+"💗 EMILY IS SENDING LOTS OF LOVE\! #77 → #71"
+
+"🎁 SOPHIA SENT A GIFT\! #75 → #74"
+
+Requirements:
+
+- Show one message at a time per line.
+- Smooth upward animation.
+- Automatically expire old messages.
+- No overlapping messages.
+- No excessive DOM elements.
+- Admin can enable/disable the ticker and adjust duration.
+
+## PHASE 5 — TAROT READING RESULT BOX
+
+After cards are revealed, display a detailed result box underneath the Tarot table.
+
+Example:
+
+LOVE READING FOR EMILY
+
+Display the actual drawn Tarot cards, including:
+
+- Card image.
+- Card name.
+- Upright or reversed status.
+- Position in the spread.
+
+Then show two percentage bars:
+
+GOOD FORTUNE: 78%
+
+POINTS TO WATCH: 22%
+
+Percentages must be derived from a deterministic interpretation scoring system based on the drawn cards, orientations and reading topic.
+
+They must not be random.
+
+Below the bars, display:
+
+THE ORACLE'S MESSAGE
+
+Example:
+
+"Emily, I see a soft pink light surrounding your crystal ball. You have been carrying quiet hopes in your heart, especially about love and your future.
+
+The Star reveals that your patience and kindness are beginning to attract positive energy.
+
+The Empress suggests that someone around you appreciates your warmth more than you realize.
+
+The Page of Cups brings a message of unexpected affection. Someone may soon find the courage to express their feelings."
+
+Closing line:
+
+"The future is not written. Your choices shape your destiny."
+
+Requirements:
+
+- Personalize with the actual username.
+- Use the actual drawn cards.
+- Match interpretation to the selected topic.
+- Respect reversed card meanings.
+- Do not generate generic readings unrelated to the cards.
+- Keep text readable on a 1080×1920 canvas.
+- Results must remain visible long enough for viewers to read.
+- Add a configurable result display duration.
+
+## PHASE 6 — READING CONTENT ENGINE
+
+Implement two interpretation sources.
+
+A. BUILT-IN READING LIBRARY
+
+- Support all 78 Tarot cards.
+- Upright and reversed interpretations.
+- Topic-specific interpretations.
+- Love, family, personality, career, wealth, study and general questions.
+- Always available without internet or AI.
+
+B. AI INTERPRETATION
+
+Reuse existing configured providers:
+
+- OpenRouter.
+- Ollama at the existing configured endpoint.
+
+Do not hardcode API keys.
+
+Requirements:
+
+- Read existing provider settings.
+- AI must use the actual card results as context.
+- AI must not change the selected cards.
+- AI must not invent additional cards.
+- Enforce an appropriate output length.
+- Add timeout and error handling.
+- Automatically fall back to built-in interpretations.
+- Keep the existing Tarot Engine as the source of truth.
+
+## PHASE 7 — ORACLE VOICE AND CONVERSATION
+
+Use the existing Kokoro voice:
+
+af\_alloy
+
+Reading sequence:
+
+1. Welcome the viewer by username.
+2. Announce their selected topic.
+3. Announce that the cards are being drawn.
+4. Reveal the cards.
+5. Explain each card.
+6. Read the final interpretation.
+7. Return to the waiting state.
+
+Example:
+
+"Welcome, Emily. The Oracle is ready to read your love destiny."
+
+"The first card reveals The Star."
+
+"The second card is The Empress."
+
+"Now let us discover what the final card has to tell you."
+
+Requirements:
+
+- Use the existing shared TTS queue.
+- Never interrupt an active narration.
+- Keep background music ducking functional.
+- Never allow ambient conversation to interrupt a Tarot reading.
+- Restore normal Mystic Conversation scheduling after the reading.
+- Maintain the configured interval after audio playback ends.
+
+## PHASE 8 — ADMIN CONTROL PANEL
+
+Add the following sections to the existing Admin page:
+
+1. LIVE Queue Manager
+   - Current viewer.
+   - Queue list.
+   - Queue position.
+   - Manual priority adjustment.
+   - Remove viewer.
+   - Queue capacity.
+2. Reading Topics
+   - Add/edit/delete topics.
+   - Enable/disable topics.
+   - Rotation speed.
+   - Topic ordering.
+3. Gift Priority
+   - Gift mappings.
+   - Gift coin values.
+   - Promotion amount.
+   - Waiting-time promotion.
+4. Queue Ticker
+   - Enable/disable.
+   - Message duration.
+   - Animation speed.
+5. Reading Result
+   - Fortune percentage configuration.
+   - Result display duration.
+   - Built-in or AI interpretation.
+6. AI Provider
+   - Reuse existing OpenRouter/Ollama settings.
+   - Do not create a second independent provider configuration.
+7. Testing
+   - Simulate one viewer joining.
+   - Simulate a Tarot comment.
+   - Simulate a gift.
+   - Simulate likes.
+   - Test queue promotion.
+   - Test a complete Tarot reading.
+
+All configuration must persist across server restarts.
+
+## PHASE 9 — TESTING
+
+Run the complete existing test suite.
+
+Add tests for:
+
+- Queue insertion and removal.
+- Queue capacity.
+- FIFO ordering.
+- Priority promotion.
+- Automatic waiting promotion.
+- Gift combo deduplication.
+- Like promotion.
+- Topic detection.
+- Topic rotation.
+- Reading result rendering.
+- Fortune percentage calculation.
+- AI provider failure fallback.
+- TTS serialization.
+- Queue recovery after restart.
+- Multiple stage tabs.
+- OBS 9:16 rendering.
+
+Verify:
+
+- No duplicate readings.
+- No overlapping audio.
+- No broken existing TikTok handlers.
+- No broken music playback.
+- No regression in Kokoro.
+- No regression in Mystic Conversation.
+- No 16:9 layout.
+- No JavaScript console errors.
+
+## IMPLEMENTATION RULES
+
+1. Work incrementally.
+2. Keep changes focused.
+3. Run tests after each phase.
+4. Commit each completed phase separately.
+5. Never claim a test passed unless it was actually run.
+6. Do not generate images.
+7. Do not replace working assets.
+8. Do not redesign the entire stage.
+9. Do not remove existing features.
+10. Do not start the next phase if the current phase has failing tests.
+
+## FINAL ACCEPTANCE CRITERIA
+
+The completed app should behave like a real interactive TikTok Tarot LIVE:
+
+- Viewers can see the current reading.
+- Viewers can see who is next.
+- Viewers can see their queue position.
+- Comments automatically select a Tarot topic.
+- Gifts and waiting time can promote viewers.
+- Likes create live interactions.
+- Queue messages animate on screen.
+- The Oracle calls viewers by name.
+- Tarot cards are drawn and revealed.
+- Fortune percentages appear.
+- Personalized English interpretations appear.
+- Kokoro reads the result.
+- The app returns to the waiting state automatically.
+
+The existing Mystic Witch visual identity, Tarot Engine, music, Kokoro voice and TikTok integration must remain intact.
+
+Start with Phase 0 inspection. Then implement the phases in order. Do not stop at documentation or a proposed plan: make the actual code changes and verify them.
+
+Lưu ý: Cho AI coding agent làm từng phase và báo kết quả từng commit. Đừng để nó sửa toàn bộ một lượt — đặc biệt là TikTok connector, TTS queue và Tarot Engine đang hoạt động.
+
+
+
+All nine phases are implemented, verified and committed. The suite is 97/97 green, the server is running on 3116 with the new build, and the working tree is clean apart from the runtime state file.
+
+What was built
+Phase 1 — Live queue box. Three server-driven lines on the 9:16 stage: NOW READING: EMILY (or THE READING TABLE IS WAITING) with 2 / 100 WAITING, NEXT: SOPHIA → OLIVIA, and the latest movement. Empty queues render NEXT: THE LINE IS OPEN / ✨ THE LINE IS QUIET TONIGHT, never undefined. Capacity is configurable and the whole queue is persisted in data/game-state.json — verified by seeding two viewers, restarting the server, and reading back count=2 order=Persist Two|Persist One.
+
+Phase 2 — Choose your destiny. 🔮 CHOOSE YOUR DESTINY / COMMENT + YOUR QUESTION plus two rotating columns. The twelve requested topics ship enabled and deduplicated, with add/edit/reorder/enable/delete and rotation speed in Admin. Natural comments match by longest keyword (tarot reading about my career → Career Reading), the viewer's wording becomes the question, and a bare question falls back to My Question. A viewer cannot enter the line twice, so one comment cannot start two readings.
+
+Phase 3 — Promotion. Deterministic score-then-arrival ordering with gift boosts from the real public/assets/gift_icon/ art (rose.webp +2 … grandCeremony.webp +12, unmapped gifts at coins-per-step), like bursts above a threshold, and waiting credits (🌹 SOPHIA MOVED UP: #2 → #1). Gift combos are deduplicated by TikTok groupId, so a repeat never promotes twice. The real GIFT/LIKE handlers call the same promotion code the simulator exercises.
+
+Phase 4 — Ticker. Two lines, one message at a time, animated upward and expired by the animation itself; Admin can disable it and set duration/speed.
+
+Phase 5 — Result box. LOVE READING FOR EMILY, the drawn cards with position and upright/reversed, GOOD FORTUNE / POINTS TO WATCH bars, the Oracle's message and the closing line, with a configurable display duration. Live DOM check: 66% / 34%, 3 cards, 741-character message, box fully inside the 1080×1920 stage. Percentages are deterministic from orientation, arcana, keyword polarity, topic affinity and position.
+
+Phase 6 — Content engine. Built-in library explains all 78 cards in both orientations across general/love/family/personality/career/wealth/study/future, offline. AI mode reuses the existing OpenRouter/Ollama settings and validates the answer against the actual spread; foreign cards, markdown or vague text are rejected and the built-in reading is used.
+
+Phase 7 — Voice. Welcome → topic → drawing → each card → verdict → closing, in sequence through the shared TTS queue with Kokoro af_alloy. I also fixed a real defect found during verification: speech requested while Kokoro was still loading fell back to Piper, so one reading had mixed voices. The server now waits for the worker and retries before falling back — after a restart, a fresh narrated reading produced only kokoro_af_alloy_* clips (0 Piper).
+
+Phase 8 — Admin. New 🔮 Live Tarot Experience panel: queue manager (capacity, add/remove, manual priority, start next), topic editor with rotation speed, gift mappings and promotion rules, ticker, result settings, and simulation buttons for viewer/comment/gift/likes/reading. Verified rendering: 12 topics, 7 gift rows with real icon paths, capacity 100.
+
+Phase 9 — Tests. 97/97 pass (npm test, now node --test test so the glob actually runs on Windows). New coverage: queue FIFO/capacity/removal/duplicate/promotion/dedupe/waiting/hydration, topic matching/rotation/dedupe, all 78 cards and deterministic scoring, AI validation and fallback, TTS serialization, and the 9:16 stage markup. No console errors on the stage; only pre-existing music warnings and connection errors captured while the server was down for a restart.
+
+Commits
+478ea05 feat(tarot): add the live queue, topic catalog and reading library
+71730a0 feat(tarot): drive the live queue, promotions and readings from the server
+4158558 feat(stage): show the live queue, destiny topics, result box and ticker
+8956451 feat(admin): control the live tarot experience
+799f3d3 docs: document the live tarot experience
+Limitations
+No TikTok room was available, so gift/like/comment flows were driven through the server's simulator RPCs, which call the same handlers as the connector. The AI path has no configured provider key here, so only the fallback and validation were exercised live. Card art: the project has no per-card images and image generation was excluded, so the result box uses the existing CSS card faces (sigil, name, orientation, position) rather than bitmap cards. The final narrated reading produced 5 of its 8 clips before the runner restarted; all five were Kokoro, and the sequencing itself is covered by tests.
+
+
+Probe confirms the core fix: readings now answer in ~20 ms and narrate 6 (one-card) / 8 (three-card) clips, all Kokoro, zero Piper. Two gaps remain: the Admin conversation test and the gift test return errors. Checking those now.
+
+No changes to existing files.
+
+All phases are done and verified, with 104 tests passing and four commits.
+
+Root causes (evidence-based)
+Admin one/three-card tests drew but never spoke. public/admin.html called tarot.testOne / tarot.testThree with announce: false, so the server built the reading and skipped narration entirely. The server-side narration was fine: a probe showed six tts.play parts for one card and eight for three.
+The Admin panel appeared to freeze. runTarotReading did await announceTarotReading(...), which synthesizes every clip before replying — measured 29 s for one card and ~60 s for three. The Admin rpc(), sendRpc() and eventRpc() helpers had no AbortController, no catch, and no visible error, so a button stayed disabled and "…" forever.
+Interactions never reached the stage. public/js/stage.js contained a duplicated branch: } else if (msg.method === 'temple.event') { } else if (msg.method === 'temple.event') {. The first, empty branch swallowed every temple.event, so follows, gifts, like bursts and reaction replies were impossible to see or hear.
+The gift test was rejected by design. The "Gift party tray" button sent coins: 48, but the configured tiers are 1/5/10/15/20/25, so shop.gift answered No drink configured for 48 coins.
+RPC robustness gaps. No per-request guard against a hung handler, no method name in failure logs, and silent WebSocket handler errors.
+Not a bug: conversation.test with no id answers "Unknown dialogue line" by design. With a real line id it returns a Kokoro af_alloy clip in ~2 s.
+Fixes
+server.js — narration is now fire-and-forget (.catch logged), so readings answer in ~20 ms; /rpc answers exactly once behind a 45 s guard with [RPC] <method> logging; WS failures log the method.
+public/js/stage.js — removed the duplicated temple.event branch so stage events run again.
+public/admin.html — tests now request announce: true and report "narration sent to the stage"; all RPC helpers have 30 s aborts and surface the real error instead of spinning; gift test uses a valid 25-coin tier; comment-test hint no longer claims a Piper queue.
+test/live-rpc.test.js — guards the regressions (single response path, no blocking narration, one temple.event branch, Admin tests narrating, gift tier validity).
+Verification
+Check	Result
+npm test	104 pass / 0 fail
+Unknown method	JSON-RPC error -32000, 66 ms
+Test One Card (Admin button)	"One card: Knight of Cups · narration sent to the stage", 6 Kokoro clips fetched
+Test Three Cards	8 narration parts, 0 Piper
+Kokoro voice	af_alloy, 24 kHz, worker ready, 0 failures
+Test Comment	ok:true, LLM wording, order created, 6.3 s, no stuck button
+Test Like Batch	7 ms, stage received likeBurst
+Test Follow	18 ms, stage received followGuest
+Gift (25 coins)	21 ms, giftOrder created; tarot gift accepted
+Test Conversation	ok:true, Kokoro af_alloy clip ~2.2 s
+Automatic Oracle dialogue	observed ambient tts.play lines (categories tarot, engagement) through the shared queue
+Console	no errors on stage or Admin
+Commits: 54015d2 (RPC answers + non-blocking narration), 4accb24 (Admin narration + stage events + RPC timeouts), 60ac57e (tests), 90af734 (Admin hint). data/game-state.json was left uncommitted as runtime state.
+
+Limitations
+I cannot hear audio in this environment: playback is evidenced by the stage requesting and decoding every WAV in sequence, the shared queue reporting busy and draining, and no errors — not by listening. Only one stage tab was open, so the two-tab duplicate guard is covered by the server's 20 s text dedupe and unit tests rather than a live two-tab run. After a restart Kokoro needs ~28 s to load; speech requested during that window now waits up to 12 s and can still fall back to Piper if the worker is not ready (one ambient Piper clip occurred during startup in testing).
+
+
+Tests
+node --test test/*.test.js → 113 pass / 0 fail (the new file contributes 9; they assert the panel rides the real RPCs/events, that topics are never hardcoded, that no second engine/queue/player is constructed, that join dedupes, that the comment path has no bypassCooldowns, and that all six acceptance topics resolve to their own label).
+
+Actual browser verification (Chrome, localhost:3116)
+TEST USER JOIN, default username: ✔ TEST_VIEWER_01 joined the live — 1 viewer(s) on stage. Clicking again: ✔ TEST_VIEWER_01 is already in the live — no duplicate viewer created. — one viewer record, dedupe confirmed via RPC too (created:true then duplicate:true, viewers:1).
+Comment Love Reading (typed via the chip): ✔ Queued at #1 as "Love Reading", matched keyword love, reading tarot_1793683524251_2_w2l6, card Guidance: Two of Swords (REVERSED), narration 6 clips · kokoro af_alloy.
+Stage simultaneously showed LOVE READING FOR TEST_VIEWER_01 with the result card revealed and orientation REVERSED, and fetched six kokoro_af_alloy_*.wav clips (all 206) through the shared queue.
+Second run with TEST_VIEWER_02 and Crush Reading: joined (2 viewer(s)), matched crush, reading tarot_1793683602903_3_0r92, Guidance: The Hermit (REVERSED), stage headline CRUSH READING FOR TEST_VIEWER_02, then the panel advanced WAITING → QUEUED → READING → COMPLETED with 6 clips · kokoro af_alloy — it no longer trusts the RPC reply for COMPLETED.
+All six topics through the real server matcher: Love Reading, Crush Reading, Future Partner, Career Reading, Wealth Reading, My Question each matched its own label. Only the first was queued; the rest were refused with global_cooldown, retry 20 s — proof the tool does not bypass cooldowns.
+Topic chips render 12 enabled topics from tarot.getState/tarot.state (same snapshot the stage rotates); clicking one fills the comment box.
+Remaining limitations
+I cannot hear audio. Playback evidence is the stage requesting and decoding each of the 6 WAVs in order through the single shared queue with no console errors — not listening.
+The card reveal was verified from the rendered result card (REVERSED, headline, shown state); I did not record frames of the flip animation itself.
+“COMPLETED” is derived after 5 s of narration silence (the server never emits an explicit “narration finished” event); a very slow Kokoro synthesis could complete the panel early.
+The tester obeys the real limits: 20 s global comment cooldown and 120 s per username. To test the next topic immediately, change the username (each name is its own viewer identity).
+I want to know about my future does not match any topic (it is neither a topic keyword nor a question form), so the panel reports “No enabled topic matched” — that is the live chat behaviour, unchanged.
+Server is running new code on port 3116; data/game-state.json is runtime state and was left uncommitted.
+
+
+1111111111111 úp bài sau khi đọc xong
+Copy prompt này đưa cho Freebuff làm, yêu cầu chỉ sửa đúng hai vấn đề, không ảnh hưởng các chức năng khác:
+
+WritingResponse copied
+
+## Fix Tarot Card Text Orientation & Reset Cards After Reading
+
+Please fix the following two issues in the existing Mystic Witch Tarot project.
+
+### 1\. Fix reversed / upside-down text on Tarot cards
+
+Sometimes the text on Tarot cards appears upside down or mirrored.
+
+Requirements:
+
+- All card names, labels, symbols and text must remain readable.
+- Upright and reversed Tarot cards must both display text in the correct orientation.
+- A reversed card should visually rotate the card artwork by 180 degrees if desired, but the text layer must remain upright.
+- Separate the card artwork rotation from the text/UI layer rotation.
+- Check CSS transforms, inherited transforms, and animation keyframes.
+- Ensure the fix works for both one-card and three-card readings.
+
+### 2\. Reset Tarot cards after a reading finishes
+
+Current problem: After the cards are flipped and the Oracle finishes narrating the result, the cards remain face-up.
+
+Required behavior:
+
+1. Cards begin face-down.
+2. Cards flip one by one during the reading.
+3. The result panel displays the complete interpretation.
+4. Wait until the entire narration queue has finished playing.
+5. Allow a short configurable delay (default 3 seconds).
+6. Flip all cards face-down again with a smooth animation.
+7. Clear the completed reading from the active stage when appropriate.
+8. Return to the idle Tarot table, ready for the next viewer.
+
+**Important:** Do not reset the cards immediately when the server finishes generating TTS files. Wait until actual audio playback has completed and the shared TTS queue is idle.
+
+### 3\. Regression protection
+
+- Test one-card readings.
+- Test three-card readings.
+- Test upright and reversed cards.
+- Test consecutive readings without refreshing the browser.
+- Test that music playback and Kokoro narration remain unaffected.
+- Ensure the reset timer cannot interrupt a new reading.
+- Keep the existing queue, TikTok interactions, Oracle conversation and Admin controls unchanged.
+
+### Deliverables
+
+- Identify the exact root cause of both issues.
+- Make the smallest necessary changes.
+- Add regression tests.
+- Run `npm test` and report the actual results.
+- Commit the fix separately.
+- Report changed files and commit hash.
+
+Do not redesign the stage, change the Tarot engine, add dependencies, or generate new images.
+
+
+Browser verification (localhost:3116, real server + Kokoro)
+Three-card draw: Queen of Wands / The Magician / Page of Cups, all revealed; .card-art transform none, name transform none (upright).
+Second three-card draw (no page refresh): middle card Eight of Cups REVERSED — .card-art computed as matrix(-1, 0, 0, -1, 0, 0) (180° artwork only), .card-name none, .card-face the Y-flip; text stayed upright.
+One-card draw: one slot (cardRow.single), Three of Swords REVERSED with the same art-only rotation, result card read ⚔ / Three of Swords / GUIDANCE / REVERSED.
+After the narration finished: revealed: 0, three face-down slots, single: false, question back to “Speak your question in the chat…”, result panel hidden and emptied, headline cleared, no console errors, and mysticMusic still playing.
+Commit & files
+Commit 97eb1e3 — fix(stage): keep card text upright and reset the table after narration (7 files, +601/−28): public/js/tarot-card-view.js, public/js/reading-reset.js, public/js/stage.js, public/css/stage.css, public/css/stage-tarot.css, public/index.html, test/card-view-reset.test.js. data/game-state.json is runtime state and was deliberately left out.
+
+Limitations
+I cannot hear audio; completion is proven by the queue's own onIdle firing after each clip's ended (6 clips fetched and played in order), not by listening.
+Reversed artwork here is the sigil layer (cards are text/sigil art, no per-card images), so “artwork rotates” means the sigil; the layout rotation is deliberately absent.
+The 950 ms idle restore runs after the flip-back; if a new reading starts inside that window it is protected by the generation guard and left untouched.
+A reading whose narration is disabled has no clips, so the 25 s fallback waits for queue silence before resetting; in that edge case the table lingers up to ~28 s longer than usual.
+
+
+1111111111111
+thay THE LINE IS QUIET TONIGHT = "chờ lâu tự lên": 1xu-icon rose.webp or 100xu * thả tim (icon tim) = tự lên 1 người * Bói miễn phí (viết trên 1 dòng)
+icon nằm trong: public\assets\gift_icon
+
+Đưa prompt này cho Freebuff. Chỉ thay dòng trạng thái khi hàng chờ trống, giữ nguyên các chức năng khác.
+
+Writing
+
+## Update Empty Tarot Queue Message
+
+Replace the current text:
+
+"THE LINE IS QUIET TONIGHT"
+
+With a single-line promotional message in English:
+
+🌹 1 Rose = Move Up 1 Position | ❤️ 100 Likes = Move Up 1 Position | 🔮 FREE TAROT READING
+
+### Requirements
+
+1. Use the actual gift icons from `public/assets/gift_icon/`:
+   - Rose: `rose.webp`
+   - Heart: use the existing heart icon if available.
+2. Display everything on ONE horizontal line.
+3. Use actual image icons, not emoji, wherever matching image assets exist.
+4. Keep the message centered and readable inside the 9:16 stage.
+5. Scale icons proportionally and prevent text wrapping.
+6. If the viewport is narrow, reduce font size while keeping the message on one line.
+7. This message appears only when the Tarot queue is empty.
+8. When someone joins the queue, restore the normal live queue display.
+9. Do not change gift promotion values, queue logic, Tarot readings, TTS, music or TikTok handlers.
+
+### Verification
+
+- Empty queue: promotional line is visible.
+- One or more waiting viewers: promotional line disappears.
+- Rose gift and 100 likes still promote exactly one position.
+- Check at 1080×1920 OBS resolution.
+- Run all existing tests and commit separately.
+
+
+All 138 tests pass. Restarting the dev server (server.js changed) and checking the live queue state before visual verification at 1080×1920.
+
+The empty-queue line is replaced and verified live at 1080×1920; committed as e8cc768.
+
+What changed
+public/index.html — #queueMovement is now a container holding the promotion (#queuePromo) plus a text span (#queueRecent) for the live movement message:
+
+text
+Copy
+[rose.webp] 1 Rose = Move Up 1 Position | ❤️ 100 Likes = Move Up 1 Position | 🔮 FREE TAROT READING
+The rose uses the real asset /assets/gift_icon/rose.webp; there is no heart image in public/assets/gift_icon/ (only rose.webp, rosa10.webp, PrayerCandle.webp, embroidered5.webp, flowergarland15.webp, Bouquet20.webp, grandCeremony.webp), so the heart and crystal ball stay emoji. Everything sits in one flex row with white-space: nowrap, justify-content: center and em-sized icons.
+
+public/js/queue-promo.js (new) — pure hasWaiting(queue) rule: the promotion is visible only when queue.count is 0.
+
+public/js/stage.js — renderQueue() toggles is-hidden on the promotion and on the movement span from that rule (a movement message no longer writes textContent into the row, which would have destroyed the markup). fitQueuePromo() starts at min(17px, rowWidth/52) and steps down to 9px until the row measures as one line, so narrow widths shrink the text instead of wrapping.
+
+public/css/stage-tarot.css — promo flex row, .is-hidden rules, 1.2em icon sizing, 1.05em emoji, centered .queue-move.
+
+tarot-queue.js / server.js — the old ✨ THE LINE IS QUIET TONIGHT fallback is gone (recent is now '' when nothing has happened); the stage hides the blank span and keeps the row height. README.md describes the new line.
+
+Nothing in promotion values, queue logic, readings, TTS, music or TikTok handlers was modified; the diff outside the new promo module is display-only.
+
+Verification
+npm test: 138 tests, 138 pass, 0 fail (10 new in test/queue-promo.test.js: empty/waiting/defensive count rules, one-line markup with rose.webp and no 🌹 emoji, asset present, quiet copy gone everywhere, CSS nowrap/centre rules, stage wiring, script order).
+Live server on :3116, stage viewport 1080×1920: empty queue → promotion visible, text exactly 1 Rose = Move Up 1 Position | ❤️ 100 Likes = Move Up 1 Position | 🔮 FREE TAROT READING, rose loaded (20×20 px from gift_icon/rose.webp), promo centre 540 = row centre 540, scrollWidth 888 ≤ rowWidth 888, single line.
+Added a waiting viewer through the admin “Simulate viewer joining”: row showed 1 / 100 WAITING, NEXT: SOPHIA, promotion display: none, movement span blank and hidden, row height held at 21px. Cleared the queue again: promotion returned, 0 / 100 WAITING, NEXT: THE LINE IS OPEN.
+Two things you should know
+The saved mapping does not say 1 position for a Rose. data/game-state.json (and the server default at server.js:2740) maps rose to promote: 2, so a Rose adds 2 queue points. I proved it against the real queue module: a 3-viewer queue, Rose from #3 → 🎁 C SENT A GIFT! MOVED UP: #3 → #1. Likes are likeAmount: 1 with likeThreshold: 10, so a 100-like batch adds 1 point. Since you asked me not to change promotion values, I left both alone — but then the new line's "1 Rose = Move Up 1 Position" is marketing copy, not the current setting. Set Rose to promote: 1 in Admin → Gift promotion if you want the line to be literal.
+Everything is in e8cc768 on its own, with data/game-state.json left uncommitted (runtime state). Verification of the promotion itself used the admin simulator, which promotes with amount: 6 — it does not exercise the real TikTok gift handler, so the Rose path is confirmed at the queue-module level, not by a live TikTok gift.
+
+
+
+111111111111111111111
+ví dụ mở bài = family reading thì result lúc nào cũng chỉ có 1 result ah là sao?
+
+Đúng rồi, đây có thể là do hệ thống hiện tại đang dùng một template kết quả chung cho mỗi topic, chứ không phải Family Reading có nhiều khía cạnh giải bài riêng.
+
+Ví dụ chọn Family Reading, kết quả nên có nhiều phần:
+
+1. Family Energy – Năng lượng chung trong gia đình.
+2. Relationships – Mối quan hệ giữa các thành viên.
+3. Hidden Concerns – Điều đang khiến gia đình lo lắng.
+4. Challenges – Khó khăn cần chú ý.
+5. Coming Changes – Những thay đổi sắp tới.
+6. Oracle Advice – Lời khuyên từ Oracle.
+
+Và mỗi lần rút bài phải tạo nội dung khác nhau dựa trên:
+
+- Những lá bài thực tế được rút.
+- Chiều xuôi hoặc ngược.
+- Chủ đề người xem chọn.
+- Tên người xem.
+
+Prompt cho Freebuff kiểm tra và sửa:
+
+Writing
+
+Investigate the Tarot result generation system.
+
+Problem: Family Reading and potentially other topics seem to produce only one generic result. Every reading feels repetitive.
+
+Requirements:
+
+1. Each topic must have its own structured interpretation template.
+2. Family Reading must cover:
+   - Family Energy
+   - Family Relationships
+   - Hidden Concerns
+   - Current Challenges
+   - Coming Changes
+   - Oracle Advice
+3. Other topics must also have their own relevant sections (Love, Crush, Career, Wealth, Study, Future Partner, Personality, etc.).
+4. Generate interpretations using the actual drawn cards, their orientation, card meanings and spread positions.
+5. Each reading should be sufficiently different, not simply reuse one fixed paragraph.
+6. Use the existing OpenRouter/Ollama provider when AI mode is enabled.
+7. When AI is unavailable, provide a rich deterministic fallback library.
+8. Display all interpretation sections in the result box and ensure they remain readable on the 9:16 stage.
+9. Keep Kokoro narration synchronized with the result and do not read generic placeholder text.
+10. Do not invent additional cards or change the existing Tarot deck.
+
+Investigate whether the current one-result behavior comes from the topic templates, interpretation library, AI generation or frontend rendering.
+
+Add tests for multiple topics and consecutive readings. Run the full test suite and report the results.
+
+Do not redesign unrelated systems or add dependencies.
+
+Lưu ý: Không nhất thiết phải rút 3 lá cho mọi chủ đề. Có thể giữ một lá nhưng giải thành nhiều khía cạnh; ba lá thì có chiều sâu hơn.
+
+
+
+11111111111111
+thay luồng 1 chút, khi có yêu cầu mở bài, trước tiên hiện icon vs tên người vào giữa màn hình
+đọc tên [user] tới phiên bạn rồi
+hiện bài hiệu ứng rồi bắt đầu mở
+mở xong đọc kết quả
+sửa dc ko?
+
+
+Sửa được. Mình đề xuất đổi luồng Tarot thành một nghi thức bói bài hoàn chỉnh, để người xem biết rõ ai đang tới lượt và có cảm giác chờ đợi trước khi lật bài.
+
+Đây là prompt đưa Freebuff:
+
+Writing
+
+# Mystic Witch — Tarot Reading Ceremony Flow
+
+Modify the existing Tarot reading sequence. Keep the current Tarot engine, queue, Kokoro voice, music and card assets.
+
+## New reading sequence
+
+### STEP 1 — Viewer announcement
+
+When a viewer's turn begins:
+
+- Pause ambient Oracle conversation.
+- Show a full-screen ceremony overlay in the center of the 9:16 stage.
+- Display a glowing magical user icon.
+- Display the viewer's name prominently.
+- Show the selected reading topic underneath.
+
+Example:
+
+🔮 YOUR TURN HAS ARRIVED
+
+EMILY
+
+FAMILY READING
+
+Voice (Kokoro af\_alloy):
+
+"Emily, your turn has arrived. Come closer. The cards are ready to reveal your destiny."
+
+Keep this screen visible while the announcement plays.
+
+### STEP 2 — Card preparation
+
+After the announcement finishes:
+
+- Fade out the viewer overlay.
+- Show the Tarot deck in the center of the table.
+- Play a magical purple smoke and glowing particle animation.
+- Display the message:
+
+"THE SPIRITS ARE GATHERING..."
+
+Voice:
+
+"Take a deep breath. Let us discover what the cards have to tell you."
+
+### STEP 3 — Card reveal
+
+- Show the selected cards.
+- Animate each card appearing and flipping one by one.
+- For three-card readings, reveal Past → Present → Future.
+- Synchronize the animations with the narration.
+- Do not display the final interpretation before the cards are revealed.
+
+### STEP 4 — Interpretation
+
+After all cards are revealed:
+
+- Display the complete reading result.
+- Show the topic and viewer name.
+- Show GOOD FORTUNE percentage.
+- Show POINTS TO WATCH percentage.
+- Show the individual card interpretations.
+- Show the final Oracle advice.
+
+Kokoro reads the complete interpretation in a natural, continuous sequence.
+
+### STEP 5 — Closing ceremony
+
+After the entire TTS queue has finished:
+
+Voice:
+
+"Your reading is complete. May the spirits guide your path."
+
+Show a short magical closing animation.
+
+Then:
+
+- Wait 3 seconds.
+- Turn all cards face-down.
+- Clear the viewer overlay and result panel.
+- Return to the idle Tarot table.
+- Resume ambient Oracle conversation.
+- Process the next viewer in the queue.
+
+## Critical technical requirements
+
+1. Use one centralized reading state machine: IDLE → ANNOUNCING → PREPARING → REVEALING → INTERPRETING → CLOSING → RESETTING → IDLE.
+2. All transitions must be driven by actual audio playback completion and animation completion, not merely by server RPC responses or TTS synthesis completion.
+3. Never allow two readings to overlap.
+4. If a new reading is queued, do not interrupt the current ceremony.
+5. Prevent stale timers or previous reading callbacks from affecting a newer reading.
+6. Ambient conversation must remain paused throughout the entire ceremony.
+7. Music must continue playing and retain existing TTS ducking behavior.
+8. Keep the existing 9:16 OBS layout. All ceremony elements must fit inside 1080×1920.
+9. Preserve queue promotion, gift priority, TikTok events, Admin controls and the existing Tarot interpretation engine.
+
+## Testing
+
+Test:
+
+- One-card reading.
+- Three-card reading.
+- Two consecutive viewers.
+- Long Kokoro narration.
+- Reversed cards.
+- Queue arriving during an active reading.
+- Browser tab visibility changes.
+- Final reset and ambient conversation resumption.
+
+Run the full test suite and report actual results.
+
+Make focused changes only. Do not redesign unrelated components or add dependencies.
+
+Điểm quan trọng: Phải để Oracle đọc tên người xem trước khi bài xuất hiện. Như vậy livestream sẽ có cảm giác người xem thực sự được gọi lên bàn bói, thay vì hệ thống chỉ tự động lật bài và đọc kết quả.
+
+
+Live verification
+One-card Family Reading for Emily, real Kokoro audio (recorder timestamps):
+
+State entered	At	Time in previous phase	Animation floor
+ANNOUNCING	8.8s	—	—
+PREPARING	29.4s	20.6s	1.4s
+REVEALING	43.1s	13.7s	2.4s
+INTERPRETING	63.8s	20.7s	—
+CLOSING	81.1s	17.3s (result showed 1 card + 6 sections)	2.2s
+RESETTING	102.9s	closing clip duration	2.6s
+Every phase ran far past its animation floor, so clip playback was the driver, not timers.
+
+Two consecutive viewers with the voice temporarily off (to avoid a second 2-minute synthesis run): reading 1 ran to IDLE; the second reading was held with pending: 1 during it and started only after IDLE; after reading 2 the stage had 3 face-down cards, hidden result, hidden overlay, and conversation.reading === false (ambient resumed). Voice restored to true afterwards.
+
+Bugs found and fixed during this verification:
+
+Announcement could never finish — the plan already counted a phase's clips and routeClip counted each arrival again, so phaseEnded never reached phaseExpected. Fixed with an explicit phasePlanned flag.
+Final reset never fired — it relied on a later queue-idle event. RESETTING now owns a cardResetDelayMs()+150 timer that calls resetReading regardless.
+A legacy 25s reset could cut a ceremony short (observed as REVEALING → IDLE, skipping interpretation and closing). resetReading now ignores reset requests while the ceremony is anywhere except CLOSING/RESETTING.
+Voice off left the stage waiting 45s per phase for clips that would never come. The server now sends an empty plan when ttsEnabled is false, so animations drive it.
+Tests
+npm test → 166 tests, 166 passing, 0 failing.
+
+New test/tarot-ceremony.test.js covers: the full state order, refusal of a second ceremony, stale-epoch rejection, wrong-phase rejection, finish gating, abort; clip plans for one-card and three-card (including a reversed card's reveal line, verdict and every section label, unique ascending orders, closing last); TTS start/end boundaries and a failing clip unblocking the queue; stage wiring (one TarotCeremony, one TtsQueue, one ReadingResetTimer, queueing instead of overlap, visibility handler, conversation paused/resumed, reset authority); markup/CSS/script order; and the server's plan and phase-tagged clips. test/live-rpc.test.js and test/tarot-result-sections.test.js were updated for the new narration signature.
+
+Limits and files
+The three-card audio ceremony was not run to completion live (its plan, phase counts and section narration are unit-tested; the card reveal path is shared with the one-card run).
+Reversed cards are covered in the clip plan and card markup tests, but this run's live draw happened to be upright.
+Kokoro on CPU synthesizes roughly 10–20s per clip here, so a full reading ceremony takes ~1.5–2 minutes. That is server synthesis latency, not stage gating; pre-warming or parallel synthesis would be the next improvement.
+Background-tab timer throttling distorted the voice-off timing run (OBS runs a visible tab); only a dispatched visibilitychange was used, not a real hide/show cycle.
+Nothing is committed. Changed: public/js/tarot-ceremony.js (new), public/css/stage-ceremony.css (new), public/index.html, public/js/stage.js, public/js/tts-queue.js, tarot-reading-library.js, server.js, plus the three test files; data/game-state.json remains runtime state.
+The ceremony now paces itself exactly to the voice and never begins the next viewer before the table is clear.
+
+11111111111111111
+Tôi đề xuất 3 việc tiếp theo
+
+    Tối ưu Kokoro: Hiện một bài bói mất khoảng 1,5–2 phút do thời gian tổng hợp giọng nói. Nên tối ưu việc tổng hợp trước để giảm thời gian chờ, nhưng vẫn giữ thứ tự phát âm thanh.
+
+    Test thực tế 3 lá: Chạy trọn vẹn một lượt Past / Present / Future có giọng đọc, kiểm tra tất cả phần giải bài.
+
+    Test TikTok thật: Kiểm tra comment, gift, like và follow trong một phiên LIVE thực tế.
+
+Lưu ý: Hiện tại chưa commit code. Tôi khuyên nên yêu cầu Freebuff commit trạng thái 166/166 trước khi tối ưu tiếp, để có mốc quay lại an toàn.
+
+
+Đưa prompt này cho Freebuff. Mình chia thành 3 phần theo thứ tự: commit bản ổn định → tối ưu Kokoro → test 3 lá và TikTok.
+
+Writing
+
+# Mystic Witch — Stabilize, Optimize Kokoro & Complete Live Verification
+
+The Tarot Ceremony implementation has passed 166/166 tests.
+
+Continue from the current working tree. Do not redesign the system.
+
+## PHASE 0 — Secure the current working version
+
+Before making changes:
+
+1. Inspect git status and current diffs.
+2. Run `npm test`.
+3. Confirm all 166 tests pass.
+4. Commit the current working version as a stable checkpoint.
+5. Do not include runtime state, secrets, caches, voice models or generated temporary files.
+
+Report the commit hash.
+
+## PHASE 1 — Optimize Kokoro TTS performance
+
+Current problem: A complete Tarot reading takes approximately 1.5–2 minutes because Kokoro runs on CPU and synthesizes clips sequentially.
+
+Goal: Reduce waiting time without sacrificing voice quality or narration order.
+
+Investigate:
+
+- Whether all narration clips can be synthesized ahead of playback.
+- Whether independent clips can be synthesized concurrently without destabilizing the Kokoro worker.
+- Whether repeated phrases can reuse cached WAV files.
+- Whether card interpretations and section narration can be pre-generated or cached.
+- Whether the Kokoro worker startup and model-loading overhead can be reduced.
+
+Requirements:
+
+1. Preserve the existing `af_alloy` voice.
+2. Keep narration in the correct sequence.
+3. Never play two clips simultaneously.
+4. Do not interrupt background music.
+5. Preserve music ducking and restoration.
+6. Keep Piper as fallback.
+7. Do not introduce NaN, negative-duration or worker-crash issues.
+8. Do not increase CPU thread count blindly. The existing single-thread configuration is important for numerical stability.
+
+Measure actual synthesis time before and after optimization.
+
+Do not sacrifice narration quality for speed.
+
+## PHASE 2 — Complete three-card live ceremony test
+
+Run one complete real three-card Tarot reading using Kokoro.
+
+Test sequence:
+
+1. ANNOUNCING — announce the viewer's name.
+2. PREPARING — magical preparation.
+3. REVEALING — Past, Present, Future.
+4. INTERPRETING — narrate every card and every interpretation section.
+5. CLOSING — Oracle closing message.
+6. RESETTING — turn all cards face-down.
+7. IDLE — prepare for the next viewer.
+
+Verify:
+
+- All three cards appear.
+- Upright and reversed orientations render correctly.
+- All result sections are visible.
+- Every narration clip plays in order.
+- Result text matches the actual cards.
+- Cards reset only after narration finishes.
+- The next viewer does not interrupt the current ceremony.
+
+Record actual timestamps and audio completion events.
+
+## PHASE 3 — TikTok LIVE integration verification
+
+Inspect the existing TikTok connector and test the actual event handlers.
+
+Verify:
+
+- Comment with a Tarot topic joins the queue.
+- Comment with a natural-language question joins the queue.
+- Rose gift promotes the correct viewer.
+- Gift combos are not counted twice.
+- Like bursts promote viewers according to the configured rules.
+- Follow displays the welcome interaction.
+- Two simultaneous viewers cannot start overlapping readings.
+
+If a real TikTok LIVE session is unavailable, clearly separate simulator results from real connector verification.
+
+Do not claim a real LIVE test was completed if only simulator RPCs were used.
+
+## PHASE 4 — Regression tests
+
+Run:
+
+- `npm test`
+- Server syntax checks.
+- Stage browser checks.
+- Kokoro voice verification.
+- Music playback and ducking checks.
+- One-card and three-card ceremony checks.
+
+Preserve all existing functionality:
+
+- 9:16 OBS stage.
+- Tarot queue and promotion.
+- Mystic Conversation System.
+- Admin controls.
+- Background playlist.
+- Kokoro af\_alloy.
+- TikTok integration.
+
+## Deliverables
+
+Report:
+
+1. Stable checkpoint commit.
+2. Files changed.
+3. Kokoro performance before and after.
+4. Full three-card ceremony timestamps.
+5. TikTok verification results.
+6. Full test results.
+7. New commit hashes.
+
+Work incrementally. Commit each completed phase separately.
+
+Do not generate images, change the visual design, add dependencies unnecessarily, or modify unrelated systems.
+
+Một lưu ý quan trọng: Kokoro hiện chạy single-thread vì đã từng gặp lỗi NaN khi tăng thread. Freebuff nên ưu tiên cache và chuẩn bị trước audio, không tự ý tăng thread để chạy nhanh hơn.
+
+
+All four phases are complete. Both commits are in, the final one-card run confirms the performance fix, and the suite is green.
+
+Phase 0 — stable checkpoint
+git status showed the ceremony work plus the earlier per-topic sections work; npm test was 166/166. Committed everything except runtime state (data/game-state.json):
+
+1944c99 — feat(tarot): run the reading as a five step ceremony · 11 files, +2421/−159.
+
+Phase 1 — Kokoro performance
+What the code showed: kokoro_worker.py is one persistent Python process reading JSON lines from stdin and synthesising one request at a time. Sending clips concurrently from Node would only queue them in the worker's stdin, so it cannot speed anything up (and would risk out-of-order audio). WAVs are already cached by voice+speed+text hash for 14 days, the server dedupes identical in-flight text, the model loads once (~25–29s) and stays resident, and threads stay at 1 (KOKORO_THREADS default → torch.set_num_threads(1)) — left untouched for numerical stability. Measured cost is ~13–22s per 1–2 sentence clip on one CPU thread, and most of a reading is unique text that can never be cached.
+
+Three focused changes in 868abc7:
+
+The announcement is split into the viewer's name (short, cold) and the constant sentence (cache hit) — tarot-reading-library.js.
+A low-priority warm-up synthesises the three constant ceremony lines once the worker reports ready, and refuses to write while narration is active or the worker is busy, so a live reading always goes first.
+The closing line is queued right after the preparation instead of last, so its cached audio is already buffered when the interpretation ends. This removed a 45s silent closing screen I caught while measuring.
+Added [Tarot] narration N clips · Xs synthesis · Y from cache for measurement.
+Measured, same one-card reading (Emily / Family / real Kokoro af_alloy):
+
+Metric	Before	After
+Whole ceremony	102.9s	68.8s
+ANNOUNCING phase	20.6s	7.1s
+CLOSING → RESETTING (silent screen)	45.0s	4.1s
+RESETTING → IDLE	3.9s	3.9s
+Final run: 12 clips · 94.8s synthesis · 5 from cache; worker ready, cpu, threads 1, failures 0, cache hits 9. A repeat reading of the same topic reaches INTERPRETING in 16s versus 64s cold. Voice, order, single-clip playback and ducking are unchanged.
+
+Phase 2 — three-card live ceremony (real Kokoro)
+Draw: Ace of Swords (reversed), Three of Wands (upright), Two of Pentacles (reversed), fortune 63 — genuinely mixed orientations.
+
+Phase	Timestamp	Verified
+ANNOUNCING	9.8s	name clip then the constant sentence, overlay shown
+PREPARING	19.7s	deck + "THE SPIRITS ARE GATHERING..."
+REVEALING	24.2s	3 cards flipped in order (revealed count 0 → 3)
+INTERPRETING	37.1s	3 result cards, 6 sections, result panel shown, revealed: 3
+CLOSING	82.1s	closing overlay, result hidden
+RESETTING → IDLE	92.3s	cards face-down, overlay cleared, conversation.reading false
+Reversed cards render .card-face.reversed-card with the REVERSED label and only the art rotated, matching the draw. Narration: 14 clips in plan order, no overlap, cards only reset after the closing clip ended.
+
+Phase 3 — TikTok handlers
+No real LIVE session was connected (state.tiktok.connected false); everything below is the simulator RPCs that call the exact detection/promotion functions the connector events call.
+
+Topic comment tarot family reading please → detected Family Reading / three-card; tarot love reading accepted and queued Love Reading / one-card.
+Natural-language question will I find love soon? → detected Love Reading / one-card, question will I find love soon? extracted.
+Gift: Rose accepted and promoted the queued viewer; repeating the same groupId returned handled: false (no double count); a new group was accepted.
+Likes: viewer Bolt moved 2 → 1 (kind: like, 150 likes, threshold 10). An earlier case showed no movement only because that viewer was already #1.
+Follow welcome (mystic.fx kind welcome) lives in the real FOLLOW/SOCIAL branch; no RPC exposes it, so it is code-verified only.
+Cooldowns enforced: global_cooldown (retry 8s), viewer_cooldown.
+Two viewers cannot overlap: verified live earlier (second reading held at pending: 1, started only after the first reached IDLE) and covered by the ceremony tests.
+Phase 4 — regression
+npm test: 166 tests, 166 pass, 0 fail (run again after every edit, final run clean).
+node --check: server.js, tarot-reading-library.js, stage.js, tarot-ceremony.js, tts-queue.js — all clean.
+Stage in the browser: overlay present, 3 card slots, ceremony CSS active, no console errors across the runs.
+Kokoro: ready, cpu, threads 1, voice af_alloy, 0 failures.
+Music: playing: true, volume 0.28, ducked: true while the Witch speaks, back to ducked: false at idle (music.setDuck 0.3, driven from the TTS queue).
+One-card and three-card ceremonies both run to IDLE with the table cleared.
+New commits: 1944c99 (checkpoint), 868abc7 (Kokoro performance). Phases 2–4 were verification only and changed no code; data/game-state.json stays uncommitted as runtime state.
+
+Limits worth knowing: a fully cold first reading still takes ~2 minutes because per-clip synthesis of unique text at one thread is the floor; the background warm-up costs ~40s of CPU once per server start and yields to live narration; and the TikTok findings are handler/simulator level, not a real LIVE broadcast.
+
+
+
+1111111111111111111111
+
+
+11111111111111111
+Tests
+npm test → 151 tests, 151 pass, 0 fail (13 new in test/tarot-result-sections.test.js): Family's six sections in order; all twelve topics give distinct, non-repeating label sets; sections name the drawn cards, orientations and positions; consecutive draws differ in ≥4 of 6 sections while a repeat draw is byte-identical; all 78 cards × both orientations fill all six sections within the character cap; topic precedence over the My Question fallback; AI section parsing, narration rebuild, invented-card rejection; stage/CSS/server wiring.
+
+Live checks through /rpc against the running server (1080×1920 stage): Family Reading, Career, Love, Study and Wealth each returned their own six sections and 13 narration lines at 13–15px with no overflow.
+
+Limitations
+AI mode is builtin here and no OpenRouter/Ollama provider is configured, so the new section prompt and merge were verified with synthetic provider responses, not a real LLM call.
+Narration was verified through the spoken array (13 lines), successful Kokoro synthesis with no TTS part failed entries, and the display/judgement chain — not by listening to playback.
+Nothing is committed; the working tree holds tarot-reading-library.js, server.js, public/index.html, public/js/stage.js, public/css/stage-tarot.css and the new test file, with data/game-state.json left as runtime state.
+If you want the AI path proven against a live model, the next step is pointing the existing provider manager at your OpenRouter key and re-running a family and a career reading.
