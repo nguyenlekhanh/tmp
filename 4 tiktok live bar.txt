@@ -1,3 +1,5 @@
+create dance hiphop animate fast strong funny for rabbit or dog or cat chỉ cần nhảy với biểu cảm funny meme that's it
+
 làm sao cho opencode/freebuff run và chạy project, ổ C đầy rồi nếu down thì down vào ổ D
 project đang ở đây
 D:\AI\sources\testgit\7\tiktok-live-bar-main\tiktok-live-bar-main
@@ -6723,7 +6725,366 @@ LIVE starts
 ```
 
 
-1111111111111
+1111111111111 dance prompt
+Được\! Google Flow + Veo có thể tạo video theo phong cách meme animation như vậy: nhân vật chibi, chó, mèo, thỏ, người que, meme reaction... rồi dùng làm hiệu ứng Gift cho TikTok Live Bar.
+
+Điểm quan trọng là phải viết prompt để Veo tạo animation nhân vật trên nền đơn giản, chuyển động rõ ràng, camera cố định và có thể loop, thay vì tạo một video cinematic thông thường.
+
+## 1. Phong cách hình ảnh nên hướng tới
+
+jump rope in ARASAAC · Global Symbols
+
+Black & white meme
+
+Người que, nét vẽ nguệch ngoạc, chuyển động hài hước.
+
+Happy Dancing StickerHappy Dancing CuteDiscoverShare GIFs | Kawaii cat drawing, Cute anime cat, Anime cat
+
+Chibi
+
+Đầu to, thân nhỏ, biểu cảm phóng đại.
+
+Spotlight Victory GIF - Spotlight Victory Music - Discover & Share GIFs
+
+Dog meme
+
+Chó nhảy, lắc đầu, xoay người.
+
+Chibi Cat GIF - Chibi Cat Cute - Discover & Share GIFs
+
+Cat meme
+
+Mèo nhảy, lắc mông, biểu cảm troll.
+
+Cartoon Bunny Dancing
+
+Rabbit meme
+
+Thỏ nhảy liên tục, tai rung theo chuyển động.
+
+Flork Bailando - Florkofcows Icons Stickers WhatsApp | Ideias para canecas, Desenhos a lápis de flores, Desenho de palito
+
+Doodle meme
+
+Nét vẽ đơn giản, animation vui nhộn.
+
+## 2. Prompt mẫu cho Google Flow Veo
+
+Mình viết prompt bằng tiếng Anh để mô tả chuyển động rõ ràng hơn.
+
+### A. Chibi nhảy múa
+
+Writing
+
+Create a funny 2D chibi meme animation.
+
+A cute chibi character with an oversized head and tiny body performs an energetic funny dance.
+
+The character rapidly swings both arms, bounces up and down, shakes its head and moves its feet rhythmically.
+
+Exaggerated cartoon movements, funny facial expressions, playful meme energy.
+
+Visual style: simple 2D cartoon animation, bold clean outlines, flat colors, sticker-like character design.
+
+Camera: completely static, full body visible, centered composition.
+
+Background: pure solid green (#00FF00), no shadows, no scenery, no objects.
+
+The animation should be seamless and perfectly loopable. The final pose must match the initial pose.
+
+No text, no subtitles, no watermark.
+
+### B. Chó meme nhảy điên cuồng
+
+Writing
+
+Create a funny viral dog meme animation.
+
+A cute cartoon Shiba Inu dog stands upright on two legs and performs an absurdly funny dance.
+
+The dog rapidly shakes its hips, swings its front paws, bounces its body and wiggles its ears.
+
+Exaggerated comedic movements, chaotic but rhythmic dancing, funny facial expression.
+
+Style: simple 2D meme animation, clean bold outlines, flat cartoon colors, sticker aesthetic.
+
+Camera is static. Full body centered and always visible.
+
+Pure solid green (#00FF00) background.
+
+Seamless looping animation. The ending position must match the starting position.
+
+No text, no additional characters, no camera movement, no watermark.
+
+### C. Mèo nhảy meme
+
+Writing
+
+Create a hilarious cartoon cat meme animation.
+
+A chubby orange cat stands upright and performs a ridiculous dance.
+
+The cat rapidly shakes its body, swings its paws, wiggles its hips and jumps rhythmically.
+
+Its eyes are wide open with an exaggerated funny expression.
+
+Style: minimalist 2D cartoon meme, bold black outlines, flat colors, simple shapes.
+
+Static camera, full body, centered character.
+
+Solid pure green background (#00FF00).
+
+Perfect seamless animation loop. Match the final pose with the initial pose.
+
+No text, no subtitles, no watermark.
+
+### D. Thỏ nhảy dây giống meme mẫu
+
+Writing
+
+Create a minimalist black and white funny rabbit meme animation.
+
+A cute cartoon rabbit with a large round head and tiny body is jumping rope continuously.
+
+The rabbit jumps rhythmically while rotating a jump rope with both paws.
+
+Its ears bounce naturally with every jump. The character has exaggerated funny movements.
+
+Visual style: hand-drawn black and white doodle animation, simple rough outlines, minimalist meme aesthetic.
+
+Camera: static, full body visible, centered.
+
+Background: pure solid white.
+
+Seamless looping animation. The rope movement and character pose must connect naturally between the beginning and ending frames.
+
+No text, no scenery, no watermark.
+
+## 3. Cài đặt nên ưu tiên trong Flow
+
+| Thuộc tính | Khuyến nghị |
+| --- | --- |
+| Aspect ratio | 1:1 |
+| Resolution | 1080p nếu có |
+| Duration | 4–8 giây |
+| Camera | Static |
+| Character | Centered |
+| Background | Green screen hoặc transparent nếu hỗ trợ |
+| Animation | Seamless loop |
+| Style | 2D meme / cartoon |
+
+Quan trọng Veo có thể không tạo được loop hoàn hảo hoặc nền alpha trong suốt trực tiếp. Nếu xuất nền xanh, bạn có thể chroma key để xóa nền trước khi đưa vào Unity.
+
+## 4. Mình đề xuất xây dựng thư viện Meme Gift
+
+Có thể tạo nhiều nhóm animation để sử dụng cho TikTok Live Bar:
+
+Stickman Dancing Meme
+
+Stickman Meme
+
+Nhảy dây, nhảy múa, té ngã, xoay vòng.
+
+Уαmαmоto(福岡な) (@otomamay\_tpl) on X
+
+Chibi Collection
+
+Dance, khóc, cười, tức giận, ăn mừng.
+
+Shibainu Stickers - Find & Share on GIPHY
+
+Dog Collection
+
+Shiba dance, dog running, dog spinning.
+
+Spice Up Your Social Media with cute gif dancing GIFs
+
+Cat Collection
+
+Cat dance, cat crying, cat vibing.
+
+## 5. Một lưu ý rất quan trọng cho Unity
+
+Vì hệ thống TikTok Live Bar của bạn đang dùng GIF chuyển thành PNG frame rồi render lên Quad 3D, mình khuyên nên giữ một tiêu chuẩn đầu ra chung:
+
+- Nhân vật luôn nằm giữa khung hình.
+- Không bị cắt chân, tay, tai.
+- Kích thước nhân vật tương đối đồng nhất.
+- Không có camera zoom hoặc pan.
+- Chuyển động ngắn, rõ ràng.
+- Loop được.
+- Tách nền để hiển thị đẹp trên sân khấu 3D.
+
+Mình có thể giúp bạn xây dựng một bộ Prompt Generator chuyên tạo Meme Gift cho Google Flow Veo, trong đó chỉ cần đổi nhân vật (Dog, Cat, Rabbit, Chibi, Stickman) và hành động (Dance, Jump, Cry, Spin...) là có prompt hoàn chỉnh theo chuẩn Unity.
+
+
+
+
+Haha đúng rồi :))) Phải làm kiểu TikTok Live Bar – Crazy Meme Dance mới đã\! Không phải nhảy cute nhẹ nhàng, mà phải kiểu DJ đánh nhạc EDM, nhân vật giật liên tục theo beat, lắc đầu, quăng tay, lắc mông, nhún chân cực nhanh. Nhìn vào là muốn bật nhạc lên nhảy theo. 😂
+
+Mình nghĩ nên xây dựng một phong cách animation riêng cho toàn bộ Gift.
+
+## 1. Phong cách nhảy cần hướng tới
+
+Style: expressionism
+
+Crazy Chibi Dance
+
+Nhảy điên cuồng, giật đầu, quăng tay.
+
+Generador de baile de mascotas AI de Photo | DreamFace
+
+Dog EDM Dance
+
+Lắc mông, nhún chân liên tục.
+
+ブレイクダンスを踊る猫③\_20231201 | AIArt | Aipictors
+
+Cat Crazy Dance
+
+Nhảy breakdance, xoay người, bật nảy.
+
+Bad Bunny Kissing Me - Capturing the Moment | AI Art Generator | Easy-Peasy.AI
+
+Rabbit Bounce
+
+Nhảy bật cao, tai rung theo beat.
+
+## 2. Prompt MASTER – Crazy Bar Dance
+
+Đây là prompt nền mình đề xuất dùng cho mọi nhân vật.
+
+Writing
+
+Create an extremely energetic, hilarious viral EDM nightclub meme dance animation.
+
+CHARACTER: \[INSERT CHARACTER DESCRIPTION\]
+
+DANCE STYLE: The character performs an insanely fast, high-energy nightclub dance, synchronized to aggressive EDM, hardstyle and electronic dance music beats.
+
+MOVEMENT:
+
+- Extremely fast rhythmic bouncing and jumping.
+- Rapid head shaking and body jerking.
+- Fast left-right hip shaking.
+- Both arms swinging wildly to the beat.
+- Rapid alternating footwork.
+- Exaggerated shoulder popping.
+- Sudden funny dance moves and crazy body movements.
+- Continuous high-speed bouncing throughout the animation.
+
+DANCE ENERGY: Maximum energy, chaotic funny meme dance, ridiculous exaggerated movements, intense nightclub party atmosphere.
+
+IMPORTANT: The character must dance FAST, not slowly. Movement should feel punchy, snappy, rhythmic and synchronized to a very fast EDM beat around 140-150 BPM. No slow dancing, no gentle swaying, no idle standing.
+
+VISUAL STYLE: High-quality 2D cartoon meme animation, expressive character, bold clean outlines, vibrant colors.
+
+CAMERA: Completely static camera. Full body always visible. Character centered in the frame. No zoom, no pan, no cuts.
+
+BACKGROUND: Pure solid green screen (#00FF00).
+
+LOOP: Create a seamless continuous dance loop. The final frame must closely match the initial frame. Keep the character moving energetically until the very last frame.
+
+No text, no subtitles, no watermark.
+
+## 3. Ví dụ áp dụng cho từng con
+
+Shiba Inu – DJ Dog
+
+'Dancing Shiba Inu with Sunglasses' Poster, picture, metal print, paint by sakon | Displate
+
+[displate.com](<https://displate.com/displate/9175721?utm_source=chatgpt.com>)
+
+Writing
+
+A hilarious chubby Shiba Inu dog standing upright on two legs.
+
+The dog performs an extremely fast EDM nightclub dance: rapid hip shaking, aggressive head bobbing, fast paw swinging, crazy shoulder movements and continuous bouncing.
+
+Its ears flap wildly while dancing. Its facial expression is ridiculously excited.
+
+Maximum crazy meme energy. 150 BPM hardstyle dance feeling.
+
+Static camera, full body, centered character, pure green screen background, seamless loop.
+
+2D cartoon meme animation.
+
+Crazy Cat – Rave Dance
+
+ทำภาพ GIF ให้ลื่นปรื๊ด ด้วยเทคนิคจากมืออาชีพ
+
+[number24.co.th](<https://number24.co.th/blog/gif-giphy-creative-flow?utm_source=chatgpt.com>)
+
+Writing
+
+A funny chubby orange cat dancing upright like a crazy nightclub party animal.
+
+Extremely fast dance movements: rapid hip thrusts, fast paw pumping, head banging, alternating foot stomps and exaggerated body bouncing.
+
+The cat looks completely obsessed with the music.
+
+Crazy energetic EDM meme dance, 150 BPM, sharp rhythmic movements.
+
+2D cartoon animation, static camera, full body, green screen, seamless loop.
+
+## 4. Bí quyết để nhảy nhìn thật đã
+
+Mình đề xuất chia chuyển động theo nhịp:
+
+## Dance movement design
+
+140–150 BPM
+
+Bar energy
+
+01 · Head bang
+
+95%
+
+Giật đầu liên tục theo beat
+
+02 · Hip shake
+
+90%
+
+Lắc hông trái phải thật nhanh
+
+03 · Arm pumping
+
+85%
+
+Hai tay đấm lên xuống
+
+04 · Footwork
+
+90%
+
+Chân nhún và bước đổi liên tục
+
+05 · Body bounce
+
+100%
+
+Toàn thân nảy theo bass
+
+Một mẹo quan trọng: đừng yêu cầu Veo tạo quá nhiều động tác phức tạp cùng lúc. Hãy tập trung vào 3–4 chuyển động chính, lặp nhanh và rõ. Như vậy animation ít bị méo hình hơn.
+
+## 5. Mình muốn đề xuất thêm một thứ cho TikTok Live Bar
+
+Thay vì tất cả Gift đều nhảy giống nhau, mình sẽ thiết kế 4 cấp độ:
+
+- Normal: Nhảy vui nhộn, tốc độ nhanh.
+- Crazy: Nhảy cực sung, lắc toàn thân.
+- Insane: Headbang, xoay người, bật nhảy liên tục.
+- Legendary: Nhảy như nhân vật đang quẩy hết mình trong nightclub, có hiệu ứng visual riêng.
+
+Như vậy khi người xem tặng Gift giá trị cao, nhân vật sẽ có màn trình diễn hoành tráng hơn.
+
+Mình nghĩ nên lấy tiêu chuẩn 150 BPM làm phong cách chủ đạo cho cả thư viện Meme Gift. Đây sẽ là chất riêng của TikTok Live Bar: nhân vật nào cũng phải quẩy sung, nhanh, hài và nhìn phát muốn cười\! 😁
+
+
+
+11111111111111111111
 
 
 
