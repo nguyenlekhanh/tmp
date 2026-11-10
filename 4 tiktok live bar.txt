@@ -7084,7 +7084,547 @@ Mình nghĩ nên lấy tiêu chuẩn 150 BPM làm phong cách chủ đạo cho c
 
 
 
-11111111111111111111
+11111111111111111111 music library
+Được. Mình nghĩ hoàn toàn có thể giao cho OpenCode + FreeBuff triển khai tính năng này. Đây là một task khá phù hợp để AI coding agent thực hiện vì có thể chia thành backend, API và giao diện Admin độc lập.
+
+Quan trọng nhất: không làm ảnh hưởng đến hệ thống phát nhạc hiện tại trong Unity.
+
+## 1. Kiến trúc đề xuất
+
+ADMIN CONTROL PANEL
+
+DJ Music Manager
+
+Playlist · Play · Pause · Next · Shuffle · Volume
+
+REST API / WebSocket
+
+NODE.JS MUSIC MANAGER
+
+Quản lý playlist, trạng thái phát, volume và persistence
+
+DJ\_MUSIC/
+
+MP3 / WAV / OGG
+
+music\_state.json
+
+Lưu playlist và trạng thái
+
+UNITY MUSIC PLAYER
+
+Nhận lệnh điều khiển và phát nhạc · Không hiển thị tên bài trên Unity
+
+## 2. Phân chia công việc cho OpenCode
+
+| Module | Công việc |
+| --- | --- |
+| Backend | API quản lý nhạc |
+| File Manager | Quét, thêm, xóa nhạc |
+| Playlist | Shuffle, Repeat, Next, Previous |
+| Persistence | Lưu và khôi phục trạng thái |
+| Unity Bridge | Đồng bộ lệnh với Unity |
+| Admin UI | Giao diện DJ Music Manager |
+
+## 3. Các yêu cầu kỹ thuật quan trọng
+
+Mình đề nghị bổ sung một số quy tắc để tránh lỗi:
+
+- Không xóa file nhạc đang phát.
+- Khi xóa bài đang phát, chuyển sang bài kế tiếp an toàn.
+- Khi thêm file mới, tự cập nhật thư viện mà không cần restart.
+- Restart server phải khôi phục playlist, shuffle, repeat và master volume.
+- Không để Unity và Node.js cùng quản lý hai playlist độc lập.
+- Tên bài hát chỉ hiển thị trên Admin, tuyệt đối không hiển thị trên Unity.
+- Không ảnh hưởng đến cơ chế Music Ducking của AI MC.
+
+Lưu ý kiến trúc: Node.js nên là nơi quản lý playlist và trạng thái; Unity tiếp tục là nơi thực sự phát âm thanh bằng `AudioSource`. Admin chỉ điều khiển thông qua Node.js.
+
+## 4. Prompt giao cho OpenCode / FreeBuff
+
+Mình soạn prompt tiếng Anh để coding agent đọc toàn bộ project trước khi sửa, tránh tự ý thay đổi kiến trúc.
+
+Writing
+
+# TASK: Implement DJ Music Manager in TikTok Live Bar
+
+## Objective
+
+Implement a complete DJ Music Manager inside the existing Admin Control Panel.
+
+The feature must integrate with the existing Node.js backend and Unity music playback system.
+
+IMPORTANT: Preserve the existing architecture and avoid breaking any existing functionality.
+
+## 1\. First: Analyze the Existing Project
+
+Before modifying any files:
+
+- Inspect the entire project architecture.
+- Locate the existing MusicPlaylistPlayer.cs.
+- Locate the existing Unity AudioSource and music playback initialization.
+- Inspect RuntimeBootstrap.cs.
+- Inspect the existing Node.js server and API architecture.
+- Inspect the current Admin Control Panel frontend.
+- Identify the existing DJ\_MUSIC directory and audio-loading mechanism.
+- Identify the existing AI MC voice announcement and music ducking implementation.
+
+Do not duplicate existing functionality.
+
+Create a short implementation plan before coding.
+
+## 2\. Backend: DJ Music Manager
+
+Implement a centralized music management service in Node.js.
+
+Responsibilities:
+
+- Scan the DJ\_MUSIC directory.
+- Support MP3, WAV and OGG.
+- Return a list of available music files.
+- Add and remove music files.
+- Detect newly added files automatically.
+- Maintain the current playlist.
+- Maintain the current track.
+- Maintain playback state.
+- Maintain master volume.
+- Support Shuffle mode.
+- Support Repeat mode.
+- Support Next and Previous commands.
+
+Use the existing project conventions and communication protocols.
+
+## 3\. Admin Control Panel
+
+Create a DJ Music Manager interface.
+
+Features:
+
+- Display all music files.
+- Display current playlist.
+- Show currently playing track.
+- Show playback status.
+- Add music files.
+- Remove music files.
+- Play / Pause.
+- Next / Previous.
+- Shuffle ON/OFF.
+- Repeat ON/OFF.
+- Master volume slider.
+- Track-specific volume control if supported by the existing playback architecture.
+
+IMPORTANT:
+
+Track names and music metadata must ONLY appear in the Admin Control Panel.
+
+Never display track names in the Unity game UI, livestream overlay or public-facing interface.
+
+## 4\. Unity Integration
+
+Preserve Unity as the actual audio playback engine.
+
+Integrate the new music management service with the existing MusicPlaylistPlayer.cs.
+
+Requirements:
+
+- Unity receives playback commands from Node.js.
+- Play and Pause must work correctly.
+- Next and Previous must work correctly.
+- Volume changes must synchronize correctly.
+- Track changes must synchronize with Node.js.
+- Preserve the existing AudioSource configuration.
+- Preserve AI MC voice ducking functionality.
+- Avoid interrupting voice announcements when changing tracks.
+- Avoid duplicate AudioSources and duplicate music players.
+
+Do not create a second independent music playback system.
+
+## 5\. Automatic File Detection
+
+Monitor DJ\_MUSIC for file changes.
+
+When a new supported audio file appears:
+
+- Detect it automatically.
+- Update the music library.
+- Make it available in Admin without restarting Unity.
+
+Handle file copying and incomplete uploads safely.
+
+## 6\. Persistence
+
+Persist music settings and playlist state.
+
+Save:
+
+- Playlist order.
+- Current track.
+- Shuffle setting.
+- Repeat setting.
+- Master volume.
+- Playback preference.
+
+After restarting Node.js or the application, restore the saved configuration safely.
+
+Do not automatically resume playback if doing so would conflict with the existing application startup behavior. Preserve the last playback preference and use a safe startup policy.
+
+## 7\. Reliability and Safety
+
+- Never delete files outside DJ\_MUSIC.
+- Validate uploaded file types.
+- Prevent path traversal.
+- Handle missing or corrupted audio files.
+- Handle deleted current tracks gracefully.
+- Avoid race conditions during track changes.
+- Prevent duplicate playback commands.
+- Keep existing APIs backward compatible.
+- Do not break TikTok Live event processing.
+
+## 8\. Testing
+
+Test:
+
+- Music library scanning.
+- Uploading music.
+- Removing music.
+- Play / Pause.
+- Next / Previous.
+- Shuffle.
+- Repeat.
+- Master volume.
+- Automatic file detection.
+- Persistence after restart.
+- Unity synchronization.
+- AI MC music ducking.
+- Admin-only track metadata visibility.
+
+## 9\. Final Report
+
+After implementation, provide:
+
+1. Files created.
+2. Files modified.
+3. Backend API endpoints.
+4. Unity integration details.
+5. Admin UI implementation.
+6. Persistence mechanism.
+7. Test results.
+8. Known limitations.
+
+Do not claim a feature is implemented unless it has been tested.
+
+## CRITICAL RULE
+
+Preserve the existing TikTok Live Bar architecture.
+
+Do not rewrite unrelated modules.
+
+Do not replace the existing Unity music player unless absolutely necessary and justified by the actual source code.
+
+## 5. Thứ tự triển khai mình khuyên dùng
+
+1. Cho OpenCode đọc và phân tích project.
+2. Xác nhận kiến trúc hiện tại giữa Node.js và Unity.
+3. Triển khai Backend Music Manager.
+4. Tích hợp Unity.
+5. Làm giao diện Admin.
+6. Test toàn bộ chức năng và AI MC Ducking.
+
+Một lưu ý cuối: KimiSound có thể dùng làm nguồn tham khảo về ý tưởng giao diện DJ, nhưng mình không khuyên tích hợp nguyên phần mềm đó. Nên xây dựng Music Manager native ngay trong Control Panel hiện tại để tránh phát sinh một hệ thống độc lập.
+
+Nếu làm theo kiến trúc này, bạn sẽ có một DJ Music Manager hoàn chỉnh mà không cần mở Unity để điều khiển nhạc.
+
+
+xử cái music xong đã
+
+I’ll first map the existing Node/Unity music path, API conventions, admin UI, and voice ducking so the manager extends them instead of creating a parallel player. Then I’ll implement the smallest integrated backend, UI, and Unity changes with focused tests.
+
+The project already has a single `MusicPlaylistPlayer` with folder polling, `VOLUME.txt`, smooth voice ducking, and Node control-panel guards. I’ll keep that player and add a bridge-side DJ service that sends commands/state over the existing WebSocket, plus REST endpoints for the admin UI.
+
+Implementation plan:
+
+1. Add a bridge-side `music` service that owns `DJ_MUSIC` scanning/validation, safe upload/delete, persisted playlist/order/settings, and serialized playback commands.
+2. Expose control-panel-only REST endpoints and WebSocket `music_*` messages; push the current config to newly connected Unity overlays and broadcast state to the panel.
+3. Extend the existing `MusicPlaylistPlayer` (no second `AudioSource`) to apply commands, pause/resume, next/previous, shuffle/repeat, volume, and report actual state. Keep voice ducking untouched.
+4. Add a DJ Music Manager tab with library/playlist, controls, uploads, deletion, and volume; then run syntax/unit/API/Unity compile checks.
 
 
 
+
+
+
+
+
+
+
+
+
+
+The bridge service and REST surface are in place. Next I’m wiring Unity’s existing player to receive `music_command`/`music_config` and report actual playback state without touching its single `AudioSource` or the voice-ducking path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Unity and admin UI wiring are now added. I’m at the verification stage: writing focused music-service tests, checking the new API against a temp library, then I’ll address any failures and report what could not be exercised without Unity.
+
+
+
+
+
+
+
+
+
+
+The runner restarted mid-verification, so I’m checking the files that were already written and rerunning the test suite rather than re-editing completed work. I still need to confirm the WebSocket command path and whether a Unity compiler is available on this machine.
+
+The code checks and focused music tests pass. The full suite has two unrelated GIF-manager failures caused by an existing oversized GIF fixture, not by this feature. My first WebSocket smoke test attached its listeners after registration, so it missed the immediately pushed config; I’m rerunning that protocol check with listeners attached first and checking whether the prebuilt Unity assemblies can validate the C# changes.
+
+The WebSocket path now passes end to end: overlay config, REST command delivery, Unity ack, and control-panel state synchronization. I’m doing the remaining static review of the C# bridge and the music UI/UI-state wiring, since there is no Unity editor or C# compiler on this machine.
+
+The backend, WebSocket protocol, and full-suite state are now confirmed. The only failing tests are the two pre-existing GIF tests caused by the modified 1.8 MB `assets/gifs/a.gif`; I’m leaving that unrelated fixture alone. I’m starting the control panel with a temporary music-state file so I can verify the DJ Music tab renders against the real catalogue without changing the project’s saved music settings.
+
+
+
+
+The Admin Control Panel now renders the full DJ Music tab from the real 15-file catalogue, with no JavaScript errors; the only console warning is the pre-existing blocked Google Fonts request. I also found and fixed a volume-restore edge case in Unity: the startup `VOLUME.txt` timestamp is now recorded so the first rescan cannot overwrite a volume restored from the bridge. I’m rerunning the affected checks now.
+
+## DJ Music Manager — implemented
+
+### Backend
+- Added `TikTokBridge/src/music/library.js` for MP3/WAV/OGG detection, header validation, safe filenames, 100 MB upload limits, stable-file scanning, and persisted-state sanitization.
+- Added `TikTokBridge/src/music/service.js` for:
+  - `DJ_MUSIC` scanning every 1.5 seconds
+  - incomplete-upload protection via stable size checks
+  - atomic uploads and safe removal
+  - playlist merging and ordering
+  - current track, shuffle, repeat, master volume, per-track volume, and playback preference persistence
+  - missing/corrupt/deleted-track handling
+  - command serialization and duplicate-command protection
+  - actual Unity state synchronization
+- Added `TikTokBridge/config/music.json` defaults.
+- Added control-panel-only endpoints:
+  - `GET /api/music`
+  - `POST /api/music`
+  - `POST /api/music/command`
+  - `POST /api/music/upload`
+  - `POST /api/music/remove`
+- Added `music_config`, `music_command`, `music_ack`, and `music_state` handling over the existing WebSocket.
+- Existing TikTok event processing and current APIs remain intact.
+
+### Admin UI
+- Added the **🎛 DJ Music** tab in `control.html`.
+- Added `music-manager.js` and `music-manager.css`.
+- Supports library listing, play/remove, uploads, playlist reordering, play/pause, previous/next, rescan, shuffle, repeat, master volume, and current-track volume.
+- Track names are rendered only in the Admin Control Panel. No Unity or public overlay rendering was added.
+
+### Unity
+- Kept `MusicPlaylistPlayer` as the only playback controller and continued using its existing `AudioSource`.
+- Added command handling, acknowledgement/state reporting, duplicate-command protection, load cancellation, shuffle/repeat, master volume, and per-track volume.
+- Preserved AI MC voice ducking and the existing startup autoplay behavior.
+- Fixed a volume-restore edge case: the startup `VOLUME.txt` timestamp is now recorded so a later rescan cannot overwrite a volume restored from the bridge.
+
+## Verification
+
+- `npm run check` — **passed**.
+- Focused tests `test/music-manager.test.js` and `test/public-assets.test.js` — **6/6 passed**.
+- WebSocket smoke test — **passed**:
+  - Unity-style overlay received `music_config`.
+  - Control command was delivered as `music_command`.
+  - Overlay `music_ack` and `music_state` reached the control panel with the correct track, playback state, volume, and acknowledgement.
+- API smoke test — **passed**:
+  - Play command accepted and returned `sent:false` without a Unity overlay.
+  - Master volume written to `VOLUME.txt`.
+  - Upload, traversal rejection, corrupt-audio rejection, and removal all behaved correctly.
+- Admin UI preview — loaded the real 15-file catalogue, displayed the playlist and current track, and issued a play command with `sent:false` while Unity was offline. No JavaScript errors were reported; the only console warning is the pre-existing blocked Google Fonts request.
+
+Preview is running at:
+
+`http://127.0.0.1:3140/control.html`
+
+### Remaining limitations
+- Full `node --test` result is **105 passed / 2 failed**. Both failures are unrelated GIF-manager tests caused by the existing modified 1.8 MB `assets/gifs/a.gif` exceeding a test’s 1 MB fixture limit. I left that unrelated fixture and GIF code unchanged.
+- No Unity editor or usable C# compiler is installed on this machine (`dotnet` has no SDK), so the C# changes were reviewed statically but not compiled. Unity audible playback and live voice-ducking behavior were therefore not verified here.
+
+The implementation is complete; the remaining verification gap is limited to compiling and exercising the Unity side in an actual Unity editor.
+
+
+
+11111111111111 màn hình 9:16 16:9
+giờ cái game đang 9:16 đẹp, vẫn giữ 9:16 mà cho nó xoay ngang dc ko, tại tiktok live nó màn hình ngang ko có dọc, khi bỏ vào tiktok nó ra ngang rồi tôi xoay nó thành dọc thì nó ko bị mờ á
+
+
+
+Được. Và mình hiểu chính xác ý bạn muốn: giữ nguyên chất lượng hình ảnh của game 9:16, nhưng xoay toàn bộ nội dung 90° để đưa vào TikTok Live màn hình ngang. Sau đó bạn xoay nguồn hình trong TikTok thành dọc thì hình sẽ trở lại đúng chiều và không bị mờ.
+
+Đây là cách làm hợp lý nếu bạn muốn tận dụng độ phân giải gốc.
+
+## 1. Cách hoạt động
+
+OPPO A96 REVIEW: A value-for-money smartphone for mobile gamers • PhilSTAR Life
+
+Hiện tại
+
+- Game 1080 × 1920
+- Tỷ lệ 9:16
+- Hiển thị dọc bình thường.
+
+Powerpuff Girls — Wesley L Brannen
+
+Sau khi xoay
+
+- Output 1920 × 1080
+- Nội dung game xoay 90°.
+- Không kéo giãn hình.
+
+Powder AI: The Ultimate Guide for Gaming Creators
+
+Trong TikTok
+
+- Xoay nguồn hình lại 90°.
+- Trở về bố cục dọc 9:16.
+- Không phải upscale hình ảnh.
+
+## 2. Cách mình đề xuất làm trong Unity
+
+Không nên thay đổi toàn bộ UI Canvas hoặc thiết kế lại game.
+
+Nên tạo một chế độ riêng:
+
+ROTATED STREAM MODE
+
+- Giữ nguyên resolution gốc 1080 × 1920.
+- Xoay camera hoặc toàn bộ nội dung render 90°.
+- Xuất hình 1920 × 1080.
+- Không thay đổi kích thước font.
+- Không thay đổi vị trí tương đối của các thành phần UI.
+- Không làm ảnh hưởng animation, TikTok Gifts, particles và AI MC.
+- Có thể bật/tắt chế độ xoay trong Admin.
+
+## 3. Prompt giao cho OpenCode
+
+Writing
+
+# FEATURE: ROTATED PORTRAIT OUTPUT MODE (UNITY)
+
+## Objective
+
+Add a Rotated Stream Mode to the existing TikTok Live Bar Unity project.
+
+The game currently has a beautiful native portrait layout at 1080x1920 (9:16).
+
+We want to preserve the exact portrait composition and visual quality while producing a landscape output at 1920x1080.
+
+The entire portrait composition must be rotated 90 degrees clockwise or counterclockwise, selectable through configuration.
+
+The purpose is to send the landscape output to TikTok Live Studio and rotate the source back to portrait orientation there.
+
+## CRITICAL REQUIREMENTS
+
+1. Preserve the original 9:16 layout.
+2. Do NOT redesign the UI.
+3. Do NOT stretch or squash the image.
+4. Do NOT scale the portrait composition to fit a landscape canvas.
+5. Preserve the original rendering resolution and aspect ratio.
+6. Avoid unnecessary resampling.
+7. Preserve all existing animations and visual effects.
+
+## Implementation
+
+First inspect:
+
+- Unity camera configuration.
+- Canvas Render Mode.
+- Canvas Scaler settings.
+- RenderTexture usage.
+- Current game resolution.
+- Existing screen capture/output mechanism.
+- All UI canvases and overlay layers.
+
+Choose the safest implementation based on the actual architecture.
+
+Preferred approach:
+
+- Render the original portrait scene at 1080x1920.
+- Capture the complete portrait composition.
+- Rotate the rendered image by 90 degrees.
+- Produce a landscape output of 1920x1080.
+- Preserve pixel quality without stretching.
+
+If using RenderTexture, ensure the render and rotation pipeline does not introduce unnecessary resolution loss.
+
+## Admin Configuration
+
+Add:
+
+- Rotated Stream Mode: ON/OFF.
+- Rotation: 90° clockwise / 90° counterclockwise.
+- Output resolution: 1920x1080.
+- Original portrait resolution: 1080x1920.
+
+When OFF, the game must behave exactly as before.
+
+When ON, only the stream output should rotate if the existing architecture allows it. Keep the normal Unity editor/game preview unchanged whenever possible.
+
+## Testing
+
+Verify:
+
+- Original portrait mode remains unchanged.
+- Rotated output is correctly oriented.
+- No stretching or cropping.
+- Text remains sharp.
+- GIF animations remain correct.
+- TikTok Gift animations remain correct.
+- Particles remain correct.
+- Audio and AI MC remain unaffected.
+- Performance remains acceptable.
+
+Do not modify unrelated systems.
+
+Before coding, report the proposed rendering pipeline and explain how it preserves the original 1080x1920 composition.
+
+## 4. Một điểm rất quan trọng
+
+Mình khuyên dùng cách xoay ở tầng output, không xoay trực tiếp toàn bộ Unity Scene.
+
+Như vậy:
+
+- Preview trong Unity vẫn dọc như cũ.
+- Game vẫn thiết kế 9:16.
+- Chỉ hình gửi sang TikTok Live Studio là ngang.
+- Có thể chuyển qua lại mà không phải sửa UI.
+
+Mình muốn xác nhận một chi tiết: Bạn đang xuất hình game sang TikTok Live Studio bằng cách nào?
+
+- OBS Virtual Camera.
+- Unity Game Window được TikTok Capture trực tiếp.
+- NDI / Spout.
+- Một phương thức capture khác.
+
+Điều này quyết định vị trí tốt nhất để xoay hình mà không làm giảm chất lượng.
+
+
+
+
+
+
+1111111111111111
