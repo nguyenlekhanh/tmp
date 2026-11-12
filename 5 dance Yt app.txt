@@ -11027,3 +11027,1048 @@ The preview is back at 390×844 with the app running. Since the floor's speed is
 
 1111111111111
 
+cần sửa này dc ko:
+4 cái pad hiện đang giống người khác làm rồi, bạn có nghĩ dc kiểu khác ko, sợ giống nhau bị dính bản quyền...?
+
+Được. Và mình nghĩ đây là việc đáng làm trước khi phát triển thêm gameplay.
+
+Mình đồng ý nên giữ nguyên 4 lane, cách chơi, hit detection và toàn bộ cơ chế hiện tại. Chỉ thay đổi thiết kế hình ảnh của 4 dance pads để NEON PULSE có nhận diện riêng, không mang cảm giác sao chép một game rhythm có sẵn.
+
+Mình có một ý tưởng: đừng thiết kế 4 pad theo kiểu bốn ô vuông hoặc bốn mũi tên truyền thống nữa.
+
+## 1. Ba hướng thiết kế mình đề xuất
+
+## Concept A – NEON ENERGY GATES
+
+Mình đề xuất chọnGlow portal set, technology digital teleport, vector game magic neon circles, light hologram scene.
+
+Bốn pad là bốn cổng năng lượng nằm trên mặt sàn. Mỗi cổng có hình dạng vòng cung hoặc hình học phát sáng, không còn là ô vuông.
+
+- Khi chưa có note: cổng phát sáng nhẹ.
+- Khi note đến: cổng sáng mạnh.
+- Khi nhấn: tạo hiệu ứng sóng năng lượng.
+- Mỗi lane có một màu nhận diện.
+
+## Concept B – HOLOGRAPHIC ENERGY DISCS
+
+abstract design with neon laser glow on a dark background
+
+Bốn pad là bốn đĩa năng lượng holographic.
+
+- Hình tròn nhiều lớp.
+- Có vòng xoay bên trong.
+- Có các vạch năng lượng chạy quanh.
+- Khi nhấn, đĩa lõm xuống rồi bung sáng.
+
+Phong cách hiện đại, giống sân khấu công nghệ tương lai.
+
+## Concept C – NEON CRYSTAL PORTS
+
+3D abstract background with neon lights. neon tunnel .space construction . .3d illustration3
+
+Bốn pad là bốn cấu trúc tinh thể hình học.
+
+- Hình đa giác không đối xứng.
+- Viền phát sáng.
+- Có lõi năng lượng bên trong.
+- Khi nhấn, lõi tinh thể phát xung sáng.
+
+Hướng này tạo cá tính riêng và có thể rất đẹp khi kết hợp dancer silhouette.
+
+## 2. Nếu là mình, mình sẽ chọn Concept A
+
+Mình hình dung bố cục như sau:
+
+Beat Saber V3ライティング Environment紹介｜エフ3
+
+Bốn lane vẫn giữ nguyên vị trí và chức năng:
+
+| Lane | Thiết kế |
+| --- | --- |
+| 1 | Cổng năng lượng Cyan |
+| 2 | Cổng năng lượng Violet |
+| 3 | Cổng năng lượng Magenta |
+| 4 | Cổng năng lượng Blue |
+
+Điểm quan trọng:
+
+- Không dùng mũi tên.
+- Không dùng hình dáng pad truyền thống.
+- Không dùng giao diện sao chép từ game khác.
+- Tạo hình học, hiệu ứng và animation riêng cho NEON PULSE.
+
+## 3. Về vấn đề bản quyền
+
+Không thể kết luận một thiết kế an toàn bản quyền chỉ vì đổi hình vuông thành hình tròn hoặc đổi màu.
+
+Mình khuyên:
+
+- Tạo silhouette và ngôn ngữ hình học riêng.
+- Không sao chép artwork, texture, icon, animation hoặc giao diện đặc trưng của game khác.
+- Không sử dụng tên gọi và logo dễ gây nhầm lẫn.
+- Kiểm tra cả tổng thể hình ảnh và nhận diện thương mại trước khi phát hành.
+
+## 4. Trước khi sửa, mình muốn chốt một điểm
+
+Bạn thích hướng nào cho NEON PULSE?
+
+A – Energy Gates (cổng năng lượng)
+
+B B – Energy Discs (đĩa năng lượng)
+
+C – Crystal Ports (tinh thể năng lượng)
+
+Phong cách hình ảnh
+
+Neon rực rỡ, phản chiếu trên sàn đen
+
+minimal Futuristic tối giản, sang trọng
+
+Hologram 3D, nhiều lớp năng lượng
+
+ Chốt thiết kế
+
+Mình muốn 4 pads trở thành một phần nhận diện độc quyền của NEON PULSE, nhìn vào là nhận ra game của bạn, chứ không chỉ là một phiên bản thay màu của game rhythm khác.
+
+
+
+Dưới đây là prompt để bạn đưa trực tiếp cho OpenCode / AI Coding Agent. Mình viết theo hướng chỉ redesign 4 Energy Discs, tuyệt đối không phá vỡ gameplay hiện tại.
+
+Writing
+
+# NEON PULSE – ENERGY DISCS VISUAL REDESIGN
+
+## OBJECTIVE
+
+Redesign the existing 4 Dance Pads into a unique visual concept called **ENERGY DISCS**.
+
+Design direction: **Futuristic Minimal Luxury**.
+
+The goal is to create four elegant, futuristic circular energy platforms with premium materials, subtle holographic lighting, and sophisticated animations.
+
+This is a VISUAL-ONLY modification.
+
+## 1\. STRICT RULES – DO NOT MODIFY GAMEPLAY
+
+Before making any changes, inspect the existing codebase and understand the current DancePads implementation.
+
+Preserve all existing functionality:
+
+- Keep exactly 4 lanes.
+- Keep existing lane positions and spacing.
+- Keep existing hit detection and judgement zones.
+- Keep existing note and bomb systems.
+- Keep existing scoring, combo, health and timing logic.
+- Keep existing audio synchronization.
+- Keep existing camera, tunnel and floor positioning.
+- Keep existing mobile touch controls.
+- Keep existing public APIs and event callbacks.
+
+Do not rewrite existing gameplay systems.
+
+Do not change the coordinate system or judgement positions.
+
+Do not modify FloorMotion.js or Music Engine.
+
+## 2\. NEW VISUAL DESIGN – ENERGY DISCS
+
+Replace the existing pad appearance with four futuristic circular energy discs.
+
+### Geometry
+
+Each disc should feature:
+
+- Circular outer metallic ring.
+- Multiple concentric rings.
+- Dark titanium or black chrome surface.
+- Subtle transparent holographic layers.
+- Central luminous energy core.
+- Thin precision-engineered geometric details.
+- Premium 3D depth and realistic material response.
+
+Avoid traditional square rhythm pads, arrow buttons, flat circles, or generic glowing platforms.
+
+The four discs must look like sophisticated futuristic technology rather than ordinary game buttons.
+
+### Visual Style
+
+Reference aesthetic:
+
+- Minimal futuristic luxury.
+- Premium sci-fi interface.
+- Black titanium.
+- Subtle cyan, violet and magenta illumination.
+- Elegant reflections.
+- Clean geometry.
+- High contrast against the existing dark floor.
+
+Avoid excessive neon, cartoon styling, noisy particles, oversized glow and arcade-like visuals.
+
+## 3\. FOUR DISC COLOR IDENTITIES
+
+Use four distinct but harmonious colors:
+
+- Lane 1: Cyan.
+- Lane 2: Violet.
+- Lane 3: Magenta.
+- Lane 4: Ice Blue.
+
+Colors should be sophisticated and moderately luminous.
+
+All four discs must share the same geometry and visual language.
+
+## 4\. ANIMATIONS AND INTERACTIONS
+
+Implement visual states using the existing pad interaction events.
+
+### Idle
+
+- Slow, subtle rotation of inner rings.
+- Soft energy core illumination.
+- Very subtle breathing effect.
+- No excessive particle effects.
+
+### Note Approaching
+
+- Gradually increase the central core brightness.
+- Add a subtle pulse to the outer ring.
+- Do not change the pad's position or scale.
+
+### Perfect Hit
+
+- Create a clean circular energy wave.
+- Briefly illuminate all concentric rings.
+- Add a subtle central energy burst.
+
+### Great / Good Hit
+
+- Use progressively softer energy pulses.
+
+### Miss
+
+- Briefly reduce the energy illumination.
+- Avoid dramatic screen effects.
+
+### Bomb
+
+- Use a brief red warning pulse.
+- Preserve existing bomb gameplay behavior.
+
+All animations must be synchronized with existing game events.
+
+## 5\. 3D MATERIAL AND LIGHTING
+
+Use the existing rendering engine and material system.
+
+Prioritize:
+
+- Metallic reflections.
+- Subtle emissive materials.
+- Layered circular geometry.
+- Controlled bloom.
+- Soft reflections on the existing black floor.
+- Clean and premium appearance.
+
+Do not add unnecessary lights or expensive post-processing effects.
+
+## 6\. PERFORMANCE
+
+- Reuse geometries and materials where possible.
+- Avoid creating new objects every frame.
+- Use efficient animation updates.
+- Dispose of replaced geometries and materials correctly.
+- Avoid increasing draw calls unnecessarily.
+- Maintain existing desktop and mobile performance.
+
+## 7\. RESPONSIVE DESIGN
+
+The four discs must remain correctly positioned on:
+
+- Desktop.
+- Tablet.
+- Mobile portrait.
+- Mobile landscape.
+
+Preserve existing touch interaction areas and hit detection.
+
+Visual geometry must never interfere with input detection.
+
+## 8\. IMPLEMENTATION PROCESS
+
+Before coding:
+
+1. Inspect DancePads.js and related modules.
+2. Identify existing pad geometry, materials, event handlers and interaction states.
+3. Identify which visual elements can be replaced independently.
+4. Report the planned modifications.
+
+Then implement the visual redesign with minimal changes.
+
+Do not refactor unrelated modules.
+
+## 9\. REGRESSION TESTING
+
+After implementation:
+
+- Verify exactly four discs are visible.
+- Verify all four lanes retain their original positions.
+- Verify note alignment.
+- Verify hit detection.
+- Verify Perfect, Great, Good and Miss.
+- Verify bombs.
+- Verify mobile multi-touch.
+- Verify pause, resume and restart.
+- Verify audio synchronization.
+- Verify no console errors.
+- Run existing tests and production build.
+
+## 10\. FINAL REPORT
+
+Report:
+
+- Files modified.
+- Visual changes implemented.
+- Gameplay systems preserved.
+- Tests executed and results.
+- Any performance regressions.
+- Any remaining issues.
+
+## FINAL REQUIREMENT
+
+The result must feel like a premium futuristic rhythm game with its own recognizable visual identity.
+
+**Change the appearance of the four Dance Pads only. Preserve the existing NEON PULSE gameplay architecture and behavior.**
+
+Lời khuyên: Gửi prompt này cho OpenCode ở chế độ Agent. Yêu cầu nó đọc code trước, lập kế hoạch rồi mới sửa. Không cho phép nó tự tiện refactor các module khác.
+
+
+
+Auditing the current pad implementation and its event contract before touching anything.
+
+Audit done. Plan: replace each trapezoid (fill + 2 outlines = 3 draw calls) with **one premium energy-disc plane per lane driven by a single polar shader** (4 draw calls total instead of 12), keeping `flash/celebrate/update/setStage/reset/dispose`, `pads[i].group` and lane positions identical.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Discs render, but they're too dim/small to read as premium at both sizes. Tuning the material response now.
+
+
+
+
+
+
+
+
+
+
+Tilt reads far better than flat — implementing it as the shipped look.
+
+
+
+
+Discs add ~1.5 ms/frame at 1280×720 — too much for four small quads, so I'm tightening the shader and geometry before calling this done.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The four pads are now ENERGY DISCS. Everything below was run against the live build.
+
+## Files modified
+
+| File | Change |
+|---|---|
+| `src/world/DancePads.js` | **Rewritten (visual only).** Each lane is now a single circular disc mesh instead of a trapezoid fill + two outline loops. Draw calls for the pad row: **12 → 4**. Class API unchanged: `object`, `pads[i].group`, `setStage`, `farZ`, `flash`, `celebrate`, `update`, `reset`, `dispose`, `_padsForLane`. |
+| `src/world/NeonWorld.js` | 2 lines: forwards `notes` and `songTime` into `pads.update` (read-only, for the approach glow). |
+| `src/core/Game.js` | 1 line: passes `notes: this.gameplay?.notes` into `world.update`. |
+| `src/game/Gameplay.js` | 3 call sites pass an **optional 4th argument** (`judgement`) so great/good can be distinguished visually. Strength, windows, scoring, misses and bomb handling are untouched — legacy 3-arg calls still work (verified). |
+| `qa/stage46-motion-check.mjs` | One source-shape assertion relaxed because the world signature gained a parameter (still 133/133). |
+
+No new dependencies, no new lights, no new post-processing.
+
+## Visual changes
+
+- **Geometry** — one `CircleGeometry` per lane, radius 0.78 m at pad scale 1 (diameter 0.95× lane spacing, so the four discs sit in a tight, even row). They are **tilted 12° toward the camera and lifted slightly** (0.19 desktop / 0.065 portrait): dead flat at a ~20° grazing angle they collapsed into slivers, and the tilt is what restores the circular read. Lane centres, pad row Z and judgement depth are unchanged by this — it is rotation and lift on a visual mesh only.
+- **Materials (one polar shader, evaluated per fragment)** — brushed black-titanium plate with machining grooves and an anisotropic brush highlight; bevelled machined rim with a key light that reads as polished metal; three precision rings; two counter-rotating segmented bands; luminous core with soft halo; a faint atmosphere ring outside the rim. All layered in a single pass over a single mesh, so there is no extra draw call for any of it.
+- **Colour identity** — lane 1 cyan `#2fe6ff`, lane 2 violet `#9a63ff`, lane 3 magenta `#ff3fbe`, lane 4 ice blue `#9fe9ff`; shared language, all four identical in construction.
+- **States** — idle: slow ring rotation (0.16 rad/s) plus a very slow breathing lift; **note approaching**: core and rings brighten over the last 1.4 s, per lane, read from the live note list; **perfect**: white-hot core, all rings flare, a circular energy wave expands from centre to rim; **great / good**: same wave at graded power (grade 0.7 / 0.5), no colour change; **miss**: illumination drops ~32 % and cools toward a brief red; **bomb**: short red warning pulse, no bright wave — bomb gameplay itself is untouched.
+
+## Gameplay preserved (measured, not assumed)
+
+- Four discs, exactly 4 meshes, one draw call each; `pads.group` contributes exactly **4** scene draw calls (verified by toggling visibility).
+- Lane positions identical: `[-3, -1, 1, 3]` desktop, `[-0.846, -0.282, 0.282, 0.846]` at 390×844; group Z still `PAD_NEAR_Z = 7.2`; `farZ` 6.031 portrait.
+- Judgement depth unchanged: `hitZ` 6.2649 (390×844) / 0 (1280×720); a note at its chart time still lands exactly on `hitZ`, and the disc footprint sits where the old trapezoid did.
+- Hit detection driven through the **real** `Gameplay`/event path (`input:lane` → judge → score) produced `perfect`, `great`, `good`, `bomb` with correct pad states (`grade` 1.0 / 0.7 / 0.5, `bomb` 1.0) and score 270. Free taps and `celebrate()` still work; `reset()` clears all state.
+- Untouched: camera/FOV, `StageFraming`, lane mapping, `NoteManager`, chart/BPM generation, `Scoring`, timing windows, audio sync, `FloorMotion`, touch-band computation (`computePadZones` / `padLayout`), Stage 4.1 HUD, 4.3 ScoreStore, 4.5 library/mobile UX.
+
+## Tests and results
+
+| Check | Result |
+|---|---|
+| `npm run build` | **exit 0** (1,117 kB bundle) |
+| `qa/stage46-motion-check.mjs` | 133/133 passed |
+| `qa/stage45-library-mobile-check.mjs` | 138/138 passed |
+| `qa/stage36-layout-check.mjs`, `stage42`, `stage43`, `stage44` | all exit 0 |
+| `qa/stage35-framing-check.mjs` | exit 1 — **pre-existing**, unchanged by this work (it still expects four pads in a 70° portrait FOV, which Stage 4.x replaced; its inputs are untouched) |
+| Runtime | console clean on fresh load; `gl.getError() = 0` at every check; no shader compile warnings |
+| Draw calls / triangles | pad row 4 draw calls (was 12); scene 36 |
+
+**Performance:** the new shader is heavier per pixel than the old flat `MeshBasicMaterial`. Measured synchronously at 1280×720 with `gl.finish()`: whole frame **1.75 ms** with discs vs 0.88 ms with the row hidden → **≈0.87 ms/frame** for all four discs (about 5 % of a 60 fps budget). Live FPS could not be sampled — this preview tab is occluded and delivered 0 rAF callbacks/second — so that number is render cost, not measured FPS.
+
+## Screenshots
+
+![Energy discs — portrait idle](screenshots/energy-discs-portrait-idle.png)
+![Energy discs — portrait, note approaching plus a perfect hit on lane 2](screenshots/energy-discs-portrait-notes.png)
+![Energy discs — desktop idle](screenshots/energy-discs-desktop-idle.png)
+![Energy discs — desktop, perfect / great / miss / bomb states left to right](screenshots/energy-discs-desktop-states.png)
+
+Desktop shots were captured by downscaling the drawing buffer so the 480 px capture shows the whole 16:9 frame.
+
+## Remaining issues
+
+- **Note colours no longer match the disc colours.** The brief fixed cyan/violet/magenta/ice-blue for the discs and also said not to touch the note system, so notes keep their old palette (cyan, magenta, pink, amber). Lane 4 reads amber over ice blue. One line in `LANE_COLORS` would align them if you want that.
+- **Pre-existing gameplay bug found, deliberately not fixed:** `NoteManager` releases notes when `z > DESPAWN_Z` (14). In portrait `hitZ` is 6.26, so notes vanish ~0.258 s late — *before* `collectMisses`' 0.28 s window — meaning lane misses never register on tall/portrait layouts (they do on desktop, where `hitZ` is 0). Untouched, since this task was visual-only.
+- Real multi-touch, pause/resume and full-song play were not exercised interactively: the tab is occluded (no animation frames). State transitions and hit paths were verified by driving the real APIs and rendering frames, not by watching a song play.
+- No git commit: a repo exists but committing wasn't authorised. Changes sit in the working tree (`src/core/Game.js`, `src/game/Gameplay.js`, `src/world/DancePads.js`, `src/world/NeonWorld.js`).
+
+
+
+11111111111111
+sửa giờ vật thể bay tới đụng pad là tự ăn luôn không cần nhấn, lúc đụng pad thì pad phải có hiệu ứng gì đó để người xem biết là pad đã dc ăn dc ko?
+
+Được. Mình nghĩ đây là nâng cấp rất cần thiết, đặc biệt vì NEON PULSE còn hướng đến việc tạo video dance để người khác xem.
+
+Có một điểm cần phân biệt: note tự động được ăn khi chạm pad, nhưng hiệu ứng pad phải thể hiện rõ khoảnh khắc note được kích hoạt, chứ không chỉ sáng lên một chút.
+
+Mình đề xuất làm theo hướng sau.
+
+## 1. Hiệu ứng AUTO HIT cho Energy Discs
+
+Techno Background Images | Free Photos, PNG Stickers, Wallpapers & Backgrounds - rawpixel
+
+Futuristic energy core powering up on circular platform, pulsing nodes and cyan beam - Free Stock Video | Pikwizard
+
+Modern empty abstract background illuminated by white vertical neon circle lights / ultra sound waves, 80's retro style
+
+Khi note chạm đúng vị trí pad:
+
+1. Lõi disc lập tức bùng sáng.
+2. Các vòng đồng tâm phát sáng đồng thời.
+3. Một vòng năng lượng bung từ tâm ra mép đĩa.
+4. Vòng ngoài phát sáng mạnh trong khoảnh khắc.
+5. Sau đó trở về trạng thái Idle mượt mà.
+
+Mình muốn hiệu ứng giống một thiết bị năng lượng vừa được kích hoạt, không giống nút bấm thông thường.
+
+## 2. Phân biệt hiệu ứng theo loại note
+
+| Sự kiện | Hiệu ứng pad |
+| --- | --- |
+| Note thường | Core flash + expanding ring |
+| Perfect | White-hot flash + hai vòng sóng |
+| Great | Một vòng sóng sáng |
+| Good | Một pulse nhẹ |
+| Bomb | Red warning burst |
+| Miss | Không kích hoạt hit effect |
+
+Lưu ý: đây là hiệu ứng hiển thị, không thay đổi cách tính điểm hay gameplay.
+
+## 3. Điều mình muốn đặc biệt chú ý
+
+PNG Futuristic minimalist glowing blue | Free PNG - rawpixel
+
+Hiệu ứng phải xảy ra chính xác khi note chạm pad, không phải khi note vừa đến gần.
+
+- Note đến gần: pad chỉ tăng độ sáng nhẹ.
+- Note chạm pad: kích hoạt hiệu ứng.
+- Note vượt qua pad: không được kích hoạt hit lần thứ hai.
+- Nhiều notes cùng chạm: phải hỗ trợ nhiều hiệu ứng liên tiếp mà không bị mất sự kiện.
+
+## 4. Prompt gửi OpenCode
+
+Writing
+
+# NEON PULSE – AUTO HIT ENERGY DISC FEEDBACK
+
+## OBJECTIVE
+
+Improve the visual feedback of the existing four ENERGY DISCS.
+
+Currently, notes automatically hit their corresponding pads when reaching the judgement position.
+
+The goal is to make every automatic hit visually obvious to viewers.
+
+When a note reaches and triggers a pad, the corresponding Energy Disc must produce a beautiful, immediate energy activation effect.
+
+This is a VISUAL FEEDBACK enhancement only.
+
+## STRICT PRESERVATION RULES
+
+Do not change:
+
+- Four-lane gameplay.
+- Automatic hit behavior.
+- Note movement or speed.
+- Hit detection.
+- Judgement timing.
+- Scoring, combo or health.
+- Bomb logic.
+- Music synchronization.
+- Dancer animation.
+- Camera, tunnel or floor.
+- Existing Energy Disc geometry and materials.
+
+Do not introduce manual input requirements.
+
+Do not modify the existing gameplay rules.
+
+## 1\. AUTO HIT VISUAL ACTIVATION
+
+When a note is automatically judged at its corresponding pad:
+
+Trigger a visual activation on that specific Energy Disc.
+
+The effect should include:
+
+1. Immediate central energy core flash.
+2. All concentric rings illuminate simultaneously.
+3. A circular energy wave expands from the center toward the outer rim.
+4. The outer rim briefly produces a stronger luminous response.
+5. The disc smoothly returns to its idle appearance.
+
+The activation must be clearly visible even on mobile screens.
+
+## 2\. VISUAL QUALITY
+
+Design direction:
+
+Futuristic Minimal Luxury.
+
+Avoid:
+
+- Cartoon explosions.
+- Excessive particles.
+- Large fire effects.
+- Cheap arcade button animations.
+- Excessive screen shake.
+
+The result should look like an advanced energy reactor activating.
+
+## 3\. JUDGEMENT FEEDBACK
+
+Differentiate existing judgement results:
+
+- PERFECT: Bright white-hot core, two expanding energy rings.
+- GREAT: One strong expanding energy ring.
+- GOOD: One softer energy pulse.
+- BOMB: Short red warning burst, preserve existing behavior.
+- MISS: No successful hit activation.
+
+Keep existing lane-specific color identities.
+
+## 4\. EVENT TIMING
+
+Very important:
+
+The activation must be triggered by the actual gameplay judgement event, not merely by note proximity.
+
+Use the existing Gameplay / DancePads event path.
+
+Requirements:
+
+- Trigger exactly once per judged note.
+- Do not trigger again when the note despawns.
+- Support multiple notes hitting in rapid succession.
+- Do not lose consecutive activation events.
+- Each lane must activate independently.
+- Keep animation timing synchronized with songTime where appropriate.
+- Reset all transient effects correctly on restart.
+
+Do not create a second independent hit detection system.
+
+## 5\. PERFORMANCE
+
+- Reuse existing shader and geometry.
+- Prefer shader uniforms for the activation animation.
+- Avoid creating new meshes for every hit.
+- Avoid allocations inside the animation loop.
+- Do not introduce additional lights or post-processing.
+- Keep draw calls unchanged if possible.
+
+## 6\. TESTING
+
+Verify:
+
+- Automatic note hits activate the correct disc.
+- Perfect, Great and Good display their corresponding effects.
+- Bomb behavior remains correct.
+- Miss does not display a successful hit.
+- Multiple rapid hits work correctly.
+- Four lanes operate independently.
+- Restart clears activation states.
+- Pause and resume preserve synchronization.
+- Existing tests and production build pass.
+
+## FINAL REQUIREMENT
+
+Make the Energy Discs visibly react every time a note is automatically consumed.
+
+The audience must immediately understand that the note has successfully activated the pad.
+
+Preserve all existing NEON PULSE gameplay behavior. This task is strictly about visual feedback.
+
+Quan điểm của mình: Nên dùng hiệu ứng lõi trắng bùng sáng kết hợp hai vòng sóng đồng tâm cho Perfect. Đây sẽ là hiệu ứng nhận diện rất đẹp khi quay video YouTube hoặc TikTok, đặc biệt khi bốn lane liên tục kích hoạt theo nhạc.
+
+
+
+Noting an important audit finding first: this build has **no automatic note consumption** — notes are judged only when a lane is pressed/touched (`Gameplay.handleLane`). So I'll wire the activation to the real judgement event (fires once per judged note, and would also fire for any future auto-play) and verify through that path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Energy disc activation is implemented and verified. One audit finding first, because it changes what "automatic" means here.
+
+## There is no auto-hit in this build
+
+I traced every path that can consume a note: `Gameplay.handleLane` (called from `InputManager` key events and `UIManager` touch events) and `collectMisses`. Nothing consumes notes on its own — no autoplay setting, no assist mode, no judgement-by-proximity. I did **not** add one, since that would change gameplay, which the brief forbids.
+
+So the activation is wired to the single real judgement path (`world.hitLine.flash` ← `Gameplay`, which is where any note — auto or manual — is finally judged). Consequences, both verified: it fires **exactly once per judged note**, and it **never** fires on approach or despawn.
+
+## Files modified
+
+Only `src/world/DancePads.js` this turn — shader uniforms/effect maths and the flash/update/reset logic. No new meshes, lights, post-processing, or dependencies; disc geometry and base materials untouched. `Gameplay` still passes `judgement` as before.
+
+## What the activation does
+
+- **Core**: white-hot flash (`uHit` → core ×2.2, colour pushed toward white) plus an inner-plate "flood" so the whole centre lifts, which is what makes it readable at phone size.
+- **All concentric rings illuminate simultaneously** (`uHit × 3.4`, colour whitened toward the lane hue).
+- **Outer rim** flashes brighter for the same beat (rim band and edge line both boosted).
+- **Expanding energy rings**: `energyRing()` sweeps radius `0.04 → 1.04 × RIM` over ~0.42 s with the band narrowing as it travels, launched from the core.
+- **Two independent ring slots per lane** (`uWaveA/B`, `uWavePowerA/B`), assigned round-robin, so consecutive hits overlap instead of cancelling:
+  - **PERFECT** — both slots fire, the second staggered 0.22 (≈90 ms) behind: a tight bright pair.
+  - **GREAT** — one strong ring (power 0.8).
+  - **GOOD** — one softer pulse (power 0.5).
+  - **BOMB** — short red burst: ring tinted toward the alert colour with `uBomb`, power 0.55, no white flash.
+  - **MISS** — **no ring at all**, only the brief dimming.
+- **Smooth return to idle**: `uHit` decays at 2.6/s (≈0.4 s), rings fade as they reach the rim; lane colour identity is preserved.
+
+## Verification (driven through the real APIs, not mocks)
+
+| Requirement | Result |
+|---|---|
+| Activation fires from the judgement event | Wrapped `pads.flash`: 4 judged notes → exactly **4** calls (2 perfect, 2 miss), correct lanes |
+| Not triggered by proximity / despawn | Playback loop over a full chart with no input produced **no hit activation**; continuing past despawn added no calls |
+| PERFECT | `waveA 0.04`, `waveB −0.18`, powers `1 / 0.8`, `hit 1.21` — two rings |
+| GREAT / GOOD | single ring, powers **0.8** / **0.5** |
+| BOMB | `bomb 0.97`, one ring at 0.55, no white core flash |
+| MISS | `wavePowerA/B = 0`, dimming only |
+| Rapid hits | perfect then good 0.1 s later → both slots alive (`A 0.04 / B 0.06`) — nothing cancelled |
+| Lanes independent | per-lane arrays and uniforms; four different judgements on four lanes in one frame |
+| Restart | `world.reset()` → `pads.reset()` clears hit, grade, miss, bomb, approach and both ring slots |
+| Pause / resume | approach glow is `songTime`-driven and freezes; a ring already in flight finishes on frame time |
+| Console / WebGL | console clean on fresh load, `gl.getError() = 0` |
+| Build & suites | `npm run build` exit 0; `stage36`, `stage42`, `stage43`, `stage44`, `stage45` (138/138), `stage46` (133/133) all pass |
+
+**Performance:** A/B measured at 1280×720 (3 interleaved rounds, 25 frames each): **idle 0.56 ms**, **activation active 0.51 ms**, **disc row hidden 0.49 ms** → the discs plus activation cost ≈0.07 ms/frame, i.e. inside measurement noise. Draw calls unchanged (**4** for the row), no per-frame allocation, no new geometry.
+
+## Screenshots
+
+![Perfect / great / good / bomb activating on four lanes](screenshots/energy-discs-activation-states.png)
+![Same frame, disc detail — two expanding rings from one perfect](screenshots/energy-discs-activation-detail.png)
+![Perfect activation at native mobile size](screenshots/energy-discs-activation-perfect.png)
+![Desktop 16:9 activation](screenshots/energy-discs-activation-desktop.png)
+
+## Remaining issues
+
+- **The "automatic hit" you describe doesn't exist in this codebase** — notes are judged when a lane is pressed or touched. The activation is correct for every judgement that happens, but if you actually want notes to consume themselves (an autoplay/attract mode), that is a gameplay change and needs your go-ahead.
+- Live playback still can't be watched here (occluded tab, 0 rAF callbacks), so the effect is shown as frozen mid-animation frames. Please watch one song to judge the feel — this is the one thing I could not verify.
+- Ring animation runs on frame time, so a hit that lands immediately before a pause finishes its 0.4 s sweep during the pause.
+- Note colours still use the old palette while discs use cyan/violet/magenta/ice-blue (unchanged from the previous step).
+
+
+
+
+11111111111
+
+Tuyệt. Chốt C – DUAL MODE cho NEON PULSE.
+
+Mình muốn triển khai theo nguyên tắc: thêm chế độ mới, không phá chế độ cũ.
+
+## 1. Hai chế độ chơi
+
+PLAY MODE
+
+Giữ nguyên
+
+Rhythm Journey – Review – Higher Plain Games
+
+- Người chơi nhấn 4 lane.
+- Có Perfect, Great, Good, Miss.
+- Có Score, Combo, Health.
+- Giữ nguyên toàn bộ gameplay hiện tại.
+
+AUTO DANCE MODE
+
+Chế độ mới
+
+Neon Dance Floor VFX – Unreal Engine 5 | Fab
+
+- Notes tự động kích hoạt Energy Discs.
+- Không cần nhấn phím hoặc chạm màn hình.
+- Dancer tự biểu diễn theo nhạc.
+- Có hiệu ứng Perfect / Great / Good tự động.
+- Phù hợp quay video và trình diễn.
+
+## 2. Nguyên tắc kỹ thuật
+
+- Hai mode dùng chung Music Engine, NoteManager, Energy Discs và Dancer.
+- Auto Dance phải sử dụng chart và thời gian nhạc hiện tại.
+- Không chạy đồng thời hai hệ thống judgement.
+- Không để input người chơi vô tình ảnh hưởng Auto Dance.
+- Chuyển mode phải reset trạng thái phù hợp.
+- Không thay đổi cách hoạt động của Play Mode.
+
+## 3. Prompt triển khai cho OpenCode
+
+Writing
+
+# NEON PULSE – STAGE 5: DUAL MODE SYSTEM
+
+## OBJECTIVE
+
+Introduce two independent gameplay modes:
+
+1. PLAY MODE – Existing manual rhythm gameplay.
+2. AUTO DANCE MODE – Automatic rhythm performance.
+
+The purpose is to turn NEON PULSE into both an interactive rhythm game and an automatic 3D dance performance experience.
+
+IMPORTANT: This is an additive feature. Do not break or rewrite the existing gameplay.
+
+## 1\. PLAY MODE – PRESERVE EXISTING BEHAVIOR
+
+Keep the current Play Mode exactly as it works.
+
+- Manual keyboard and touch input.
+- Four lanes.
+- Existing hit detection.
+- Perfect / Great / Good / Miss.
+- Existing score, combo and health.
+- Existing note and bomb behavior.
+- Existing Energy Disc activation effects.
+
+Do not modify existing judgement windows or scoring rules.
+
+## 2\. AUTO DANCE MODE – NEW FEATURE
+
+Create a new automatic performance mode.
+
+In this mode:
+
+- Notes automatically activate their corresponding Energy Discs at the scheduled chart time.
+- No keyboard or touch input is required.
+- Each note is consumed exactly once.
+- Correct lane activation is mandatory.
+- Energy Discs display the existing activation effects.
+- Dancer continues performing choreography synchronized with music.
+- Notes and bombs retain their existing visual behavior.
+
+Use the existing chart and song timing.
+
+Do not create random note timings or a second independent music clock.
+
+## 3\. AUTO JUDGEMENT
+
+Use the existing judgement infrastructure wherever possible.
+
+In Auto Dance Mode:
+
+- Scheduled notes automatically receive a successful judgement.
+- Use PERFECT as the default automatic judgement.
+- Trigger the same visual activation event used by Play Mode.
+- Consume each note exactly once.
+- Do not register automatic misses for successfully scheduled notes.
+- Preserve existing bomb rules and avoid treating bombs as successful hits.
+
+If existing chart data supports different grades, preserve that information where appropriate.
+
+## 4\. MODE ISOLATION
+
+Create a clear mode state, for example:
+
+GAME\_MODE = 'play' | 'auto'
+
+Requirements:
+
+- Only one judgement system can be active at a time.
+- Disable manual lane judgement in Auto Dance Mode.
+- Prevent double consumption.
+- Prevent double scoring.
+- Prevent duplicate Energy Disc activation.
+- Do not let Auto Dance events affect Play Mode statistics.
+
+Do not unnecessarily duplicate the NoteManager, MusicPlayer or rendering systems.
+
+## 5\. UI MODE SELECTION
+
+Add a mode selection screen or panel before starting a song.
+
+Two options:
+
+PLAY MODE
+
+- Manual rhythm gameplay.
+- Player controls four lanes.
+
+AUTO DANCE
+
+- Automatic music performance.
+- No player input required.
+
+Make the design consistent with NEON PULSE's premium futuristic aesthetic.
+
+Do not overcrowd the existing HUD.
+
+## 6\. SONG LIFECYCLE
+
+Both modes must correctly support:
+
+- Start.
+- Pause.
+- Resume.
+- Restart.
+- Song completion.
+- Switching songs.
+- Returning to the main menu.
+
+Auto Dance must remain synchronized with songTime.
+
+When paused, automatic note consumption must stop.
+
+When resumed, no notes should be duplicated or skipped.
+
+On restart, reset all consumed-note state and visual effects.
+
+## 7\. PERFORMANCE AND ARCHITECTURE
+
+Before coding:
+
+1. Inspect Gameplay.js.
+2. Inspect NoteManager.js.
+3. Inspect MusicPlayer.js.
+4. Inspect DancePads.js.
+5. Inspect Game.js and UIManager.js.
+6. Identify the safest integration point for Auto Dance.
+
+Prefer a small, isolated mode controller or an existing Gameplay extension.
+
+Avoid duplicating the entire gameplay engine.
+
+Do not change Energy Disc geometry or shader design.
+
+Do not change FloorMotion, StageFraming, camera or dancer architecture.
+
+No new dependencies unless absolutely necessary.
+
+## 8\. REGRESSION TESTING
+
+Verify:
+
+PLAY MODE:
+
+- Manual keyboard input works.
+- Mobile touch works.
+- Existing judgement and scoring remain unchanged.
+
+AUTO DANCE MODE:
+
+- Notes are automatically consumed.
+- Correct lane activates.
+- Each note activates exactly once.
+- No manual input is required.
+- Energy Disc effects work.
+- Dancer and music remain synchronized.
+
+BOTH MODES:
+
+- Pause and resume.
+- Restart.
+- Song switching.
+- No duplicate judgement.
+- No console errors.
+- Existing QA suites pass.
+- Production build succeeds.
+
+## 9\. FINAL REPORT
+
+Provide:
+
+- Files modified.
+- New architecture.
+- Mode switching behavior.
+- Tests performed.
+- Regression results.
+- Known limitations.
+
+## FINAL REQUIREMENT
+
+NEON PULSE must support two distinct experiences:
+
+PLAY MODE = Player controls the rhythm.
+
+AUTO DANCE MODE = The game performs the rhythm automatically.
+
+Both modes must share the same visual world, Energy Discs, music engine and dancer system.
+
+Preserve the existing Play Mode completely.
+
+## 4. Một lưu ý mình muốn giữ cho tương lai
+
+Auto Dance Mode sẽ là nền tảng để sau này phát triển tính năng xuất video:
+
+- YouTube: 1920 × 1080.
+- TikTok: 1080 × 1920.
+- Camera tự động.
+- Dancer biểu diễn xuyên suốt bài nhạc.
+- Energy Discs phản ứng theo beat.
+
+Nhưng hiện tại chỉ triển khai Dual Mode. Chưa làm Video Export hay các nâng cấp khác.
+
+
+
+Big additive feature — auditing the state machine and UI shell first.
+
+Audit done. Adding an isolated mode module, wiring auto judgement into the existing hit path, and a mode selector on the pre-song screen.
+
+
+Now the judgement engine — one shared hit path, with auto consumption gated by mode:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+All suites green and the build passes. Now verifying the real flow in the running app — mode picker, auto consumption, pause/resume and play mode.
+
+Stage 5 is in and verified. Here's the full report.
+
+## Files modified
+
+| File | Change |
+|---|---|
+| `src/game/GameMode.js` | **new** — the whole mode state (`GAME_MODES`, `getMode`, `setMode`, `isAuto`, `MODE_LABEL`), persisted at `neon-pulse:mode`, default `play` |
+| `src/game/Gameplay.js` | mode field + `setMode`/`isAuto`, auto judgement, success path extracted to one `_applyHit` |
+| `src/core/Game.js` | reads the mode when a song starts, forwards it to the rules engine, gates lane input, carries `mode` in the HUD/results payloads |
+| `src/ui/UIManager.js` | mode picker handling, HUD mode chip, touch-lane lock, auto-aware results screen, auto runs skipped by the record store |
+| `src/ui/templates.js` | mode cards on the pre-song screen, `hud-mode` chip |
+| `src/styles/main.css` | mode card / chip / locked-pad styles |
+| `qa/stage5-dual-mode-check.mjs` | **new** suite, 77 checks |
+| `qa-artifacts/stage5-dual-mode-check.json` | generated report |
+
+Nothing in the note, scoring, chart, audio, camera, floor, framing or Energy Disc code was touched — no new dependencies. `src/world/DancePads.js` shows as modified in git only because of the previous turn's work; this turn didn't edit it.
+
+## Architecture
+
+One state, one judgement system. `GameMode` holds the value; `Game.startSong()` reads it once and hands it to `Gameplay`, which is the only object allowed to judge notes. Both modes share the exact same success path:
+
+```
+Play  : InputManager/touch → bus input:lane → Gameplay.handleLane → judgeLane → _applyHit
+Auto  : chart clock → Gameplay.update → _autoJudge → _applyHit
+```
+
+`_applyHit(entry, lane, judgement, delta)` contains the scoring, `notes.resolve`, disc flash with grade, impact burst, camera punch and `game:judge` event — so auto notes produce *the same* activation, score and dancer accent as a hand-played note, and `NoteManager.judgeLane` is still called from exactly one place.
+
+**Auto rules:** a tap is consumed on the frame its own chart time arrives (`0 ≤ songTime − time ≤ hitWindow`), always graded **PERFECT**, marked `judged` so it cannot be consumed twice. The auto branch returns *before* `collectMisses`, so auto mode can never register a miss. Obstacles are skipped entirely — bombs are never treated as hits; they stay hazards that fly past. Play mode is untouched: `handleLane` bails out while auto is active, and the judgement windows (0.28 / 0.08) are unchanged.
+
+## Mode switching
+
+The selector sits on the existing pre-song screen, between the track hero and the difficulty grid: two cards (`PLAY MODE` / `AUTO DANCE`), a one-line explanation, and the start button re-labels to **START PERFORMANCE** in auto. The choice persists across sessions. In auto the HUD shows a pink `AUTO DANCE` chip next to the difficulty, the pad touch band is locked (`pointer-events: none`, no lane events) and the keyboard lane input is disabled — Escape/P still pause, because pause is handled before the enabled flag. Results read `AUTO PERFORMANCE` with `· AUTO DANCE` in the subtitle, and the record block stays empty because auto runs return `null` from `_storeResult` — an auto show never touches best score, accuracy or combo.
+
+![Mode selector on the pre-song screen (AUTO DANCE active)](screenshots/stage5-mode-select-portrait.png)
+
+## Tests performed
+
+**New Node suite — 77/77, exit 0** (`node qa/stage5-dual-mode-check.mjs`), driving the real `Gameplay` + real `NoteManager` and counting the events the rest of the app consumes:
+
+- mode module: default `play`, round-trip, persistence across a fresh module load, unknown value → `play`
+- auto: every scheduled note consumed, all perfect, lanes match chart order, 12 notes → 12 judgements → 12 flashes, score exactly 720, combo 12, accuracy 100, health untouched, nothing re-judged over 5 extra seconds
+- chords: 4 lanes at one time → 4 judgements on 4 distinct lanes; bomb at 4.8 s never judged as bomb and never counted; its neighbours still perfect
+- isolation: stray `handleLane` calls in auto produce no judgement, no score, no camera nudge, no flash; rapid presses during arrival produce exactly 2 judgements / 2 flashes / 240 points
+- seek: jumping past notes consumes none and registers no miss
+- play mode regression: silence → 3 misses and health loss, no disc activation; exact-timing key press → perfect, 120 points, camera nudge, graded activation; free tap → 0.35 pulse and no score; bomb → bomb judgement and damage
+- lifecycle: stopped run consumes nothing; restart clears score/combo/note state and replays every note exactly once with the same score
+- wiring guards: single `judgeLane` call site, single `_applyHit`, auto branch before `collectMisses`, Game gating/reporting, UI picker/lock/record-skip, markup and CSS present
+
+**Existing suites:** `stage36`, `stage42`, `stage43`, `stage44`, `stage45` (138/138), `stage46` (133/133) — all exit 0. `npm run build` exit 0.
+
+**In the running app** (390×844, port 5173):
+- picker: cards toggle, note text and start label swap, choice survives reload (`activeCard: auto`)
+- full auto run through the real `startSong` path (163-note hard chart, 160 taps / 3 bombs): 152 judgements, 152 flashes, grades `['perfect']`, lanes in exact chart order, `miss: 0`, `bomb: 0`, 100% accuracy, results `AUTO PERFORMANCE` / `… · HARD · AUTO DANCE`, record row hidden, score store left empty
+- **pause:** 10 judged at pause → 40 paused frames → still 10, clock frozen at 4.999 → after resume 23 judged = exactly the 23 taps by 10 s (no skips, no duplicates)
+- **restart:** score 0, combo 0, zero active notes, mode still auto, HUD chip still `AUTO DANCE`, pads still locked
+- **play mode:** `KeyD` → PERFECT lane 2, 120 pts, graded activation; touch `pointerdown` on the lane-3 pad → PERFECT, 240 pts, pad released cleanly; 3 s of silence → 3 misses, health 0.79
+- `gl.getError() = 0`, console clean on reload, `_storeResult` records in play mode and returns `null` for auto (localStorage restored afterwards)
+
+## Known limitations
+
+- **Audio itself was not exercised.** Demo synthesis stalls in an occluded tab, so the browser checks replaced `createDemoBuffer` / `playBuffer` / `_analyze` with stubs and drove `player.getTime()` from a controlled clock. Everything downstream of the clock is real code, and both modes read the one `player.getTime()` through `Game.lastSongTime` — but I have not heard or watched a real song in either mode. Please play one song of each.
+- Auto notes are judged on the first frame after their scheduled time (≤16 ms at 60 FPS) and graded PERFECT by design, not by delta.
+- Auto mode still accumulates score/combo/accuracy so the HUD, dancer accents and milestone effects perform — it just never persists them.
+- After a seek, notes the jump skipped are neither consumed nor missed (deliberate: no retro-scoring, no punishment).
+- Mode is chosen per song start; there is no mid-run switch.
+- The mode cards were reviewed visually at 390×844 only. The desktop screenshot was cropped by the capture limit, and the in-game auto frames I captured came out over-exposed because frames were stepped by hand — so the disc activation in auto mode was verified by counts and uniforms, not by eye this time.
+- Bombs intentionally produce no red burst in auto, since nothing ever hits one.
+
+Nothing was committed.
+
+
+
+111111111111111
