@@ -5180,3 +5180,763 @@ The earlier 180-second test against the 68.7-second demo was clamped by the sour
 
 
 111111111111111
+Được, mình hiểu rồi. Không tạo image nhé.
+
+Ý bạn là muốn làm giao diện Dance Studio giống hình mẫu, trong đó:
+
+Nhân vật 3D nhảy nằm trong một khung hình riêng bên cạnh.
+
+Nhân vật tự động nhảy theo nhạc.
+
+Có thể thay đổi nhân vật nam/nữ.
+
+Có thể thay đổi dance style và trang phục.
+
+Khung bên cạnh chạy animation liên tục, đồng bộ với nhạc.
+
+Có thể đưa khung nhân vật này vào video xuất MP4.
+
+Mình đề xuất dùng một viewport Three.js riêng cho nhân vật, có camera, ánh sáng và animation controller độc lập. Như vậy nhân vật có thể nhảy liên tục mà không ảnh hưởng đến khung cảnh chính.
+
+Bạn muốn nhân vật hiển thị theo kiểu 3D toàn thân (từ đầu đến chân) hay chỉ nửa người?
+
+
+Rõ rồi\! Mình sẽ thiết kế nhân vật 3D toàn thân, luôn nhìn thấy từ đầu đến chân, không bị cắt chân hoặc mất đỉnh đầu khi nhảy.
+
+Các yêu cầu kỹ thuật cho khung nhân vật:
+
+- Hiển thị toàn thân, kể cả khi nhảy, xoay người hoặc dang tay.
+- Camera cố định, tự căn chỉnh khoảng cách để không cắt cơ thể.
+- Nhân vật nhảy liên tục theo nhạc.
+- Chuyển động tự nhiên, có chuyển động hông, vai, tay, chân và đầu.
+- Có thể chọn nhân vật nam/nữ, trang phục và phong cách nhảy.
+- Nền và ánh sáng đẹp, phù hợp với phong cách neon của NEON PULSE.
+- Khi xuất video MP4, nhân vật vẫn giữ nguyên tỷ lệ và vị trí trong khung.
+
+Một điểm quan trọng: nên dùng model 3D có skeleton rig và animation dance thực sự, không dùng nhân vật ghép từ các hình khối đơn giản.
+
+Mình đề xuất khung nhân vật chiếm khoảng 30–35% chiều rộng video, đủ lớn để người xem thấy rõ toàn bộ động tác nhảy.
+
+
+Vậy mình chốt hướng này cho NEON PULSE nhé: nhân vật 3D toàn thân nhảy theo nhạc trong một khung riêng, camera không cắt đầu hoặc chân, và được tích hợp trực tiếp vào Video Creator Studio.
+
+Khi cần, mình có thể viết prompt kỹ thuật chi tiết để OpenCode triển khai đúng thiết kế này.
+
+
+Được nhé. Thực tế mình nghĩ nên làm hai việc này trước khi nâng cấp Dance Studio.
+
+## 1. Cho nhân vật tự động nhảy khi chưa có camera
+
+Làm được, không cần webcamSử dụng Auto Dance Mode:
+
+- Nhân vật 3D tự nhảy theo nhạc.
+- Phân tích BPM, bass và beat để điều khiển chuyển động.
+- Tự chuyển động tác theo từng đoạn nhạc.
+- Có animation tay, chân, hông, vai và xoay người.
+- Đồng bộ với nhạc và video export.
+
+Sau này có webcam thì bổ sung Real Player Mode, không phải viết lại Auto Dance Engine.
+
+## 2. Giảm tốc độ game ở Easy Mode
+
+Mình đồng ý nên giảm thêm. Easy hiện tại vẫn hơi nhanh thì người mới sẽ khó bắt nhịp.
+
+Đề xuất điều chỉnh:
+
+| Chế độ | Tốc độ mới đề xuất |
+| --- | --- |
+| Easy | 0.65x |
+| Normal | 0.85x |
+| Hard | 1.0x |
+| Expert | 1.15x |
+
+Ngoài tốc độ, nên giảm mật độ nốt ở Easy:
+
+- Nhiều khoảng nghỉ hơn.
+- Ít nốt liên tiếp.
+- Hạn chế nốt xuất hiện đồng thời.
+- Tăng thời gian phản ứng.
+- Không tạo chuỗi thao tác quá dày.
+
+Lưu ý kỹ thuật: Chỉ giảm tốc độ di chuyển và mật độ nốt, không giảm tốc độ phát nhạc. Như vậy người chơi vẫn nghe nhạc bình thường, còn gameplay dễ theo kịp hơn.
+
+## 3. Prompt giao cho OpenCode
+
+Mình soạn sẵn yêu cầu triển khai:
+
+Writing
+
+# NEON PULSE – AUTO DANCE & EASY MODE BALANCING
+
+## TASK 1: AUTO DANCE WITHOUT WEBCAM
+
+Implement an Auto Dance Mode that works without webcam access.
+
+Requirements:
+
+- Use the existing 3D avatar and animation system.
+- Automatically generate dance movements synchronized with music.
+- Use BPM, beat timing, bass energy and music intensity.
+- Support smooth transitions between dance animations.
+- Include full-body movement: arms, legs, hips, shoulders and head.
+- Keep the avatar synchronized with the master music timeline.
+- Ensure the system works in Game Mode and Video Creator Studio.
+- Do not require webcam permission.
+- Keep Webcam Player as a separate future feature.
+
+Do not use simple random joint rotations as the primary dance animation system. Prefer proper skeletal animation clips and procedural motion blending.
+
+## TASK 2: SLOW DOWN EASY MODE
+
+The current gameplay is too fast even on Easy mode.
+
+Proposed initial difficulty settings:
+
+- Easy: 0.65x
+- Normal: 0.85x
+- Hard: 1.0x
+- Expert: 1.15x
+
+Requirements:
+
+- Reduce note movement speed.
+- Reduce note spawn density.
+- Increase spacing between consecutive notes.
+- Reduce simultaneous note combinations on Easy.
+- Increase reaction time.
+- Preserve normal music playback speed and pitch.
+- Keep hit detection and scoring synchronized.
+- Ensure difficulty changes affect gameplay consistently.
+
+IMPORTANT: Do not globally slow down the music or master audio clock.
+
+## TASK 3: TESTING
+
+Test all difficulty levels.
+
+Verify:
+
+- Notes reach the hit line at the correct time.
+- No mismatch between note position and hit judgement.
+- Easy mode is noticeably easier.
+- Auto Dance remains synchronized with music.
+- Pause, resume and seek work correctly.
+- Video export uses the same dance timeline.
+
+Before modifying code, inspect existing modules and reuse current architecture. Avoid duplicate systems and unnecessary rewrites.
+
+After implementation, provide a report of changed files and actual test results.
+
+Mình khuyên triển khai hai task này trước, chưa cần làm webcam. Đây là bước hợp lý để hoàn thiện gameplay và Auto Dance Engine.
+
+
+
+I’ll inspect the existing choreography/pose system and the chart/difficulty pipeline first, then make the smallest changes that reuse the current architecture. The two areas are likely already connected through `AutoPoseProvider`, `Gameplay`, `BeatMapGenerator`, and the studio’s music clock.
+
+The existing Auto Play/Video Studio choreographer is real and already full-body, but the game difficulty profiles still use ad-hoc absolute speeds and have no Expert tier. I’m tracing the gameplay clock, note positioning, difficulty UI, and studio pose update before changing those contracts.
+
+The current game is first-person and has no avatar in the gameplay scene; Auto Play is the game’s existing non-webcam performance mode and already shares `AutoPoseProvider` with Video Studio. I’ll reuse that seam rather than inventing a second dance system, while adding a blend layer for style transitions and making the difficulty profiles explicit and testable.
+
+I’ve confirmed the timing model is already sound: note position is a pure function of `songTime`, and judgement uses the same `songTime` with a separate hit window. I’m now changing only the chart difficulty data/spacing and the note transit speed, so the audio clock and judgement math stay untouched.
+
+
+
+
+
+
+
+
+
+
+
+
+
+The difficulty profiles and chart spacing are in place. I’m running a pure timing/chart harness next to compare all four tiers, including note count, minimum spacing, Easy speed/reaction changes, and exact hit-line position math before touching the browser.
+
+
+
+
+The headless harness passes all four tiers: Easy is **0.65×** speed with a **3.87 s** approach time and **1.21 notes/s**, versus Normal **2.96 s / 2.96 notes/s**, and no tier produces simultaneous notes. Next I’m exercising the actual Game transport and the shared Auto Dance stage in the browser.
+
+
+
+
+The live checks now show the actual Game using the selected speed at every tier, exact hit-line arrival (`z = 0` at the note timestamp, `z = -78` at spawn), and clean pause/resume/seek. I’m doing one short WebCodecs render with instrumentation to confirm the export loop feeds the same `songTime` and avatar stage.
+
+The short export smoke test passed: 60 frames, 1280×720 MP4, 2.020 s, with the final stage pose timestamp (`1.9667`) matching the export timeline. I’m updating the in-repo guide/report with the measured numbers and the one honest limitation: this browser panel reports itself hidden, so I validated state and timeline directly rather than claiming a foreground visual play-through.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Implemented. Full report: [`AUTO_DANCE_DIFFICULTY_REPORT.md`](AUTO_DANCE_DIFFICULTY_REPORT.md).
+
+**Auto Dance**
+- Surfaced the game-facing no-webcam mode as **AUTO DANCE**; it reuses the existing `AutoPoseProvider`, `ProceduralAvatar` and `SkeletonView`.
+- Full-body motion: 17 joints across hips, spine, shoulders, arms, legs and head, driven by BPM, beat phase, energy, bass and section intensity.
+- Added a **0.45 s procedural cross-fade** when changing dance styles, starting from the currently rendered pose instead of snapping.
+- Video Studio uses the same stage/provider, so Auto Dance and export share one timeline.
+- No `getUserMedia` or camera permission path is used. Future webcam support remains a separate provider seam.
+
+**Difficulty**
+
+| Mode | Speed | Lead time | Hit window | Same-lane gap |
+| --- | ---: | ---: | ---: | ---: |
+| Easy | 0.65× | 3.87 s | ±340 ms | 0.50 s |
+| Normal | 0.85× | 2.96 s | ±280 ms | 0.24 s |
+| Hard | 1.00× | 2.52 s | ±210 ms | 0.155 s |
+| Expert | 1.15× | 2.19 s | ±170 ms | 0.11 s |
+
+Easy now samples every other kick, skips off-beat hats, has no simultaneous notes, a lower sparse-chart floor, and a wider judgement window. Music playback speed and pitch were not changed; note travel speed and chart spacing did.
+
+**Verified**
+- `node qa/auto-dance-difficulty-harness.mjs` — **PASS**. Easy: 109 notes / 1.21 notes/s; Normal: 266 / 2.96; Hard: 316 / 3.51; Expert: 331 / 3.68. Zero simultaneous notes in all tiers.
+- Actual Game starts at all four difficulties: Easy **20.15 u/s**, Normal **26.35**, Hard **31.00**, Expert **35.65**; gameplay and chart configs matched.
+- First Easy note: position at its timestamp = `z 0` (hit line), spawn position = `z -78`; `judgeLane()` returned `delta 0`.
+- Pause preserved song time, resume returned to `playing`, and seeking to 10 s reported `10.06 s` while remaining in `playing`.
+- Auto Dance produced 17-joint poses; style cross-fade was active mid-transition and cleared after 0.45 s.
+- A 2 s WebCodecs export produced 60 frames at 1280×720, MP4 H.264/AAC, 2.020 s duration, with the final pose timestamp matching the final export time.
+- `npm run build` — **PASS**, 88 modules; JS 1,028.69 kB (gzip 280.34 kB), CSS 55.44 kB.
+
+**Limitation:** the automated browser tab reports `visibilityState: "hidden"`, so I validated state, timing, stage updates and the offline export loop directly rather than claiming a visible foreground play-through. Interactive first-person Play remains unchanged; Auto Dance is the separate game-facing performance mode.
+
+The next useful step is to make the performer optionally visible during interactive Play, if that is the “Game Mode” surface you want covered.
+
+
+Kết quả triển khai này khá tốt. Mình đặc biệt đồng ý với việc giữ nguyên Music Clock và chỉ điều chỉnh tốc độ di chuyển, mật độ nốt và hit window.
+
+Có 3 điểm mình muốn lưu ý:
+
+1. Auto Dance: Đã tái sử dụng `AutoPoseProvider`, không cần webcam. Đây là hướng đúng.
+2. Easy Mode: 0.65× và 1.21 notes/s là mức giảm đáng kể. Nên chơi thử thực tế để xác nhận người mới cảm thấy dễ chịu.
+3. Video Export: Đã kiểm tra đồng bộ timeline, nhưng mới smoke test 2 giây, chưa đủ để xác nhận video dài hoạt động ổn định.
+
+## Bước tiếp theo mình đề xuất
+
+Nên triển khai Hiển thị nhân vật nhảy toàn thân ngay trong Game Mode.
+
+Cụ thể:
+
+- Thêm một khung nhân vật 3D ở bên phải màn hình.
+- Hiển thị từ đầu đến chân, không bị cắt khi nhảy.
+- Nhân vật tự động nhảy theo nhạc.
+- Có thể bật/tắt khung nhân vật.
+- Không ảnh hưởng đến gameplay góc nhìn thứ nhất.
+- Dùng chung Auto Dance Engine với Video Studio.
+
+Một điều quan trọng: Đừng tạo thêm một avatar engine mới. Hãy tái sử dụng stage, pose provider và animation hiện có.
+
+Mình nghĩ đây sẽ là bước nâng cấp giúp NEON PULSE có bản sắc riêng hơn.
+
+
+111111111111111111
+
+Dưới đây là prompt để giao cho OpenCode. Mình thiết kế theo hướng thêm nhân vật 3D nhảy toàn thân ở panel bên phải Game Mode, không phá giao diện gameplay hiện tại và tái sử dụng Auto Dance Engine đã có.
+
+Writing
+
+# NEON PULSE – ADD FULL-BODY AUTO DANCE AVATAR TO GAME MODE
+
+## OBJECTIVE
+
+Add a beautiful, full-body 3D dancing character to the existing interactive Game Mode.
+
+The avatar must appear inside a dedicated panel on the RIGHT SIDE of the gameplay screen.
+
+The character automatically dances in synchronization with the currently playing music.
+
+IMPORTANT:
+
+- No webcam required.
+- No camera permission required.
+- Do not replace the existing first-person gameplay.
+- Do not create a new avatar or dance engine.
+- Reuse the existing AutoPoseProvider, ProceduralAvatar, SkeletonView and shared music timeline.
+- Preserve all existing gameplay mechanics.
+
+## 1\. LAYOUT
+
+Create a responsive two-area Game Mode layout.
+
+LEFT SIDE:
+
+- Existing first-person 3D gameplay.
+- Keep the road, notes, obstacles, hit line and effects.
+- Preserve existing keyboard and touch controls.
+
+RIGHT SIDE:
+
+- Dedicated 3D avatar viewport.
+- Display the dancing character from head to feet.
+- Keep the entire body visible during all dance movements.
+- Use a visually appealing stage with neon lighting.
+- Add subtle background effects that respond to music.
+
+Suggested layout:
+
+- Gameplay: 65–70% width.
+- Avatar panel: 30–35% width.
+
+On smaller screens, provide a suitable responsive layout rather than forcing both panels to remain side by side.
+
+## 2\. FULL-BODY AVATAR
+
+The avatar must:
+
+- Show the complete body, including head, hands and feet.
+- Never clip the head or feet during animations.
+- Support arm extensions, jumps, turns and wide dance movements.
+- Maintain natural body proportions.
+- Use smooth skeletal animation.
+- Have appropriate lighting and shadows.
+
+Camera requirements:
+
+- Use a dedicated camera for the avatar viewport.
+- Automatically fit the entire character inside the viewport.
+- Add sufficient margins around the character.
+- Do not use the main gameplay camera.
+- Avoid unnecessary camera movement.
+- Preserve the full-body framing when resizing the viewport.
+
+## 3\. AUTO DANCE ENGINE
+
+Reuse the existing Auto Dance architecture.
+
+Use:
+
+- AutoPoseProvider
+- ProceduralAvatar
+- SkeletonView
+- Existing animation and pose blending systems.
+
+Requirements:
+
+- Dance automatically while music is playing.
+- Synchronize movement with BPM and beat phase.
+- React to bass, music energy and musical sections.
+- Include full-body movement:
+  - Head
+  - Shoulders
+  - Arms
+  - Spine
+  - Hips
+  - Legs
+  - Feet
+- Support smooth transitions between dance styles.
+- Avoid repetitive robotic movement.
+- Avoid sudden pose snapping.
+
+The avatar must use the same master song timeline as gameplay.
+
+## 4\. MUSIC SYNCHRONIZATION
+
+This is critical.
+
+The following systems must use the same songTime:
+
+- Music playback
+- Gameplay
+- Note movement
+- Auto Dance
+- Avatar animation
+- Music-reactive effects
+
+Do not create a separate timer for the avatar.
+
+Pause:
+
+- Music pauses.
+- Avatar animation freezes at the correct pose.
+- Gameplay pauses.
+
+Resume:
+
+- All systems continue from the same timeline.
+
+Seek:
+
+- Avatar immediately updates to the correct pose for the new songTime.
+
+Do not modify music playback speed or pitch.
+
+## 5\. AVATAR CONTROLS
+
+Add a small control panel with:
+
+- Show / Hide Avatar
+- Dance Style selector
+- Male / Female character selector, if existing assets support both
+- Avatar scale adjustment
+- Stage lighting toggle
+
+Keep the controls visually minimal and consistent with the existing NEON PULSE UI.
+
+Remember the user's settings during the current session.
+
+## 6\. VISUAL DESIGN
+
+Design the avatar panel to feel like a professional music performance stage.
+
+Suggested visual elements:
+
+- Dark background.
+- Cyan / purple neon lighting.
+- Subtle floor reflections.
+- Soft spotlight.
+- Music-reactive particles.
+- Minimal frame border.
+- Character clearly separated from the background.
+
+Do not overload the panel with excessive bloom or particles.
+
+The avatar must remain the main visual focus.
+
+## 7\. PERFORMANCE
+
+Avoid introducing a second unnecessary render loop.
+
+Requirements:
+
+- Reuse existing rendering infrastructure where practical.
+- Use an independent viewport/scissor rendering pass if compatible with the current renderer.
+- Avoid creating duplicate WebGL contexts unnecessarily.
+- Dispose of unused resources.
+- Pause unnecessary rendering when the avatar is hidden.
+- Maintain acceptable FPS on typical desktop hardware.
+
+The avatar must not interfere with note detection, hit judgement or gameplay performance.
+
+## 8\. VIDEO STUDIO COMPATIBILITY
+
+The Game Mode avatar and Video Creator Studio must use the same:
+
+- Avatar assets
+- Pose provider
+- Dance animation logic
+- Music timeline
+- Dance style definitions
+
+Do not duplicate choreography logic.
+
+Ensure the avatar can be rendered correctly in the existing video export pipeline.
+
+## 9\. TESTING
+
+Perform the following tests:
+
+1. Start a song in Game Mode.
+2. Verify the avatar automatically dances.
+3. Verify full-body visibility during jumps and turns.
+4. Verify synchronization with the music.
+5. Pause and resume.
+6. Seek forward and backward.
+7. Change dance style during playback.
+8. Hide and show the avatar.
+9. Resize the browser window.
+10. Switch between all four difficulty levels.
+11. Verify gameplay scoring is unchanged.
+12. Verify Video Creator Studio still works.
+13. Verify MP4 export remains synchronized.
+
+## 10\. IMPLEMENTATION RULES
+
+Before modifying anything:
+
+- Inspect the existing Game Mode layout.
+- Inspect the existing Three.js renderer.
+- Inspect AutoPoseProvider and ProceduralAvatar.
+- Inspect the Video Studio avatar rendering pipeline.
+- Identify the existing master music clock.
+
+Reuse existing code wherever possible.
+
+Do not rewrite working modules. Do not create duplicate avatar systems. Do not change existing gameplay scoring. Do not alter the audio playback speed. Do not remove existing features.
+
+After implementation:
+
+- Run production build.
+- Run relevant automated tests.
+- Test actual browser playback.
+- Capture screenshots of the new Game Mode layout.
+- Report all changed files.
+- Report any remaining limitations honestly.
+
+## FINAL ACCEPTANCE CRITERIA
+
+The task is complete only when:
+
+1. The existing game remains fully playable.
+2. A full-body 3D avatar appears on the right side.
+3. The avatar dances automatically without webcam.
+4. The character is never cropped.
+5. Music, gameplay and avatar remain synchronized.
+6. Pause, resume and seek work correctly.
+7. Performance remains acceptable.
+8. Video Studio continues to work.
+9. Production build passes.
+
+The final result should look like a professional 3D rhythm game combined with a live dance performance stage.
+
+Lưu ý: Mình muốn OpenCode ưu tiên kiểm tra cách render hai khu vực trong cùng một WebGL renderer trước khi tạo renderer thứ hai. Điều này giúp tránh hao GPU và giảm nguy cơ xung đột tài nguyên.
+
+
+
+I’ll add the avatar as a true second viewport in the existing renderer, not a second game loop or duplicate avatar system. First I’m checking how `PostFX`, the canvas sizing and the HUD are structured so the split view doesn’t disturb note timing or input.
+
+I’m implementing this as a lightweight secondary viewport fed by the same `Game._tick`: no new render loop, no second choreography engine. The panel will use one extra lightweight WebGL view only for its canvas, while `AutoPoseProvider`, `ProceduralAvatar` and the shared pose cross-fade remain single-source.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The reuse layer is in place: `PoseBlend` is shared, and the new `GameAvatarView` consumes `AutoPoseProvider` and `ProceduralAvatar`, with optional `SkeletonView` rig overlay. I’m wiring the responsive HUD panel and controls now, then I’ll build and exercise it.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The core integration and browser checks are now passing: the avatar reuses the existing pose provider/avatar, pause and seek keep the same master clock, all four difficulty charts were loaded in the browser with the panel present, and a real 5-second Studio MP4 export completed with synchronized A/V. I’m adding the test/report documentation and doing the final production build.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Implemented the Game Mode full-body dancer panel.
+
+## What changed
+
+- Added a dedicated right-side 3D avatar viewport inside Game Mode, with the existing first-person road, notes, hazards and scoring untouched on the left.
+- Reused `AutoPoseProvider`, `ProceduralAvatar`, `SkeletonView` and the shared music timeline.
+- Added `src/game/GameAvatarView.js` with:
+  - automatic full-body camera fit
+  - neon stage floor, rings, grid, lights, beams, shadow and music-reactive particles
+  - optional RIG skeleton overlay
+  - no independent `requestAnimationFrame` loop
+- Added session controls for Show/Hide, dance style, female/male form, scale, lights and RIG.
+- Added pause-screen seek controls (`−10s` / `+10s`).
+- Extracted the style cross-fade into `src/studio/pose/PoseBlend.js`, now shared by Game Mode and Video Studio.
+- Updated pause/resume/seek handling in `Game.js` so the avatar uses the same `lastSongTime` as music and gameplay.
+
+## Verified
+
+- `npm run build` — passed, 91 modules, JS 1,045.92 kB, CSS 62.06 kB.
+- `node qa/auto-dance-difficulty-harness.mjs` — passed.
+- Actual browser Game Mode loaded Easy, Normal, Hard and Expert charts with the avatar present: 122, 257, 270 and 272 notes respectively.
+- Pause froze game, audio clock and avatar pose at `11.2247 s`.
+- Seek forward produced `21.2247 s`; seek backward returned to `11.2247 s`; the avatar pose timestamp matched both.
+- Resume continued at `11.8133 s`.
+- Style change started the shared camera-safe cross-fade; hide/show and `sessionStorage` preferences worked.
+- Four-style, 120-second full-body projection test: maximum NDC joint magnitude `0.768`, with no projected head/hand/foot clipping.
+- Avatar render budget: approximately `1.19–1.26 ms` per update, 53 draw calls, 4,708 triangles, 90 particles.
+- Real 5-second Video Studio MP4 export: 150 frames, `avc1.640028` + `mp4a.40.2`, 5.02 s, sync delta 0.016 s.
+- `node qa/validate-exports.mjs` — all 19 files, 0 decode errors.
+
+## Screenshots
+
+Responsive Game Mode layout:
+
+![Game Mode responsive layout](screenshots/game-mode-avatar/game-mode-responsive-current.png)
+
+Desktop layout, scaled from the 1280×720 page because the preview capture surface is narrower than the emulated viewport:
+
+![Game Mode desktop layout](screenshots/game-mode-avatar/game-mode-desktop-scaled.png)
+
+Actual avatar-canvas close-up:
+
+![Game Mode dancer close-up](screenshots/game-mode-avatar/avatar-closeup.png)
+
+## Changed files
+
+Added:
+
+- `src/game/GameAvatarView.js`
+- `src/game/AvatarPreferences.js`
+- `src/studio/pose/PoseBlend.js`
+- `GAME_MODE_AVATAR_REPORT.md`
+- `screenshots/game-mode-avatar/game-mode-responsive-current.png`
+- `screenshots/game-mode-avatar/game-mode-desktop-scaled.png`
+- `screenshots/game-mode-avatar/avatar-closeup.png`
+
+Modified:
+
+- `src/core/Game.js`
+- `src/core/EventBus.js`
+- `src/ui/templates.js`
+- `src/ui/UIManager.js`
+- `src/styles/main.css`
+- `src/studio/StudioStage.js`
+- `src/studio/SkeletonView.js`
+- `README.md`
+- `STUDIO_GUIDE.md`
+
+## Limitations
+
+- The avatar viewport uses a second lightweight WebGL context so the existing gameplay camera and post-processing stack remain untouched. It is disposed with the game and skips rendering when hidden.
+- At 1024 px and below, the dancer panel floats over the right side of the gameplay view rather than staying side-by-side; the lane buttons remain reachable and the panel can be hidden.
+- The pause modal dims the avatar panel while the pose remains correctly frozen.
+- The automated browser tab reports `document.visibilityState` as hidden and throttles RAF, so a visible-foreground FPS trace was not available. Render-budget measurements and direct `Game._tick()` checks were used instead.
+- The desktop screenshot is a scaled capture of the 1280×720 layout; actual DOM measurements confirm the desktop panel size and lane clearance.
+
+The detailed implementation and test report is in `GAME_MODE_AVATAR_REPORT.md`.
+
+A natural next step is to tune the dancer frame so the character reads slightly larger while keeping the current arm-clearance margin.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The Game Mode dancer polish is complete. The character is now framed **10.3% larger** (`FRAME_RADIUS` 1.28 → 1.16), while keeping the full body visible and leaving clearance for extended arms, jumps and turns.
+
+## What changed
+
+- **Framing:** tighter camera fit with centre Y at 1.1 m. The FOV and auto-fit architecture are unchanged.
+- **Lighting:** a stronger neutral key light, cyan rim, purple fill and warm face fill. The face is no longer covered by the skeleton’s head marker, and viewport-only material lifts make the skin and costume readable on the darker stage.
+- **Background:** the neon stage remains, but floor, grid, rings, beams and particles are more subdued. Particles went from 90 to 64; the panel glow, scanlines and vignette were also reduced.
+- **No architecture changes:** the avatar is still driven by the existing `Game` render tick and `Game.lastSongTime`. No second render loop, no new dependencies, no changes to gameplay, scoring, music playback or difficulty.
+
+## Validation
+
+- `npm run build` — **PASS**  
+  91 modules; JS 1,046.56 kB; CSS 62.06 kB.
+- `node qa/auto-dance-difficulty-harness.mjs` — **PASS**
+- Framing sweep across **all four styles** (`pulse`, `flow`, `cyber`, `street`), 64 sampled frames per style: head, both wrists and both ankles stayed inside NDC `[-1, 1]` in all 256 samples. Worst horizontal bound `0.790`; worst vertical bound `0.721`.
+- Female/male form changes re-applied the viewport materials and kept the face marker hidden.
+- `node qa/validate-exports.mjs` — **PASS** over the 19 existing exports: 0 decode errors, A/V deltas within 15.6 ms. A fresh Studio export was not repeated because no Studio, pose or export code changed.
+- Browser reloaded with no current console errors.
+
+## Updated screenshots
+
+Desktop layout — the preview capture surface is 421 px wide, so this is a scaled capture of the 1280×720 layout:
+
+![Game Mode desktop polish](screenshots/game-mode-avatar/game-mode-polish-desktop-final.png)
+
+Mobile layout at 421×925:
+
+![Game Mode mobile polish](screenshots/game-mode-avatar/game-mode-polish-mobile-final.png)
+
+Dancer close-up after the framing, lighting and face changes:
+
+![Game Mode dancer close-up](screenshots/game-mode-avatar/avatar-polish-final-closeup.png)
+
+The full details, measurements and limitations are in **[GAME_MODE_AVATAR_REPORT.md](GAME_MODE_AVATAR_REPORT.md)**. Main implementation changes are in `src/game/GameAvatarView.js`, with panel background tuning in `src/styles/main.css`, plus README/report updates.
+
+
+111111111111111
+
