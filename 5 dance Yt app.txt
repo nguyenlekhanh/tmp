@@ -1,3 +1,11 @@
+Giai đoạn 1 – Visual: Chỉ dựng tunnel, camera, sàn phản chiếu và bốn dance pads. Chưa cần nhân vật.
+
+Giai đoạn 2 – Character: Đưa dancer silhouette vào bên trái, kết nối chuyển động với audio.
+
+Giai đoạn 3 – Gameplay: Kết nối lại beat detection, điểm số, combo và hiệu ứng tương tác.
+
+
+
 Web Audio API là một công nghệ có sẵn trong trình duyệt (Chrome, Edge, Firefox, Safari), cho phép JavaScript phát, xử lý và phân tích âm thanh.
 
 Nói đơn giản:
@@ -5938,5 +5946,5084 @@ Dancer close-up after the framing, lighting and face changes:
 The full details, measurements and limitations are in **[GAME_MODE_AVATAR_REPORT.md](GAME_MODE_AVATAR_REPORT.md)**. Main implementation changes are in `src/game/GameAvatarView.js`, with panel background tuning in `src/styles/main.css`, plus README/report updates.
 
 
+111111111111111  phiên bản mới
+content.google/image/7fe81adf-b7ec-4a54-a6e8-54eddc040510?Expires=1794457338&KeyName=labs-flow-prod-cdn-key&Signature=N7IquwnvUNMPRdbdGZUnFXjHsbI
+
+còn đây là nó đã làm sai tùm lum: https://flow-content.google/image/5e09d7b4-8131-4e29-a8dc-3d47f759ca82?Expires=1794473918&KeyName=labs-flow-prod-cdn-key&Signature=FFL57utSq9az0FJUueG_b8zgi5M
+
+
+
+Mình đã xem kỹ cả 2 ảnh. Mình hiểu vấn đề rồi: OpenCode đã làm sai cả concept lẫn bố cục 3D, chứ không đơn thuần là sai màu sắc hay hiệu ứng.
+
+Bạn muốn game NEON PULSE giống ảnh thứ nhất, nhưng sản phẩm hiện tại ở ảnh thứ hai lại đi theo một phong cách hoàn toàn khác.
+
+## 1. Phân tích sự khác biệt
+
+Ảnh 1 – Thiết kế mục tiêu
+
+Đúng concept
+
+Ảnh 2 – Sản phẩm hiện tại
+
+Sai concept
+
+### Ảnh 1 có 5 đặc điểm quan trọng
+
+1. Camera góc nhìn thứ nhất (First Person): Người chơi nhìn thẳng vào một đường hầm 3D, có chiều sâu và điểm tụ ở chính giữa.
+2. Neon Geometry Tunnel: Các khung hình học lớn dạng tam giác, đa giác, đường thẳng phát sáng, đan xen màu cyan, hồng và vàng.
+3. Reflective Floor: Sàn đen bóng như mặt nước, phản chiếu ánh sáng neon.
+4. Dancer Silhouette: Một ô nhỏ bên trái hiển thị hình bóng người nhảy màu trắng trên nền đen.
+5. Four Dance Pads: Bốn ô hình thang viền trắng nằm phía dưới, phối cảnh theo chiều sâu.
+
+### Ảnh 2 đang sai ở đâu?
+
+| Thành phần | Lỗi |
+| --- | --- |
+| Background | Dùng vòng tròn đồng tâm thay vì neon polygon tunnel |
+| Camera | Cảm giác như game chạy trên đường ray |
+| Sàn | Sàn tím phẳng, thiếu phản chiếu |
+| Nhân vật | Đưa nhân vật 3D lớn sang bên phải |
+| Dance pads | Dùng 3 vòng tròn thay vì 4 ô hình thang |
+| UI | Quá nhiều HUD và thông tin |
+| Hiệu ứng | Thiên về arcade rhythm game thay vì neon dance experience |
+
+Điểm quan trọng: Không nên tiếp tục sửa từng chi tiết của ảnh 2. Nên yêu cầu tái thiết kế lại toàn bộ composition của game scene theo ảnh 1, đồng thời giữ lại những module xử lý nhạc và gameplay đang hoạt động.
+
+## 2. Kiến trúc hình ảnh mình đề xuất
+
+Fantastic Neon Tunnel VJ Loop by OlScher - Stock Video | Motion Array
+
+[motionarray.com](<https://motionarray.com/stock-video/fantastic-neon-tunnel-vj-loop-1106211/?utm_source=chatgpt.com>)
+
+Bố cục phải được chia thành 3 khu vực:
+
+A. Main 3D World – 80–90% màn hình
+
+- Neon tunnel chiếm toàn bộ background.
+- Camera chính giữa.
+- Điểm tụ nằm ở tâm màn hình.
+- Sàn phản chiếu ánh sáng.
+- Các khung neon chuyển động tiến về phía camera.
+
+B. Dancer Silhouette – góc trái
+
+- Khung hình chữ nhật màu đen.
+- Nhân vật dạng silhouette trắng.
+- Hiển thị chuyển động nhảy đồng bộ với nhạc.
+- Không sử dụng avatar 3D lớn ở bên phải.
+
+C. Dance Pads – phía dưới
+
+- Chính xác 4 ô.
+- Viền trắng mảnh.
+- Mặt ô tối, trong suốt.
+- Phối cảnh hình thang.
+- Có hiệu ứng phát sáng khi tương tác.
+
+## 3. Prompt để yêu cầu OpenCode sửa lại
+
+Mình viết prompt này theo hướng bắt OpenCode sửa kiến trúc hiển thị, không tự ý sáng tạo thêm giao diện.
+
+Writing
+
+# NEON PULSE – VISUAL REDESIGN DIRECTIVE
+
+## CRITICAL: REBUILD THE VISUAL COMPOSITION
+
+The current implementation does NOT match the intended visual reference.
+
+The target is the FIRST reference image, not the current implementation.
+
+Do not attempt to fix this by simply changing colors, materials, or CSS.
+
+Rebuild the main 3D scene composition to match the reference image as closely as possible.
+
+Preserve the existing functional systems wherever possible:
+
+- Audio engine
+- Beat detection
+- Music loading
+- BPM detection
+- Scoring
+- Combo system
+- Game timing
+- Difficulty settings
+- Existing music controls
+
+Do not rewrite working systems unnecessarily.
+
+---
+
+## 1\. MAIN VISUAL CONCEPT
+
+Create a futuristic first-person NEON DANCE TUNNEL.
+
+The entire game world should look like the first reference image.
+
+Visual characteristics:
+
+- Symmetrical futuristic tunnel.
+- Deep perspective with a central vanishing point.
+- Large geometric neon frames.
+- Triangular and polygonal structures.
+- Cyan, magenta, pink and yellow neon lighting.
+- Dark atmospheric environment.
+- Glossy black reflective floor.
+- Strong reflections on the floor.
+- Cinematic volumetric atmosphere.
+- High contrast between dark environment and neon lights.
+
+IMPORTANT:
+
+Remove the concentric circular tunnel design.
+
+Do not use a conventional rhythm-game highway.
+
+Do not use a purple flat floor.
+
+Do not make the environment look like a generic arcade game.
+
+The tunnel must be built using geometric neon structures, not circular rings.
+
+## 2\. CAMERA AND PERSPECTIVE
+
+Use a centered first-person camera.
+
+Camera requirements:
+
+- Position at the center of the tunnel.
+- Looking straight toward the vanishing point.
+- Symmetrical left/right composition.
+- Wide-angle cinematic perspective.
+- Strong depth perception.
+- Stable camera with no unnecessary rotation.
+
+The tunnel must extend far into the distance.
+
+Neon frames should gradually become smaller toward the vanishing point.
+
+## 3\. NEON GEOMETRIC TUNNEL
+
+Build multiple layers of geometric structures.
+
+Include:
+
+- Large triangular neon frames.
+- Irregular polygon frames.
+- Angular diagonal neon lines.
+- Interconnected geometric structures.
+- Multiple depth layers.
+
+Color distribution:
+
+- Cyan: primary lighting.
+- Magenta: secondary lighting.
+- Pink: accent lighting.
+- Yellow: occasional highlights.
+
+Use emissive materials and bloom carefully.
+
+The neon structures should feel physically present in a 3D environment.
+
+## 4\. REFLECTIVE FLOOR
+
+This is a critical visual requirement.
+
+Create a dark glossy floor resembling black water.
+
+Requirements:
+
+- Strong neon reflections.
+- Cyan and pink reflection streaks.
+- Subtle animated ripple distortion.
+- Dark central walkway.
+- Reflections should follow the positions of the neon structures.
+
+Avoid a flat purple floor or a simple grid floor.
+
+## 5\. DANCER SILHOUETTE PANEL
+
+Position a small rectangular dancer panel on the LEFT side of the screen.
+
+Requirements:
+
+- Black background.
+- White human silhouette.
+- Full-body figure.
+- Thin glowing white outline.
+- Simple rectangular frame.
+
+The silhouette should animate according to the music.
+
+Do not place a large 3D avatar panel on the right side.
+
+Do not allow the dancer panel to dominate the main scene.
+
+If the existing avatar animation system can be reused, reuse its motion data to drive the silhouette.
+
+## 6\. FOUR DANCE PADS
+
+At the bottom center of the screen, create EXACTLY FOUR dance pads.
+
+Requirements:
+
+- Four trapezoidal perspective shapes.
+- Thin white outlines.
+- Dark transparent interiors.
+- Symmetrical horizontal arrangement.
+- Perspective matching the tunnel floor.
+
+These must look like four physical interaction zones.
+
+Do not use three circular targets.
+
+Do not use circular rings.
+
+Do not replace the four pads with another rhythm-game interface.
+
+Each pad should illuminate when activated by gameplay.
+
+## 7\. UI DESIGN
+
+Keep the interface minimal.
+
+The 3D environment is the main attraction.
+
+Avoid:
+
+- Large player panels.
+- Oversized avatar windows.
+- Excessive HUD elements.
+- Large central song titles covering the tunnel.
+- Unnecessary decorative controls.
+
+Only retain essential information:
+
+- Score.
+- Combo.
+- Song progress.
+- BPM.
+- Pause button.
+
+Use small, discreet typography.
+
+## 8\. TECHNICAL REQUIREMENTS
+
+Before modifying anything:
+
+1. Inspect the existing source code.
+2. Identify the current scene renderer.
+3. Identify the camera implementation.
+4. Identify the existing tunnel geometry.
+5. Identify the dance pad implementation.
+6. Identify the dancer panel implementation.
+7. Identify dependencies between visual modules and gameplay modules.
+
+Then implement the redesign.
+
+Prefer reusing the existing Three.js renderer and scene architecture.
+
+Avoid introducing additional WebGL contexts unless absolutely necessary.
+
+Optimize:
+
+- Draw calls.
+- Geometry reuse.
+- Emissive materials.
+- Bloom post-processing.
+- Reflection performance.
+- Animation loops.
+
+Maintain stable performance.
+
+## 9\. STRICT ACCEPTANCE CRITERIA
+
+The redesign is NOT complete unless all the following conditions are satisfied:
+
+\[ \] First-person centered camera.
+
+\[ \] Large geometric neon tunnel.
+
+\[ \] No concentric circular tunnel.
+
+\[ \] Cyan, magenta, pink and yellow neon structures.
+
+\[ \] Dark glossy reflective floor.
+
+\[ \] Strong visible floor reflections.
+
+\[ \] Small dancer silhouette panel on the left.
+
+\[ \] Exactly four trapezoidal dance pads at the bottom.
+
+\[ \] No three circular dance targets.
+
+\[ \] No large dancer panel on the right.
+
+\[ \] Minimal HUD.
+
+\[ \] Music and beat detection still work.
+
+\[ \] Scoring and combo still work.
+
+\[ \] Pause and resume still work.
+
+\[ \] Existing music synchronization remains intact.
+
+## 10\. IMPLEMENTATION AND VERIFICATION
+
+Do not declare success based only on a successful build.
+
+Run the application and capture an actual gameplay screenshot.
+
+Compare the screenshot with the target reference image.
+
+If the composition is still different, continue correcting it.
+
+Report:
+
+- Files modified.
+- Components rebuilt.
+- Components preserved.
+- Build and runtime test results.
+- Performance observations.
+- Screenshot of the final result.
+
+IMPORTANT FINAL INSTRUCTION:
+
+The FIRST reference image is the visual specification.
+
+Do not reinterpret it into a different rhythm-game design.
+
+Visual fidelity to the reference takes priority over adding new decorative features.
+
+## 4. Cách mình muốn bạn triển khai
+
+Mình khuyên không giao OpenCode sửa tất cả một lần. Chia thành 3 giai đoạn:
+
+1. Giai đoạn 1 – Visual: Chỉ dựng tunnel, camera, sàn phản chiếu và bốn dance pads. Chưa cần nhân vật.
+2. Giai đoạn 2 – Character: Đưa dancer silhouette vào bên trái, kết nối chuyển động với audio.
+3. Giai đoạn 3 – Gameplay: Kết nối lại beat detection, điểm số, combo và hiệu ứng tương tác.
+
+Lý do: nếu sửa cả đồ họa, animation và gameplay cùng lúc, OpenCode có thể làm hỏng những module đang chạy tốt.
+
+## 5. Mình muốn xác nhận một điểm quan trọng
+
+Ở ảnh tham chiếu, nhân vật bên trái là hình bóng silhouette trắng. Bạn muốn giữ đúng phong cách này hay muốn nâng cấp thành hình người 3D nhưng vẫn hiển thị nhỏ ở bên trái?
+
+Phong cách nhân vật
+
+أسلوب درع كامل لامع للغاية لفرانك فريزيتا ، أسلوب فن جيل إلفغرين. - MusesAI.io
+
+A. Silhouette trắng
+
+Giống ảnh tham chiếu nhất.
+
+Đã chọn
+
+Particles Of POP Dance
+
+B. Nhân vật 3D
+
+Có hình khối và chuyển động rõ hơn.
+
+Phong cách đường hầm
+
+exact Giống ảnh 1 gần như 100%
+
+Giữ bố cục ảnh 1 nhưng nâng cấp đồ họa cinematic, phản chiếu và ánh sáng
+
+ Xác nhận thiết kế
+
+Theo mình, nên chọn A + nâng cấp cinematic. Đây sẽ là hướng giữ được linh hồn của ảnh tham chiếu mà vẫn tạo ra một sản phẩm có chất lượng hình ảnh chuyên nghiệp.
+
+
+
+tôi lỡ gửi promptm trên cho opencode / freebuff làm rồi, thôi để nó làm rồi tôi gửi báo cáo cho bạn
+đúng là theo 3 giai đoạn này hay
+Mình khuyên không giao OpenCode sửa tất cả một lần. Chia thành 3 giai đoạn:
+
+Giai đoạn 1 – Visual: Chỉ dựng tunnel, camera, sàn phản chiếu và bốn dance pads. Chưa cần nhân vật.
+
+Giai đoạn 2 – Character: Đưa dancer silhouette vào bên trái, kết nối chuyển động với audio.
+
+Giai đoạn 3 – Gameplay: Kết nối lại beat detection, điểm số, combo và hiệu ứng tương tác.
+
+dùng: A. Silhouette trắng
+Giống ảnh tham chiếu nhất.
+
+thôi để nó làm rồi tôi gửi báo cáo cho bạn
+
+
+Đồng ý\! Mình nghĩ đây là hướng làm đúng nhất cho NEON PULSE.
+
+Cứ để OpenCode/Freebuff hoàn thành lượt hiện tại, chưa cần gửi thêm prompt hay yêu cầu nó sửa tiếp để tránh chồng chéo công việc.
+
+Mình thống nhất thiết kế mục tiêu:
+
+- Nhân vật: A – Silhouette trắng.
+- Tunnel: Giữ sát ảnh tham chiếu, nâng cấp chất lượng cinematic.
+- Camera: First-person, chính giữa.
+- Sàn: Đen bóng, phản chiếu neon.
+- Dance pads: Chính xác 4 ô hình thang.
+
+Khi bạn gửi báo cáo, mình sẽ cùng bạn kiểm tra theo 3 giai đoạn:
+
+1. Visual: Kiểm tra hình ảnh, camera, tunnel, ánh sáng, phản chiếu và dance pads.
+2. Character: Kiểm tra silhouette, chuyển động và đồng bộ âm nhạc.
+3. Gameplay: Kiểm tra beat detection, scoring, combo và hiệu ứng.
+
+Một điều mình muốn nhấn mạnh: Đừng để OpenCode báo Build Success rồi xem như hoàn thành. Chúng ta cần ảnh chụp màn hình thực tế và kết quả chạy ứng dụng.
+
+Mình sẽ đóng vai trò reviewer kỹ thuật cho từng giai đoạn: chỉ ra chính xác phần nào đạt, phần nào sai, cần sửa file nào và viết prompt tiếp theo cho OpenCode.
+
+Cứ gửi nguyên báo cáo của nó cho mình. Chúng ta sẽ làm NEON PULSE đúng với hình dung ban đầu, không để AI tự ý biến nó thành một game khác. 👍
+
+
+
+I’ll start by mapping the current scene, camera, tunnel, pad and HUD implementations, and checking whether the target reference image exists in the workspace. Then I’ll rebuild the composition around the existing gameplay/audio systems and verify it in the running game.
+
+The current scene is a circular shader tunnel, a 3-lane highway with ring targets, and a large 3D avatar panel. I’m replacing those visual modules with a geometric neon tunnel, a mirrored glossy floor, four trapezoidal pads and a small 2D silhouette panel while keeping the existing audio, chart, timing, scoring and input paths intact.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The new tunnel, floor, pads and silhouette HUD compile. I’m loading the real game now to check the composition at gameplay scale and will iterate on camera, reflection intensity and pad placement from the actual rendered frame.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The scene composition has been rebuilt around the written tunnel spec rather than restyled in place.
+
+![Final gameplay scene — native 1280×720 WebGL capture](screenshots/redesign-final-native.png)
+
+![Full HUD composition with four pads and left dancer panel](screenshots/redesign-final-hud-view.png)
+
+## What changed
+
+**Rebuilt**
+- `src/world/NeonTunnel.js` — new geometric tunnel made from instanced neon beams, polygonal frames, angular braces, haze planes, vanishing-point glow, and a transparent reflective floor with animated caustic/ripple shading. No torus or circular tunnel geometry.
+- `src/world/DancePads.js` — exactly four trapezoidal pads at the bottom center, white/neon outlines, dark transparent fills, pulse illumination, and lane-to-pad hit mapping.
+- `src/world/NeonWorld.js` — new World implementation using the tunnel, pads, particle field, impacts, and bursts.
+- `src/game/DanceSilhouette.js` — left-side black panel with an animated filled white dancer silhouette driven by the existing `AutoPoseProvider`.
+- `src/core/CameraRig.js` and `src/config.js` — centered first-person camera looking straight down the tunnel, stable framing, no lane lean/sway.
+- `src/ui/templates.js`, `src/ui/UIManager.js`, `src/styles/main.css` — minimal HUD, left silhouette panel, four-pad mobile touch layer, old right-side avatar panel hidden.
+- `src/objects/NoteManager.js` — notes changed from glowing spheres to angular shards; circular note/hazard rings hidden so they don’t read as targets.
+
+**Preserved**
+- Audio engine, music loading, BPM/beat detection, chart generation, scoring/combo, timing windows, difficulty settings, pause/resume/seek/restart, and the studio/video modules. The gameplay chart still uses its three internal lanes; lane 1 is visually represented by the two center pads.
+
+## Verification
+
+- `npm run build` passes: 94 modules, JS 1,055.24 kB, CSS 64.66 kB.
+- Dev server runtime loaded successfully with no console errors.
+- Ran `demo:neon-pulse` on `medium`; audio clock advanced and HUD reported `128 BPM`.
+- Pause/resume verified: state changed to `paused` and back to `playing`, with playback time continuing.
+- Scoring/combo verified with a real note hit through `Gameplay.handleLane`: perfect judgement, score `76`, combo `1`, HUD updated.
+- Four pads confirmed present and visible; silhouette panel and minimal HUD confirmed.
+- One-frame render cost: **50 draw calls, ~13.7k triangles, 22 geometries, 15 textures**, high-quality post-processing. 60 FPS was observed while the preview was foregrounded; the later preview tab was background-throttled, so its low FPS reading was not representative.
+
+## Limitations
+
+The first reference image was not available as a file in this workspace or through the session tools, so I could not perform a direct side-by-side comparison. This pass follows the written visual specification; if you reattach the reference image, I can tune frame density, tunnel scale, floor reflection strength, and pad proportions against it directly.
+
+The final WebGL capture is native 1280×720. The HUD image is a scaled preview capture because the preview surface is narrower than the game viewport; its scene detail is softer than the native image.
+
+
+
+111111111111
+
+
+Mình đã xem ảnh kết quả mới nhất. Có một tin tốt: OpenCode đã đi đúng hướng thiết kế hơn rất nhiều so với phiên bản cũ. Đặc biệt, nó đã thay được tunnel tròn bằng hệ thống hình học neon và đưa silhouette sang bên trái.
+
+Tuy nhiên, mình chưa muốn cho qua Giai đoạn 1 ngay. Có một số chi tiết cần kiểm tra và tinh chỉnh trước khi chuyển sang nhân vật và gameplay.
+
+## 1. Đánh giá ảnh hiện tại
+
+Đúng hướng thiết kế
+
+| Hạng mục | Đánh giá |
+| --- | --- |
+| Camera chính giữa | Đạt |
+| Tunnel hình học neon | Đạt |
+| Màu cyan, magenta, vàng | Đạt |
+| Silhouette bên trái | Đạt vị trí |
+| Sàn phản chiếu | Cần cải thiện |
+| Bốn dance pads | Cần kiểm tra |
+| Tỷ lệ phối cảnh | Cần tinh chỉnh |
+
+## 2\. So sánh trực tiếp với ảnh mục tiêu
+
+Mục tiêu
+
+Hiện tại
+
+Mình nhận thấy 5 điểm khác biệt:
+
+1\. Tunnel
+
+- Mục tiêu: đường hầm có kiến trúc rõ ràng, các khung neon tạo thành hành lang có chiều sâu.
+- Hiện tại: quá nhiều đường tam giác chồng chéo, tạo cảm giác mạng lưới hình học hỗn loạn.
+
+2\. Sàn phản chiếu
+
+- Mục tiêu: mặt sàn giống nước, có những mảng phản chiếu cyan, hồng và vàng rất rõ.
+- Hiện tại: sàn khá tối, chủ yếu thấy các vệt sáng ngang. Chưa có cảm giác sàn ướt.
+
+3\. Dance pads
+
+- Mục tiêu: bốn ô hình thang lớn, rõ ràng, nằm sát tiền cảnh.
+- Hiện tại: có các hình đỏ và vàng che khuất khu vực pads. Cần phân biệt rõ vật thể gameplay với mặt pad.
+
+4\. Silhouette
+
+- Mục tiêu: hình người toàn thân, có viền trắng, kích thước tương đối lớn ở bên trái.
+- Hiện tại: panel quá nhỏ, hình người chưa thể hiện rõ dáng toàn thân.
+
+5\. Không gian
+
+- Mục tiêu: có hai vách tunnel trái/phải, tạo cảm giác đang đứng trong một hành lang 3D.
+- Hiện tại: cảm giác đang đứng giữa một không gian wireframe mở.
+
+## 3\. Chưa chuyển sang Giai đoạn 2
+
+Mình đề xuất thêm một vòng tinh chỉnh Visual trước.
+
+Đây là prompt bổ sung, không yêu cầu viết lại toàn bộ hệ thống:
+
+Writing
+
+# NEON PULSE – VISUAL STAGE 1 REFINEMENT
+
+The first visual rebuild is a good foundation, but it still does not sufficiently match the original reference image.
+
+IMPORTANT: This is a refinement task, NOT a complete rewrite.
+
+Preserve the current working implementation and all gameplay/audio systems.
+
+## 1\. TUNNEL ARCHITECTURE
+
+The current tunnel has too many overlapping wireframe triangles.
+
+Make it look like a physical futuristic corridor instead of an abstract geometric wireframe.
+
+Required:
+
+- Clear left and right tunnel walls.
+- Strong central vanishing point.
+- Large polygonal neon frames distributed along the tunnel.
+- More structured spacing between frames.
+- A visible architectural corridor.
+- Cyan, magenta and yellow neon accents.
+
+Reduce unnecessary intersecting lines.
+
+Use a combination of large geometric frames and smaller structures in the distance.
+
+## 2\. WET REFLECTIVE FLOOR
+
+Improve the floor to resemble the reference.
+
+Required:
+
+- Wide dark wet floor.
+- Visible cyan and magenta reflections.
+- Yellow reflection accents.
+- Irregular reflective patches.
+- Subtle water-like distortion.
+- A dark central walkway.
+
+The floor must visibly reflect the tunnel geometry.
+
+Do not rely only on horizontal glowing lines.
+
+## 3\. FOUR DANCE PADS
+
+Keep EXACTLY FOUR trapezoidal pads.
+
+Match the reference proportions:
+
+- Wider pads.
+- Larger visible surface area.
+- Positioned close to the bottom foreground.
+- Equal spacing.
+- Thin white outlines.
+- Dark transparent interiors.
+
+IMPORTANT: Gameplay notes must not permanently obscure the pads.
+
+For visual comparison, create an idle scene with no active notes or hazards.
+
+Check that all four pads are clearly distinguishable.
+
+Remove any unintended oversized red or yellow geometry covering the pad area.
+
+## 4\. DANCER SILHOUETTE
+
+Improve the left-side dancer panel.
+
+Match the reference:
+
+- Larger rectangular panel.
+- Black background.
+- Full-body human silhouette.
+- White glowing outline.
+- Clearly visible head, arms, torso and legs.
+- Centered within the panel.
+
+Keep it a 2D silhouette, not a large 3D avatar.
+
+## 5\. CAMERA AND COMPOSITION
+
+Maintain the centered first-person camera.
+
+Adjust the camera and tunnel scale to make the corridor feel deeper and more immersive.
+
+The pads should occupy the lower foreground.
+
+The vanishing point should remain near the center of the scene.
+
+## 6\. VISUAL REGRESSION CHECK
+
+Before declaring completion:
+
+Capture a clean 1280x720 screenshot with:
+
+- No active gameplay notes.
+- All four pads visible.
+- Full tunnel visible.
+- Full dancer silhouette visible.
+- Floor reflections clearly visible.
+
+Compare against the original reference image.
+
+Do not modify audio, chart generation, scoring, combo, timing or input logic.
+
+Report all modified files and provide the final screenshot.
+
+## 4\. Tiêu chí để mình duyệt Giai đoạn 1
+
+Visual acceptance checklist
+
+Tiến độ kiểm tra
+
+## 0/7
+
+[ ]Tunnel có hình dạng hành lang 3D rõ ràng
+
+[ ]Khung neon có chiều sâu và không quá rối
+
+[ ]Sàn đen bóng phản chiếu như mặt nước
+
+[ ]Đúng 4 dance pads lớn, không bị che khuất
+
+[ ]Silhouette trắng toàn thân, nhìn rõ
+
+[ ]Camera chính giữa, phối cảnh đẹp
+
+[ ]Ảnh chụp 1280×720 giống concept ban đầu
+
+Kết luận của mình: Bản hiện tại đã có nền tảng kỹ thuật khá tốt. Mình đánh giá hướng triển khai đúng, nhưng chưa đạt độ giống ảnh tham chiếu mà chúng ta mong muốn.
+
+Đừng vội làm Giai đoạn 2. Hãy làm cho thế giới 3D thật đẹp trước, sau đó mới đưa silhouette và chuyển động vào. Khi OpenCode hoàn thành vòng tinh chỉnh, gửi mình ảnh mới để duyệt tiếp nhé\!
+
+
+
+I’ll refine the stage rather than rewrite it: first I’m re-reading the tunnel/pad/camera modules, then I’ll simplify the corridor architecture, rebuild the wet-floor reflection composition, enlarge the pads and dancer panel, and capture a no-note idle frame for comparison.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 1 refinement is complete. The corridor now reads as a physical space instead of a wireframe tunnel: dark side walls, long wall rails, one clear architectural arch, spaced polygonal portals, and a cleaner central vanishing point.
+
+![Idle stage — native 1280×720 capture](screenshots/stage1-final-native.png)
+
+![Full HUD, four pads, and left dancer panel](screenshots/stage1-final-hud-view.png)
+
+## Modified files
+
+- `src/world/NeonTunnel.js` — rebuilt corridor architecture, wall surfaces/panels, structured frames, cleaner rail layout, wet-floor shader, reflective patches, reflection streaks, and foreground-reflection exclusion behind the pads.
+- `src/world/DancePads.js` — wider pads, larger surfaces, lower foreground placement, equal spacing, darker interiors, and dimmed idle state.
+- `src/config.js` — pulled the camera back and aimed it deeper into the corridor.
+- `src/styles/main.css` — enlarged the left silhouette panel and strengthened its white frame.
+- `src/game/DanceSilhouette.js` — refined the filled body/limb proportions so the head, arms, torso, and legs read clearly.
+
+## Preserved
+
+Audio playback/analysis, music loading, BPM detection, chart generation, scoring, combo, timing, input mapping, pause/seek/restart, note visuals, and the existing `NeonWorld`/`Game` contracts were left intact.
+
+## Verification
+
+- `npm run build` passes: 94 modules transformed.
+- Dev server rendered the stage without console runtime errors.
+- Idle capture was made with `notes.group.visible = false`, no hazards, and all pad pulses reset.
+- Verified four pads present and visible, no active notes/hazards, full tunnel visible, enlarged silhouette visible, and floor reflection bands visible.
+- Render cost measured at **63 draw calls, ~6.5k triangles, 34 geometries, 23 shader programs, 15 textures** in the idle state.
+
+The original reference image is still not present in the workspace or available through the session tools, so this pass follows the written refinement requirements rather than a direct pixel comparison. The HUD capture is a scaled preview capture; the native WebGL capture above is 1280×720.
+
+
+
+
+1111111111111 giai đoạn 2
+Lần này mình thấy OpenCode đã xử lý đúng những vấn đề mà chúng ta yêu cầu ở vòng tinh chỉnh thứ nhất. Đặc biệt, việc chuyển từ wireframe hỗn loạn sang kiến trúc hành lang có vách, khung portal và điểm tụ rõ ràng là một quyết định đúng.
+
+## 1. Đánh giá vòng tinh chỉnh thứ hai
+
+Tiến bộ tốtDựa trên ảnh mới và báo cáo triển khai:
+
+| Hạng mục | Đánh giá |
+| --- | --- |
+| Kiến trúc hành lang | Tốt hơn |
+| Vách tunnel | Đã bổ sung |
+| Portal hình học | Đã có cấu trúc |
+| Điểm tụ trung tâm | Đã cải thiện |
+| Sàn phản chiếu | Đã cải thiện |
+| Bốn dance pads | Đã mở rộng |
+| Silhouette bên trái | Đã cải thiện |
+| Gameplay/audio | Được giữ nguyên theo báo cáo |
+
+Một điểm mình đánh giá cao là OpenCode đã tạo ảnh idle không có note và hazard. Đây là cách kiểm tra giao diện nền rất đúng, tránh nhầm lẫn giữa lỗi thiết kế và hiệu ứng gameplay.
+
+## 2. Có 3 việc cần kiểm tra trước khi duyệt Visual
+
+Mình chưa muốn yêu cầu OpenCode chỉnh thêm ngay, vì có thể nó đã đạt mức cần thiết.
+
+- Sàn: Phản chiếu phải xuất phát từ các cấu trúc neon, không chỉ là các dải sáng ngang.
+- Pads: Phải nhìn rõ cả bốn hình thang, có phối cảnh và khoảng cách hợp lý.
+- Silhouette: Phải thấy rõ hình người toàn thân, không bị biến thành hình khối trắng khó nhận dạng.
+
+Một lưu ý: báo cáo hiện tại chưa có số liệu FPS khi chơi thực tế. 63 draw calls và 6.5k triangles là khá gọn về mặt hình học, nhưng 23 shader programs và post-processing vẫn cần kiểm tra trên thiết bị thật.
+
+## 3. Mình đề xuất chuyển sang Giai đoạn 2
+
+Đề xuất tiếp theo## Giai đoạn 2 – Dancer Silhouette Animation
+
+Music | Cataleya Music
+
+Stream OG Telly - Na' Gangsta Walk by Memphis Jookin | Listen online for free on SoundCloud
+
+Street Dance Girl Style - iClone/Motion - Reallusion Content Store
+
+Mục tiêu bây giờ là làm cho hình bóng người bên trái thực sự trở thành một dancer.
+
+Mình muốn giữ đúng 4 nguyên tắc:
+
+1. Hình người màu trắng, nền đen.
+2. Toàn thân luôn nằm trong khung hình.
+3. Chuyển động liên tục, tự nhiên, không giật.
+4. Chuyển động đồng bộ với nhạc đang phát.
+
+### Điều đặc biệt quan trọng
+
+Không nên chỉ làm nhân vật nhún lên xuống theo BPM.
+
+Cần có các nhóm chuyển động:
+
+- Idle / Groove.
+- Upper body movement.
+- Arm choreography.
+- Hip movement.
+- Leg movement.
+- Dance transitions.
+- Accent movement theo kick và snare.
+
+Nếu hệ thống `AutoPoseProvider` hiện tại đã có dữ liệu chuyển động, hãy tái sử dụng và cải thiện nó thay vì viết lại từ đầu.
+
+## 4\. Prompt Giai đoạn 2 cho OpenCode
+
+Mình đề xuất gửi prompt này sau khi bạn quyết định duyệt Visual.
+
+Writing
+
+# NEON PULSE – STAGE 2: DANCER SILHOUETTE ANIMATION
+
+The Stage 1 visual environment is now the baseline.
+
+Do not modify or redesign:
+
+- Neon tunnel
+- Camera
+- Reflective floor
+- Four dance pads
+- Main HUD layout
+
+The next task is to develop the left-side white dancer silhouette into a convincing music-synchronized dancing character.
+
+## 1\. VISUAL IDENTITY
+
+Keep the existing design:
+
+- Solid white human silhouette.
+- Black background.
+- Full-body visibility.
+- Small rectangular panel on the left.
+- Clear human anatomy.
+- No facial details.
+- No clothing textures.
+- No colored avatar.
+
+The silhouette should remain visually consistent with the original reference.
+
+## 2\. MOVEMENT SYSTEM
+
+Inspect and reuse the existing AutoPoseProvider.
+
+Improve the animation system with distinct movement families:
+
+- Idle groove
+- Upper body movement
+- Shoulder movement
+- Arm choreography
+- Hip movement
+- Leg movement
+- Body turns
+- Dynamic dance transitions
+
+Avoid repetitive vertical bouncing.
+
+The character should look like a person dancing to music, not a mechanical object responding to BPM.
+
+## 3\. MUSIC SYNCHRONIZATION
+
+Use the existing audio engine and audio clock.
+
+Synchronize movement using:
+
+- BPM
+- Beat phase
+- Kick intensity
+- Snare intensity
+- Frequency energy
+- Music sections and transitions where available
+
+Movement should remain continuous between beats.
+
+Use musical accents to emphasize important movements rather than restarting the entire animation on every beat.
+
+## 4\. ANIMATION QUALITY
+
+Requirements:
+
+- Smooth interpolation.
+- Natural transitions.
+- Balanced body proportions.
+- Stable feet.
+- No sudden limb snapping.
+- No impossible joint angles.
+- No disappearing body parts.
+- No clipping outside the panel.
+
+Use deterministic movement based on the audio clock so seeking and restarting do not cause unpredictable animation states.
+
+## 5\. PERFORMANCE
+
+Keep the silhouette lightweight.
+
+Avoid creating another WebGL renderer.
+
+Prefer the existing rendering pipeline or a lightweight 2D canvas/SVG implementation if appropriate.
+
+Do not increase GPU load unnecessarily.
+
+## 6\. VERIFICATION
+
+Test with at least three different musical characteristics:
+
+- Slow music.
+- Medium-tempo music.
+- Fast music.
+
+Check:
+
+- Animation continuity.
+- Beat synchronization.
+- Natural movement.
+- Pause/resume.
+- Seek/restart synchronization.
+- Full-body visibility.
+
+Capture screenshots and a short gameplay recording if possible.
+
+Do not declare completion based on build success alone.
+
+Report modified files, preserved systems and actual runtime test results.
+
+Mình muốn thống nhất một điều: NEON PULSE không nên chỉ là game bấm phím theo nhạc. Phần dancer silhouette phải tạo được cảm giác như một màn trình diễn dance thực sự, còn tunnel là sân khấu tạo chiều sâu cho màn trình diễn đó.
+
+Bạn có thể gửi thêm ảnh native 1280×720 (`stage1-final-native.png`) nếu muốn mình duyệt sát hơn trước khi chuyển giai đoạn. Hiện tại mình nghiêng về việc giữ nguyên Visual và bắt đầu Giai đoạn 2, không tiếp tục chỉnh tunnel vô hạn.
+
+
+
+I’ll keep the Stage 1 stage composition untouched and work only on the silhouette pipeline. I’m reading the existing auto-pose generator, its joint rig, the game’s silhouette update path, and analyzer fields before adding the music-driven movement director.
+
+The existing provider already produces a solid base groove, so I’m adding a deterministic choreography layer on top of it rather than replacing it. That layer will select and crossfade movement families, add kick/snare accents and section-based emphasis, ground the support foot, and keep the pose tied to the song clock.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The core animation now validates cleanly (no clipping across 225 sampled poses, stable feet, exact seek determinism). I found one remaining discontinuity at music-section boundaries, so I’m adding a short deterministic crossfade from the previous section before final capture.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 2 is implemented and running, building on the existing silhouette rather than replacing it.
+
+## Animation changes
+
+- Added `src/game/DanceChoreography.js`:
+  - Seven movement families: idle groove, upper body, shoulders, arms, hips, legs and body turns.
+  - Deterministic 8-beat family cycle with crossfades.
+  - Section-aware emphasis and a 0.9-second section-change crossfade.
+  - Kick and snare accents layered over the movement instead of resetting it.
+  - Grounded support foot, knee rebuilding, arm-length limits and body-turn projection.
+- Updated `src/game/DanceSilhouette.js`:
+  - Uses `AutoPoseProvider` through the new choreography layer.
+  - Accepts kick, snare, high and low analyzer inputs.
+  - Full-body fit is now centred with safe panel margins.
+  - Added readable foot strokes and kept the silhouette solid white.
+- Updated `src/core/Game.js`:
+  - Passes `kick`, `snare`, `high`, `low` and the previous section to the dancer.
+  - Derives the previous section from chart structure so seeking is deterministic.
+  - No scoring, audio, chart-generation, combo, timing or input logic changed.
+- Smoothed seeded arm variation at bar/phrase boundaries in `src/studio/pose/AutoPoseProvider.js`.
+
+## Preserved
+
+The neon tunnel, camera, reflective floor, four pads and HUD layout/styles were not redesigned. The existing 2D canvas and game tick are still used; no second WebGL renderer was added.
+
+## Runtime verification
+
+- `npm run build` passed: **95 modules**, JS **1,068.02 kB**, CSS **64.66 kB**.
+- Live game reported **60 FPS**.
+- **225 sampled poses** across 70 BPM breakdown, 128 BPM drop and 170 BPM build-up:
+  - Clipping: **0**
+  - NaN joints: **0**
+  - Anatomy/limb violations: **0**
+  - Stable support ankle at **0.035 m**, ground drift: **0**
+- Smoothness at 60 FPS sampling:
+  - 70 BPM: max joint movement **0.01038 m**
+  - 128 BPM: **0.01447 m**
+  - 170 BPM: **0.02587 m**
+- Pause: canvas and pose remained unchanged.
+- Resume: playback advanced and animation resumed.
+- Seek: seeking `8 → 20 → 8` produced an identical pose, delta **0**.
+- Restart: re-entered the intro with the demo track loaded and a fresh silhouette.
+- Section transition: crossfaded boundary movement **0.01855 m**, compared with **0.01687 m** normal movement just after the transition.
+
+## Evidence
+
+![Stage 2 dancer panel](screenshots/stage2-dancer-panel.png)
+
+![Slow, medium and fast choreography samples](screenshots/stage2-tempo-sheet.png)
+
+![Movement families at 128 BPM](screenshots/stage2-family-sheet.png)
+
+[Six-second silhouette animation clip](screenshots/stage2-dance.mp4)
+
+[Clean native 1280×720 environment capture](screenshots/stage2-native-1280.png)
+
+## Limitations
+
+- The only built-in track is 128 BPM. Slow and fast validation used synthetic BPM/section/analyzer inputs against the real choreography renderer, not separate slow/fast audio files.
+- The original reference image was not available in the workspace, so this preserves the established silhouette style rather than matching a reference pixel-for-pixel.
+- The browser preview surface is 421 px wide; the native 1280 scene and silhouette canvases were captured directly. A full desktop HUD screenshot was therefore not produced.
+- The supplied clip is generated from the actual silhouette canvas, not a full-screen gameplay recording.
+
+The next natural pass is to push the arm silhouettes toward more recognisable dance gestures while keeping this timing and section system intact.
+
+
+
+111111111111111111
+
+Rất tốt\! Lần này OpenCode đã làm đúng hướng Giai đoạn 2: không thay thế hệ thống chuyển động cũ mà xây dựng thêm `DanceChoreography` để điều khiển các nhóm động tác theo nhạc.
+
+Mình đánh giá cao phần kiểm thử kỹ thuật, đặc biệt là khả năng seek về đúng thời điểm và tái tạo chính xác cùng một pose.
+
+## 1. Đánh giá kết quả Giai đoạn 2
+
+Đạt về nền tảng kỹ thuật| Hạng mục | Kết quả |
+| --- | --- |
+| 7 nhóm chuyển động | Đã triển khai |
+| Đồng bộ BPM | Đã triển khai |
+| Kick/Snare accents | Đã triển khai |
+| Chuyển động theo section | Đã triển khai |
+| Crossfade | Đã triển khai |
+| Chống clipping | 0 lỗi trong 225 mẫu |
+| Seek determinism | Delta 0 |
+| Pause/Resume | Đã kiểm tra |
+| Hiệu năng | 60 FPS theo báo cáo |
+
+## 2. Điều mình muốn cải thiện tiếp
+
+Có một điểm cần phân biệt:
+
+Chuyển động mượt không đồng nghĩa với nhảy đẹp.
+
+OpenCode đã chứng minh được tính ổn định của hệ thống animation, nhưng chưa chứng minh được chất lượng choreography.
+
+Mình muốn dancer có những động tác thực sự nhận diện được:
+
+Music | Cataleya Music
+
+Arm choreography
+
+INFINITY Dancers | Artist | INFINITY
+
+Hip movement
+
+クランプダンスとは？stomp・jab・arm swing・chest popで読み解くKrump | Free Chacha Online
+
+Leg and body movement
+
+Ruhrtriennale - Presse - Every-body-knows-what-tomorrow-brings-and-we-all-know-what...
+
+Body turns
+
+Hiện tại có 4 điều mình muốn kiểm tra:
+
+- Động tác tay có đủ đa dạng không?
+- Có những pose đặc trưng của dance hay chỉ là chuyển động khớp?
+- Chuyển động chân và hông có tạo cảm giác có trọng lượng không?
+- Chuyển động có phù hợp với thể loại nhạc khác nhau không?
+
+## 3. Chưa chuyển sang Giai đoạn 3 ngay
+
+Mình đề xuất một vòng polish nhỏ cho dancer trước, nhưng không viết lại hệ thống.
+
+Một điểm đáng lưu ý: 70 BPM và 170 BPM hiện được kiểm thử bằng dữ liệu tổng hợp, chưa phải hai bài nhạc thật. Vì vậy cần thử với audio thực tế trước khi kết luận hệ thống hoạt động tốt ở mọi tốc độ.
+
+## 4. Prompt polish choreography
+
+Nếu bạn muốn tiếp tục, đây là phần giao việc tiếp theo:
+
+Writing
+
+# NEON PULSE – STAGE 2.5: CHOREOGRAPHY QUALITY POLISH
+
+The Stage 2 animation architecture is working correctly.
+
+Do NOT rewrite DanceChoreography or AutoPoseProvider.
+
+Do NOT modify the tunnel, camera, floor, dance pads or HUD.
+
+The objective is to improve the visual quality and recognizability of dance movements.
+
+## 1\. RECOGNIZABLE DANCE POSES
+
+Review all seven movement families.
+
+Make each family visually distinct.
+
+Prioritize:
+
+- Clear arm gestures.
+- Arms crossing and opening.
+- Overhead arm movements.
+- Side extensions.
+- Shoulder isolations.
+- Hip shifts.
+- Side steps.
+- Weight transfers.
+- Controlled body turns.
+- Dynamic stance changes.
+
+Avoid repetitive small joint oscillations.
+
+## 2\. CHOREOGRAPHY VARIATION
+
+Introduce meaningful pose variations across phrases.
+
+Do not simply repeat the same eight-beat movement cycle indefinitely.
+
+Create a coherent sequence:
+
+- Intro groove.
+- Main dance phrase.
+- Strong accent phrase.
+- Variation phrase.
+- Recovery groove.
+- Transition.
+
+Keep all movement deterministic and seek-safe.
+
+## 3\. MUSIC RESPONSIVENESS
+
+Maintain smooth continuous movement.
+
+Use:
+
+- Beat phase for rhythmic timing.
+- Kick for grounded accents.
+- Snare for upper-body gestures.
+- High frequencies for smaller gestures.
+- Section transitions for choreography changes.
+
+Do not trigger a complete pose reset on every beat.
+
+## 4\. VISUAL QUALITY
+
+Maintain:
+
+- Solid white silhouette.
+- Black background.
+- Full-body framing.
+- Clear limb separation.
+- Natural body proportions.
+- No clipping.
+
+Make the silhouette readable even at small panel sizes.
+
+## 5\. TESTING
+
+Test using actual audio recordings with different tempos and musical characteristics, not only synthetic BPM values.
+
+Capture a video demonstrating:
+
+- At least three distinct movement families.
+- Smooth transitions.
+- Full-body movement.
+- Kick and snare responsiveness.
+- Pause/resume.
+- Seek/restart.
+
+Do not modify the Stage 1 environment or gameplay systems.
+
+Report exactly what changed and include the animation video.
+
+## 5. Kế hoạch NEON PULSE hiện tại
+
+1. Giai đoạn 1 – Visual
+   Đã hoàn thành theo báo cáoTunnel, camera, reflective floor, 4 pads, HUD.
+2. Giai đoạn 2 – Character
+   Đã hoàn thành nền tảngSilhouette, choreography, audio synchronization.
+3. Giai đoạn 2.5 – Polish
+   Nên thực hiệnLàm động tác nhảy đẹp, đa dạng và có cá tính.
+4. Giai đoạn 3 – Gameplay
+   Tiếp theoKết nối hoàn chỉnh note, dance pads, hit detection, scoring, combo và hiệu ứng.
+
+Ý kiến của mình: Phần kỹ thuật của dancer đang khá tốt. Bây giờ thứ chúng ta cần không phải thêm nhiều code, mà là làm cho người xem cảm nhận được một người đang thực sự biểu diễn dance theo nhạc.
+
+Bạn gửi mình clip `stage2-dance.mp4` nếu có thể. Clip sẽ giúp đánh giá choreography chính xác hơn nhiều so với một ảnh tĩnh.
+
+
+
+I’ll keep the Stage 1 scene and gameplay systems untouched, first auditing the current choreography and the local audio fixtures so I can test with real recordings rather than synthetic BPMs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Recording a full actual-audio clip needs more than the 10-second evaluation limit, so I’m splitting capture start, pause/seek control and stop into separate steps. I’m also clearing a timed-out recorder before the final run.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 2.5 is complete. The Stage 2 choreography was extended in place, not replaced, and `AutoPoseProvider` was left untouched.
+
+**Animation video:** [Watch `stage25-dance.mp4`](screenshots/stage25-dance.mp4)  
+28 seconds · 480×660 · 30 FPS · H.264/AAC · actual Brahms audio included. It shows overhead/crossed/wide arm work, hips, turns and weight shifts, a paused/resumed section, a seek, and an actual restart from `t=0`.
+
+![All seven families from the final build](screenshots/stage25-family-final-all7.png)
+
+## What changed
+
+### `src/game/DanceChoreography.js`
+
+- Added a **124-beat phrase sequence**:
+  - `intro-groove` — 16 beats
+  - `main-dance` — 32 beats
+  - `accent` — 16 beats
+  - `variation` — 32 beats
+  - `recovery` — 16 beats
+  - `transition` — 12 beats
+- Phrase bias blends continuously into the family selection and phrase shape, so it no longer repeats an eight-beat cycle.
+- Extended the family span to **12 beats**.
+- Added distinct per-family arm silhouettes:
+  - `groove` — low, open arms
+  - `upper` — crossed, chest-level arms
+  - `shoulders` — wide shoulder isolations
+  - `arms` — raised/overhead and side-opening arms
+  - `hips` — hands travelling to the hips/waist
+  - `legs` — low open arms with side steps and knee lifts
+  - `turn` — low crossed arms framing a controlled shoulder/body turn
+- Increased the arm-family blending sharpness while keeping it continuous.
+- Strengthened hip shifts, chest counter-rotation, side steps, weight transfers, knee lifts and shoulder-line turns.
+- Kept kick, snare and high-frequency accents as overlays, not full-pose resets.
+- All motion remains a pure function of song time, BPM, seed, section and analyzer values, so seeks and restarts resolve deterministically.
+
+### `src/game/DanceSilhouette.js`
+
+- Kept the solid white silhouette and black background.
+- Kept black separation strokes around overlapping limbs, but removed them from torso-chain edges so the body reads as one solid shape rather than segmented tiles.
+- Added foot strokes for grounding.
+- Added a conditional black halo around the head only when a wrist is raised above the head.
+- Preserved full-body fitting, safe margins and centering for raised arms, turns and knee lifts.
+
+### Validation added
+
+- `qa/stage25-choreography-harness.mjs` — deterministic family/phrase, finite-joint, grounded-foot, panel-fit, smoothness and seek-safety checks.
+- `qa-artifacts/stage25-choreography-validation.json` — latest results.
+
+Nothing was changed in `AutoPoseProvider`, `Game.js`, the tunnel, camera, floor, dance pads or HUD.
+
+## Actual-audio testing
+
+These were real local recordings, not synthetic BPM values:
+
+| Recording | Browser-detected BPM | Observed analyzer response | Transport checks |
+|---|---:|---|---|
+| Brahms — Hungarian Dance No. 5, 174.8 s | 169.5 | kick `0.44`, snare `0.02` at sampled peak | pause at `83.50 s` held; resume advanced; seek `94.74 → 116.69 s` |
+| Chopin — Nocturne Op. 9 No. 2, 239.5 s | 124.5 | kick `0.36`, snare `0.10` | pause at `11.34 s` held exactly; resume to `11.65 s`; seek `31.65 → 31.86 s` |
+| Clementi — Sonatina Op. 36 No. 1, 107.5 s | 175 | kick `0.16`, snare `0.065` at sampled peak | actual playback and silhouette updates verified |
+
+The final video was captured from the latest code with the real Brahms track and its Web Audio graph routed into the recording.
+
+## Verification
+
+- `npm run build` passed:
+  - 95 modules
+  - JS `1,070.55 kB` (`293.02 kB` gzip)
+  - CSS `64.66 kB`
+- Harness passed at **528 samples per BPM** for Brahms, Chopin and Clementi:
+  - all seven families present
+  - all six phrases present
+  - finite 17-joint full body
+  - pose fits a `152×203` panel with `25.67 px` minimum margin
+  - grounded foot minimum `0.035`
+  - maximum sampled joint speed `2.61–4.15 m/s` depending on tempo
+  - deterministic seek pose, family and phrase
+- Final video inspected through extracted frame sheets; it is `28.000 s`, H.264/AAC, and the audio stream is present and non-silent (`mean_volume -30.1 dB`).
+
+The browser console showed no JavaScript runtime errors. During the extended capture, the existing Stage 1 renderer emitted repeated `WebGL: INVALID_OPERATION: useProgram: program not valid` warnings; I did not alter that environment because this pass was scoped to choreography and silhouette quality.
+
+If you want to compare the slower real recordings visually, I can produce a Chopin/Clementi montage from the same latest build.
+
+
+111111111111111 giai đoạn 3
+
+Lần này mình đánh giá Giai đoạn 2.5 đã tiến thêm một bước đáng kể. Đặc biệt, OpenCode đã chuyển từ kiểm thử bằng BPM giả lập sang sử dụng 3 bản nhạc thực tế. Đây là thay đổi rất đáng giá.
+
+Tuy nhiên, có một vấn đề mình muốn đánh dấu trước khi chuyển sang Giai đoạn 3.
+
+## 1. Đánh giá Giai đoạn 2.5
+
+Đạt về choreography và kiểm thử| Hạng mục | Kết quả |
+| --- | --- |
+| 7 nhóm chuyển động | Đã có |
+| 6 dance phrases | Đã có |
+| Động tác tay đa dạng | Đã cải thiện |
+| Hip và weight transfer | Đã cải thiện |
+| Body turns | Đã có |
+| Nhạc thực tế | 3 bản |
+| Seek/restart | Đã kiểm tra |
+| Video có âm thanh | Đã xuất |
+| Deterministic animation | Đã kiểm tra |
+
+Ba bản nhạc thử nghiệm:
+
+- Brahms – Hungarian Dance No. 5
+- Chopin – Nocturne Op. 9 No. 2
+- Clementi – Sonatina Op. 36 No. 1
+
+Đây là lựa chọn tốt vì chúng có đặc điểm tiết tấu khác nhau.
+
+## 2. Một vấn đề kỹ thuật cần lưu ý
+
+Cần theo dõiOpenCode báo cáo:
+
+`WebGL: INVALID_OPERATION: useProgram: program not valid`
+
+Đây là cảnh báo đáng chú ý.
+
+Nó xuất hiện trong quá trình capture kéo dài, thuộc renderer của Stage 1.
+
+Mình không muốn bỏ qua lỗi này khi bước sang gameplay vì nó có thể liên quan đến shader hoặc WebGL program lifecycle.
+
+Chưa thể kết luận nó ảnh hưởng đến gameplay, nhưng nên yêu cầu kiểm tra và xử lý trước khi phát hành.
+
+Ngoài ra, tốc độ khớp tối đa 2.61–4.15 m/s trong harness là số liệu cần xem xét theo ngữ cảnh, không tự động chứng minh chuyển động trông tự nhiên.
+
+## 3. Bây giờ chuyển sang Giai đoạn 3
+
+## Gameplay Integration
+
+Hexagroove: Tactical DJ - Ichigoichie Games
+
+《音灵 INVAXION》X ilem 联动开启，限时折扣+ DLC限免奉上！\_新浪游戏\_手机新浪网
+
+Save 50% on Dance Dash on Steam
+
+Mục tiêu của giai đoạn này là kết nối toàn bộ hệ thống thành một trải nghiệm game thống nhất.
+
+Mình muốn có 6 phần:
+
+1. Note spawning: Nốt xuất hiện từ điểm tụ trong tunnel và di chuyển về phía người chơi.
+2. Four-pad mapping: Bốn pads thực sự tương ứng với hệ thống input, không chỉ là hình trang trí.
+3. Hit detection: Người chơi tương tác đúng thời điểm nhạc.
+4. Scoring: Perfect, Great, Good, Miss.
+5. Combo: Hiển thị chuỗi hit liên tục.
+6. Visual feedback: Pads phát sáng, tunnel phản ứng và dancer có accent theo nhịp.
+
+## 4. Prompt Giai đoạn 3 cho OpenCode
+
+Mình đề xuất giao việc theo hướng bảo toàn các hệ thống đã hoàn thiện.
+
+Writing
+
+# NEON PULSE – STAGE 3: GAMEPLAY INTEGRATION
+
+Stage 1 visual redesign and Stage 2/2.5 dancer choreography are the established baseline.
+
+The objective is to integrate the complete rhythm gameplay experience with the new four-pad visual environment.
+
+CRITICAL: Do not redesign the tunnel, camera, reflective floor, silhouette panel or HUD composition.
+
+Do not replace the existing audio engine, chart generator, scoring engine or timing system without demonstrating a concrete technical necessity.
+
+## 1\. AUDIT EXISTING GAMEPLAY
+
+Before changing code, inspect:
+
+- NoteManager.js
+- DancePads.js
+- Gameplay.js
+- Game.js
+- InputManager.js
+- AudioEngine.js
+- Chart generation
+- Scoring and combo logic
+
+Document how the existing three internal gameplay lanes map to the four visual pads.
+
+Do not assume that three internal lanes can be mapped to four pads correctly without inspecting the current implementation.
+
+Resolve the lane-to-pad mapping explicitly.
+
+## 2\. NOTE VISUALIZATION
+
+Notes should emerge from the tunnel vanishing point and approach the player.
+
+Requirements:
+
+- Strong perspective depth.
+- Clear direction of movement.
+- Distinguishable note shapes.
+- Readable colors.
+- Accurate timing against the audio clock.
+- Notes must visually align with their corresponding pads.
+
+Avoid excessive particle effects.
+
+Notes must not obscure the four pads unnecessarily.
+
+## 3\. FOUR-PAD GAMEPLAY
+
+The four trapezoidal pads must become actual gameplay interaction zones.
+
+Requirements:
+
+- Exactly four visual pads.
+- Each pad has a clearly defined input mapping.
+- Correct lane-to-pad correspondence.
+- Active pad illumination.
+- Hit feedback.
+- Miss feedback.
+- Consistent desktop and mobile input behavior.
+
+Document the mapping for all four pads.
+
+## 4\. HIT DETECTION AND SCORING
+
+Preserve existing timing windows unless a real bug is discovered.
+
+Support:
+
+- Perfect
+- Great
+- Good
+- Miss
+
+Verify:
+
+- Timing accuracy.
+- No double hits.
+- No duplicate score.
+- No false hits.
+- Correct combo updates.
+- Correct miss handling.
+- Correct pause/resume behavior.
+
+## 5\. VISUAL FEEDBACK
+
+On successful hits:
+
+- Illuminate the corresponding pad.
+- Generate a restrained impact effect.
+- Add a brief neon pulse.
+- Trigger appropriate dancer accent behavior.
+
+On misses:
+
+- Use subtle visual feedback.
+- Do not introduce excessive screen shake.
+
+The tunnel and floor should respond to musical events without reducing visual clarity.
+
+## 6\. DANCER INTEGRATION
+
+Keep the current DanceChoreography system.
+
+The dancer should:
+
+- Continue dancing during gameplay.
+- React to music continuously.
+- Maintain deterministic seek/restart behavior.
+- Remain visually readable.
+- Never reset its pose abruptly on a successful hit.
+
+## 7\. WEBGL WARNING INVESTIGATION
+
+Investigate the previously observed:
+
+WebGL: INVALID\_OPERATION: useProgram: program not valid
+
+Identify its source and reproduce it if possible.
+
+Check shader program lifecycle, material disposal and renderer state.
+
+Do not suppress the warning without identifying its cause.
+
+Fix only if the issue is reproducible and attributable to the application.
+
+## 8\. TESTING
+
+Test:
+
+- Desktop keyboard.
+- Mobile touch.
+- Four-pad mapping.
+- Perfect/Great/Good/Miss.
+- Combo and score.
+- Pause/resume.
+- Seek/restart.
+- Different music tempos.
+- Long gameplay sessions.
+- WebGL console warnings.
+
+Use real audio playback for integration tests.
+
+## 9\. DELIVERABLES
+
+Provide:
+
+- Modified file list.
+- Four-pad input mapping.
+- Gameplay screenshots.
+- A short real gameplay video with music.
+- Scoring test results.
+- Console error report.
+- Build result.
+- Runtime FPS observations.
+
+Do not declare completion based on build success alone.
+
+Preserve all working systems and document any behavior that had to change.
+
+## 5. Tiến độ dự án
+
+1. Stage 1 – Visual redesign
+   Hoàn thành theo báo cáoNeon tunnel, reflective floor, four pads, camera.
+2. Stage 2 – Character
+   Hoàn thành theo báo cáoWhite dancer silhouette, music synchronization.
+3. Stage 2.5 – Choreography polish
+   Hoàn thành theo báo cáoDance phrases, movement variation, actual audio tests.
+4. Stage 3 – Gameplay integration
+   Tiếp theoNotes, four-pad mapping, hit detection, scoring, combo, effects.
+
+Một điều mình muốn nhấn mạnh: Stage 3 là giai đoạn quan trọng nhất về mặt sản phẩm. Đừng để OpenCode chỉ làm cho note xuất hiện đẹp mắt. Bốn dance pads phải thực sự hoạt động chính xác, nốt phải đến đúng vị trí đúng thời điểm và điểm số phải đồng bộ với audio clock.
+
+Bạn cứ gửi báo cáo Stage 3 khi OpenCode hoàn thành. Mình sẽ kiểm tra kỹ phần mapping 3 lane cũ sang 4 pads mới, vì đây là chỗ dễ phát sinh lỗi logic nhất.
+
+
+
+I’ll audit the existing lane/pad pipeline first, then make the smallest integration changes that preserve the Stage 1 environment and Stage 2.5 dancer. I’ll verify the mapping, scoring behavior, touch/keyboard paths, WebGL warnings, build, and a real-audio session before reporting.
+
+I'll resume the Stage 3 implementation. First, let me re-read the core gameplay files to ground the edits.
+
+Now the CSS/layout and camera details, plus the QA harness I'll extend.
+
+Now I have the full picture. Making the four-lane conversion across config, chart patterns, notes, pads, input, UI copy, and the dancer accent — plus reading the shader/PostFX path for the WebGL warning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Build passes and the chart generator is four-lane. Now I'll run a deterministic in-browser QA of the lane mapping, judgements and pad illumination against a real decoded track.
+
+Lane mapping, pad illumination, double-hit protection and combo reset all pass. The judgement-tier scores are right, but my event capture returned empty — checking the bus and console for an exception.
+
+The WebGL warnings reproduce immediately on a fresh load, so this is a real, persistent bug rather than a capture artifact. I'll inspect the live program table and trap the failing `useProgram` call.
+
+Found the root cause: a fragment shader fails to compile at line 80 because it uses the reserved GLSL word `patch`. Let me locate it.
+
+Confirmed: the floor shader declares a variable named `patch`, a reserved GLSL word, so its program never links and every frame calls `useProgram` on an unusable program. Renaming it is the real fix.
+
+
+
+
+My comment used backticks inside the GLSL template literal, which broke the module. Fixing the comment.
+
+
+
+
+The shader program now links cleanly (0 broken programs, GL error 0). Now the judgement tiers, pause/resume, seek, note sync and FPS against real audio.
+
+Judgements, transport and frame rate are clean. Two things left to verify: a real false-hit check (my earlier probe landed on a legitimate note) and the dancer accent staying pose-safe — then a second tempo under autoplay.
+
+The evaluator has a 10 s cap; splitting the remaining checks.
+
+No WebGL warnings at all across ~15 s of active four-lane gameplay. Now capturing visual evidence at desktop and mobile widths.
+
+The aborted evaluation left the loader stuck; reloading and restarting with the faster Chopin analysis.
+
+The page's timers appear frozen mid-analysis (progress stalls between yielding chunks). Opening a fresh focused tab to continue.
+
+The preview capture only grabs the narrow panel width, so it crops the outer pads. Checking for the local upload receiver used in earlier stages so I can save a true wide canvas frame.
+
+All four pads read clearly at desktop aspect. Now a frame with notes in flight so I can check their readability and lane alignment.
+
+Pool behaviour explains the empty snapshot (a 40-note pool consumed by stale spawns), not an app leak. Re-capturing with incremental spawns so notes are actually in flight.
+
+Notes are present and lane-aligned (x = -3, -1, 1, 3), but faint at distance. Let me look at one close to the hit line before deciding whether the note shape needs a readability bump.
+
+Notes read as pale glass; lane colour is washed out by the white core. Applying a restrained size/colour tweak to make lane identity clearer, then re-checking the same close view.
+
+
+
+
+The game auto-failed with 15 misses before autoplay attached. Chaining autoplay to the start call to close that gap.
+
+All four pads flash from real hits and the run is at 75-perfect combo. Capturing a wide live frame (all four pads) and then recording the gameplay clip.
+
+All four pads lit with distinct colours, one per lane. Starting the gameplay recording.
+
+
+
+
+Stage 3 is implemented, verified against real audio, and the WebGL warning is traced to a real bug and fixed.
+
+## 1. What the audit found
+
+The app was genuinely a **three-lane game wearing four pads**:
+
+| Before | Reality |
+|---|---|
+| `LANE_COUNT = 3`, `LANE_X = [-2.6, 0, 2.6]` | centre-lane notes at `x = 0` land between the two centre pads |
+| `DancePads._padsForLane` | lane 0 → pad 0, lane 1 → **pads 1 and 2**, lane 2 → pad 3 |
+| Charts / obstacles | lanes 0–2 only |
+| Input | A/S/D + 3 numbers, 3 arrow keys |
+| Touch DOM | `data-lane` 0, 1, 1, 2 (two zones fired the same lane) |
+
+Three lanes cannot map onto four pads without one pad pair sharing a lane, so I made the chart **four real lanes** instead of keeping the workaround. Timing windows, scoring, combo, audio clock and the chart-generator architecture were kept; only the lane vocabulary and patterns changed.
+
+## 2. Four-pad input mapping
+
+| Lane | World X | Pad | Keyboard | Alternates | Touch zone |
+|---|---|---|---|---|---|
+| 0 | −3 | pad 1 (cyan) | **A** | ←, 1, Num1 | `.hud__pad-touch [data-lane="0"]` |
+| 1 | −1 | pad 2 (magenta) | **S** | ↑, 2, Num2 | `[data-lane="1"]` |
+| 2 | +1 | pad 3 (pink) | **D** | ↓, 3, Num3 | `[data-lane="2"]` |
+| 3 | +3 | pad 4 (gold) | **F** | →, 4, Num4 | `[data-lane="3"]` |
+
+`PAD_X` is now literally `LANE_X`, so pad centres and lane centres cannot drift. `_padsForLane()` returns `[lane]` — one pad per lane, no sharing.
+
+## 3. Files modified
+
+- `src/config.js` — 4 lanes, `LANE_X = [-3,-1,1,3]`, full key map, `LANE_KEYS`
+- `src/audio/BeatMapGenerator.js` — imports `LANE_COUNT` from config, rewrote the easy/normal/hard/expert lane patterns over 4 lanes
+- `src/objects/NoteManager.js` — 4 lane material sets, 4 lane colours, slightly larger shard/ring, less white wash so lane colour reads
+- `src/world/DancePads.js` — `PAD_X = LANE_X`, 1:1 `_padsForLane`
+- `src/world/NeonTunnel.js` — **WebGL fix** (below)
+- `src/game/DanceSilhouette.js` — hit accent overlay + `dt`, cleared on seek
+- `src/core/Game.js` — judge events drive the dancer accent, `dt` forwarded
+- `src/ui/templates.js` — 4 HUD lane buttons (A/S/D/F), 4 touch zones, how-to copy, footer “4 LANES”
+- `src/world/HitLine.js` — legacy judgement line now defaults to `LANE_COUNT`
+- `qa-gameplay-harness.js`, `qa/auto-dance-difficulty-harness.mjs` — four-lane QA
+- new: `qa-artifacts/stage3-gameplay-validation.json`
+
+The tunnel, camera, reflective floor composition, silhouette panel and HUD layout are untouched. `DanceChoreography` is untouched — the accent is a canvas overlay drawn *after* the pose, so a hit can never reset it (verified: identical joint data before/after an accent, and identical pose for the same song time after seek).
+
+## 4. The WebGL warning — reproduced and fixed
+
+It was not a capture artifact. On a fresh load the console flooded within seconds:
+
+- One `ShaderMaterial` had `diagnostics.runnable = false`, log: `Fragment shader is not compiled.` / `ERROR: 0:80: 'patch' : Illegal use of reserved word`.
+- Source: the floor shader in `src/world/NeonTunnel.js` declared `float patch`. `patch` is reserved GLSL (tessellation), so the program never linked and every frame called `useProgram` on it.
+
+Renamed to `wetPatch`. After that: **0 broken programs, `gl.getError() === 0`, and zero `useProgram` warnings** across a ~100 s gameplay session and on a fresh reload. Nothing was suppressed.
+
+Side effect worth stating plainly: the floor shader had been silently failing, so this **restores the intended wet-floor shader** that Stage 1 designed. It is a visible change caused by fixing the bug, not a redesign.
+
+## 5. Measurements (real audio, live build)
+
+**Charts** — Clementi 175 BPM: 404 notes, lanes `[99,100,99,106]`; Chopin 124.5 BPM: 664 notes, `[169,164,168,163]`; procedural 96 BPM: `[6,8,6,6]`, 0 out-of-range lanes.
+
+**Input, per lane** — A/S/D/F each judged exactly 1 note in their own lane and lit only their own pad `[0]/[1]/[2]/[3]`. All four touch zones did the same.
+
+**Judgements (Hard: 210 ms window, 60 ms perfect)** — +5 ms → `perfect` 170 pts, +110 ms → `great` 128, +190 ms → `good` 85, +300 ms → `miss` 0. Combo built 1→2→3→4 then reset to 0 on a miss.
+
+**No double hit / no duplicate score** — second press on an already-judged note: `scoreDelta 0`, `judgedDelta 0`, no judge event.
+
+**No false hits** — pressing a lane at a moment with no note inside the window: 0 judged, 0 score, no event, only that pad pulsed (0.35 free-tap reward). Miss feedback: pad 2 only, `success = false`.
+
+**Transport** — pause moved the clock 0.8 ms, resume advanced 0.46 s, seek 20 s landed at 20.16 s with the chart and note count preserved. Restart rebuilt the session at four lanes.
+
+**Note/audio alignment** — worst sampled visual error 0.33 m at 31 m/s ≈ **11 ms, under one frame**; notes sat at `x = -3, -1, 1, 3`, exactly the pad centres.
+
+**Runtime** — 120 frames: 16.598 ms average, p95 16.8 ms, **60.03 FPS** at 432×780; 140 draw calls, 14,274 triangles, 24 programs, 56 MB heap after 104 s and 411 judged notes. One 56 FPS reading occurred while the screen recorder was capturing.
+
+## 6. Deliverables
+
+![Stage 3 four-pad gameplay](screenshots/stage3-gameplay-desktop.png)
+
+Desktop frame: all four pads lit, one colour per lane, live impact and HUD. `screenshots/stage3-gameplay-mobile.png` is the portrait capture, and the real-audio clip is `screenshots/stage3-gameplay.mp4` (26 s, H.264/AAC, 420×800, Clementi audio muxed from the recorded song position).
+
+**Console report:** clean. No errors or warnings on a fresh load; no WebGL warnings during gameplay. Two unrelated `net::ERR_FILE_NOT_FOUND` resource 404s appeared in one long session and did not recur after reload — nothing to do with rendering.
+
+**Build:** `npm run build` exit 0 — 95 modules, JS 1,072.07 kB (293.60 kB gzip), CSS 64.66 kB.
+
+## 7. Limitations I did not hide
+
+- **Portrait framing:** at ~421–432 px wide the fixed 70° camera only fits the two inner pads horizontally; all four are in frame from roughly 16:10 upwards. Fitting ±3.7 units at pad depth in portrait needs a ~118° vertical FOV or moving the pads — both forbidden by the brief, so I left the composition alone. Input still covers all four lanes on mobile.
+- Automated input tests mute the audio element (autoplay policy); the video carries the real track audio, aligned to within ~0.3 s.
+- Autoplay hits every note, so hit-FX density in the stills/video is heavier than human play would produce.
+- The `.lanes` HUD buttons stay hidden by the existing Stage 1 CSS; mobile input is the invisible pad-touch grid, unchanged in design.
+- Not checked: a human click-through of every screen, or phone hardware — everything above ran in the local browser at desktop and portrait viewport sizes.
+
+If you want the outer pads visible in portrait as well, that is a camera/FOV or pad-placement decision rather than a gameplay one.
+
+
+1111111111111
+Mình đánh giá đây là một bước tiến rất lớn của NEON PULSE. Đặc biệt, OpenCode đã phát hiện và sửa được hai vấn đề quan trọng: game thực chất chỉ có 3 lane và shader sàn phản chiếu bị lỗi biên dịch.
+
+Mình nghiêng về việc duyệt Stage 3 về mặt logic và tích hợp, nhưng chưa nên tuyên bố hoàn thành toàn bộ sản phẩm.
+
+## 1. Những điểm đã làm rất tốt
+
+Đạt theo báo cáo kiểm thử### Chuyển từ 3 lane sang 4 lane thực sự
+
+Đây là thay đổi quan trọng nhất.
+
+## Four-pad mapping
+
+# 1
+
+## A
+
+X = −3
+
+# 2
+
+## S
+
+X = −1
+
+# 3
+
+## D
+
+X = +1
+
+# 4
+
+## F
+
+X = +3
+
+Mỗi lane tương ứng chính xác một pad, không còn chia sẻ lane giữa hai pad.
+
+Việc sửa đồng bộ chart generator, NoteManager, DancePads và InputManager là cách làm đúng.
+
+### Scoring
+
+| Judgement | Timing | Điểm |
+| --- | --- | --- |
+| Perfect | +5 ms | 170 |
+| Great | +110 ms | 128 |
+| Good | +190 ms | 85 |
+| Miss | +300 ms | 0 |
+
+Các kiểm tra double-hit, false-hit và combo reset đều có kết quả tốt.
+
+### Shader sàn phản chiếu
+
+Đây là phát hiện đáng giá nhất ngoài phần gameplay.
+
+Lỗi `patch` trong GLSL khiến shader không thể biên dịch. Việc đổi tên thành `wetPatch` đã khôi phục shader thực sự thay vì che giấu cảnh báo.
+
+Điều này có nghĩa Stage 1 trước đây chưa từng hiển thị đúng hoàn toàn hiệu ứng sàn phản chiếu như thiết kế.
+
+## 2. Ba vấn đề mình chưa muốn bỏ qua
+
+### A. Portrait chưa hiển thị đủ bốn pads
+
+Cần xử lýOpenCode xác nhận camera hiện tại chỉ hiển thị hai pad giữa ở màn hình điện thoại.
+
+Đây là vấn đề UX quan trọng. Người chơi mobile phải nhìn thấy được cả bốn khu vực tương tác.
+
+Mình không đồng ý với việc mặc định chấp nhận hạn chế này chỉ vì không muốn thay đổi camera.
+
+Giải pháp nên thử:
+
+- Responsive camera FOV riêng cho portrait.
+- Điều chỉnh khoảng cách camera theo aspect ratio.
+- Giữ nguyên phối cảnh và vị trí pads tương đối.
+- Không thay đổi camera desktop.
+
+### B. 140 draw calls
+
+60 FPS là tốt, nhưng 140 draw calls và 24 shader programs vẫn cần theo dõi trên điện thoại cấu hình trung bình.
+
+Chưa cần tối ưu vội. Cần benchmark trên thiết bị thật trước.
+
+### C. Chưa có kiểm thử người chơi thực tế
+
+Autoplay 75-perfect combo không chứng minh gameplay có cảm giác tốt.
+
+Cần thử:
+
+- Người chơi bấm bằng bàn phím.
+- Người chơi chạm màn hình.
+- Phản hồi pad có nhanh không.
+- Note có dễ nhìn không.
+- Timing window có hợp lý không.
+
+## 3. Vòng tiếp theo: Stage 3.5 – Mobile & Gameplay Polish
+
+Mình đề xuất không mở thêm một giai đoạn lớn. Chỉ cần xử lý các vấn đề còn lại.
+
+Rock Heroes: A new rhythm game by Tuyen Pham
+
+Đây là prompt mình đề xuất giao OpenCode:
+
+Writing
+
+# NEON PULSE – STAGE 3.5: MOBILE & GAMEPLAY POLISH
+
+Stage 3 is functionally integrated.
+
+Do not rewrite the gameplay engine.
+
+Do not redesign the Stage 1 visual environment.
+
+Preserve:
+
+- Four-lane chart system.
+- Four-pad mapping.
+- Existing scoring and timing windows.
+- DanceChoreography.
+- Audio engine.
+- Wet-floor shader fix.
+
+## 1\. MOBILE PORTRAIT CAMERA
+
+Current issue: The four outer pads are not fully visible on narrow portrait screens.
+
+Fix responsive camera framing.
+
+Requirements:
+
+- All four pads must be visible at once.
+- Keep the vanishing point centered.
+- Preserve the tunnel perspective.
+- Preserve pad proportions.
+- Do not stretch the 3D scene.
+- Do not change desktop camera composition.
+- Use responsive camera settings based on viewport aspect ratio.
+
+Test at:
+
+- 360×800
+- 390×844
+- 430×932
+- 1280×720
+- 1920×1080
+
+## 2\. MOBILE TOUCH GAMEPLAY
+
+Verify all four touch zones.
+
+Requirements:
+
+- Clear touch responsiveness.
+- No accidental double activation.
+- No missed pointer release.
+- Correct multi-touch handling.
+- No browser scrolling while interacting with pads.
+- Consistent scoring with keyboard input.
+
+## 3\. NOTE READABILITY
+
+Improve distant note visibility without excessive brightness.
+
+Ensure:
+
+- Four distinct lane colors.
+- Clear note silhouettes.
+- Stronger contrast against tunnel background.
+- Accurate visual alignment with pads.
+- No excessive glow or bloom.
+
+## 4\. HUMAN GAMEPLAY TEST
+
+Test actual manual input rather than autoplay alone.
+
+Capture:
+
+- One keyboard gameplay session.
+- One mobile touch gameplay session if a device is available.
+
+Report timing judgement distribution, missed inputs and any interaction problems.
+
+Do not claim physical device testing if it was only simulated in a browser viewport.
+
+## 5\. PERFORMANCE
+
+Benchmark:
+
+- Idle scene.
+- Active gameplay.
+- Heavy particle effects.
+- Long gameplay session.
+
+Report FPS, frame time and console errors.
+
+Do not optimize by reducing visual quality without evidence.
+
+## 6\. DELIVERABLES
+
+Provide:
+
+- Portrait and desktop screenshots.
+- Four-pad visibility at all target resolutions.
+- Manual input test results.
+- Gameplay recording.
+- Build result.
+- Remaining limitations.
+
+Preserve all existing functionality.
+
+## 4. Tiến độ hiện tại
+
+1. Stage 1 – Visual
+   Đã hoàn thành theo báo cáo
+2. Stage 2 – Character
+   Đã hoàn thành theo báo cáo
+3. Stage 2.5 – Choreography
+   Đã hoàn thành theo báo cáo
+4. Stage 3 – Gameplay
+   Đã tích hợp
+5. Stage 3.5 – Mobile polish
+   Cần hoàn thiện
+
+Ý kiến cuối cùng: NEON PULSE đã vượt qua giai đoạn xây dựng demo hình ảnh và bắt đầu trở thành một game rhythm thực sự.
+
+Mình muốn ưu tiên giải quyết hiển thị bốn pads trên điện thoại trước khi nghĩ đến tính năng mới. Đây là yêu cầu cơ bản của gameplay, không phải chi tiết trang trí.
+
+Khi có báo cáo Stage 3.5, gửi mình nhé. Mình sẽ cùng bạn kiểm tra để quyết định khi nào NEON PULSE đủ chất lượng bước sang giai đoạn hoàn thiện sản phẩm.
+
+
+
+Stage 3.5. Starting with the pieces I need to change: camera framing, pad placement, note materials, touch handling, and the theme palette.
+
+Now implementing responsive framing (camera FOV + a fitted pad/hit-line depth), pad-anchored note target, explicit lane colours, and safer touch handling.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+All four pads fit inside the frame at every target, and the desktop numbers are untouched. The desktop hit line intentionally sits in front of the pads, so I'll correct that assertion rather than the app.
+
+
+
+
+The pads fit, but at portrait sizes they sit small and mid-screen while the touch strip stayed at the bottom — so I'll align the touch band to the projected pad row.
+
+
+
+
+
+
+
+Adding a window-level release so a pointer that ends off the pad can never leave a zone stuck pressed, then running the touch suite.
+
+
+
+
+
+
+
+Touch suite passes (per-zone mapping, multi-touch, outside release, containment, keyboard parity). Now a real manual-input session driven through the actual key handlers.
+
+Input and touch behaviour is verified. Now the performance benchmarks (active, heavy effects) and then the recording.
+
+
+
+
+Stage 3.5 is implemented and verified. Everything ran in the local browser — no physical phone was involved.
+
+## 1. Responsive camera framing
+
+New `src/world/StageFraming.js` derives the whole playfield layout from the viewport aspect ratio, and `Game.resize()` applies it:
+
+- **FOV opens as the viewport narrows** (70° → max 92°) — a uniform perspective widen, no stretching.
+- **The pad row and judgement depth slide deeper** until the outermost pad corner fits with a 6% margin. Pad size, trapezoid proportions and lane spacing are untouched; only depth changes, using the existing perspective.
+- **Wide viewports resolve to exactly the desktop numbers**, so `1280×720` and `1920×1080` are unchanged: fov 70, pads 7.2→3.8, hit line 0.
+- The **vanishing point stays centred** (camera position and look-at are untouched).
+- Notes are now judged at a depth *inside* the pad row on narrow layouts, so they land on their pad instead of stopping short of it.
+
+| Viewport | FOV | Pad near→far Z | Judged Z | Outer pad NDC X | All four visible |
+|---|---|---|---|---|---|
+| 360×800 | 90.4° | 2.09 → −1.31 | −0.63 | −0.938 … 0.938 | yes |
+| 390×844 | 90.0° | 2.25 → −1.15 | −0.47 | −0.938 … 0.938 | yes |
+| 430×932 | 90.0° | 2.24 → −1.16 | −0.48 | −0.938 … 0.938 | yes |
+| 1280×720 | 70° | 7.2 → 3.8 | 0 | −0.82 … 0.82 | yes (unchanged) |
+| 1920×1080 | 70° | 7.2 → 3.8 | 0 | −0.82 … 0.82 | yes (unchanged) |
+
+`qa/stage35-framing-check.mjs` asserts this by projecting every pad corner through a real `PerspectiveCamera` — exit 0.
+
+The invisible touch zones were pinned to the bottom of the screen, which no longer lined up with the pads, so they now project to the pad row (portrait: top 49.5%, height 18%). Desktop keeps the old bottom strip.
+
+![Portrait gameplay at 360×800](screenshots/stage35-360x800.png)
+
+## 2. Touch gameplay
+
+| Check | Result |
+|---|---|
+| Four zones → four lanes | each emits its own lane, judges 1 note, lights only its own pad |
+| Duplicate pointerdown (same pointer) | `judgedDelta 0`, `scoreDelta 0` |
+| Multi-touch (two zones at once) | both zones pressed, lane events `[0, 3]` |
+| Release outside the zone | pressed state cleared — added a window-level release net |
+| Scrolling/gestures | `touch-action: none`, `user-select: none`, `overflow: hidden`, `scrollY 0` |
+| Keyboard vs touch parity | identical 60 pts / 100% / Perfect ×1 at the same delta |
+
+Pointer capture is now taken on press and released on up/cancel, so a finger sliding off a pad can't leave it stuck or drop the release.
+
+## 3. Note readability
+
+- Notes now use **exactly the four pad colours** (`LANE_COLORS` in config, shared by `DancePads` and `NoteManager`) instead of theme-derived hues that collapsed to cyan/blue/teal — lane colour is literally the pad colour.
+- Shard 0.62, ring 0.90 with lower additive opacity (0.46 / 0.34 + pulse) so the halo no longer washes out the silhouette.
+- Notes sit at `x = −3, −1, 1, 3`, i.e. the pad centres, and are judged inside the pad on narrow layouts.
+
+One visible consequence: because notes and pads are fixed to pad hues, they no longer recolour with the 12 environments. Pads never did, so this makes the two layers consistent.
+
+## 4. Manual input test
+
+A 20-second session driven by **real keyboard events through `InputManager`** (not autoplay), all four lanes:
+
+- 78 notes scheduled, **78 judged, 0 missed inputs**
+- Perfect 78 / Great 0 / Good 0 / Miss 0
+- Per lane: 27 / 21 / 24 / 22
+- Mean |timing delta| 41 ms, max 58 ms (Medium window 280 ms, Perfect 80 ms)
+- 16 misses appear **after** the scripted window ends, which drains health to 0 about 5 s later
+
+The events were synthetic DOM `KeyboardEvent`s (`isTrusted=false`) — an attempt to send OS-level keys through the browser panel did not register, so I am not claiming physical-key or physical-device testing.
+
+## 5. Performance (390×844, 60 Hz panel, DPR 1)
+
+| Scene | Avg frame | p95 | FPS | Draw calls | Triangles |
+|---|---|---|---|---|---|
+| Idle (menu) | 16.622 ms | 16.8 | 60.16 | 126 | 13,026 |
+| Active gameplay | 16.549 ms | 16.8 | 60.43 | 178 | 15,638 |
+| Heavy effects (climax + 4 bursts + flare) | 16.629 ms | 16.8 | 60.14 | 179 | 15,752 |
+
+Heap 48.9 MB during play, 54.0 MB at the menu; 24 shader programs; no quality reduction was needed or applied.
+
+**Console:** zero WebGL warnings, zero broken shader programs (the `patch` fix holds), and no runtime errors. The only noise is `ERR_FILE_NOT_FOUND` on revoked `blob:` audio URLs when a track is restarted mid-playback — the media element briefly still references the old object URL. It's cosmetic and pre-existing; I left the audio engine alone.
+
+## 6. Deliverables
+
+- Screenshots: `screenshots/stage35-360x800.png`, `stage35-390x844.png`, `stage35-430x932.png`, `stage35-1280x720.png`, `stage35-1920x1080.png` (exact framebuffer captures at each target), plus `stage35-portrait-hud.png` with the live HUD.
+- Recording: `screenshots/stage35-gameplay.mp4` — 27.4 s, 420×800, H.264 + AAC, real Clementi audio muxed from the recorded song position.
+- Data: `qa-artifacts/stage35-validation.json`, `qa-artifacts/stage35-framing.json`.
+- Build: `npm run build` exit 0 — 95 modules, JS 1,074.37 kB (294.41 kB gzip), CSS 64.71 kB.
+
+**Files changed:** `src/world/StageFraming.js` (new), `src/config.js`, `src/core/Game.js`, `src/core/CameraRig.js`, `src/world/DancePads.js`, `src/objects/NoteManager.js`, `src/game/Gameplay.js`, `src/ui/UIManager.js`, `src/styles/main.css`, `qa/stage35-framing-check.mjs` (new).
+
+## 7. Remaining limitations
+
+The honest one: **on portrait the four pads fit but are small** — they occupy roughly 6% of frame height and sit just below the vertical centre. That is geometry, not a bug: lanes span ±3 units and the camera cannot pull back past the tunnel's near wall, so "all four visible" and "pads large at the bottom" cannot both hold without either compressing lane spacing on portrait (changes gameplay geometry) or extending the floor/walls to allow a camera outside the tunnel. I kept the constraints you set and left that call to you.
+
+Also: 3D screenshots are framebuffer captures (no HUD) because the preview panel crops DOM screenshots to ~431 px wide; touch/key input was synthetic; the background tab freezes during chunked audio analysis, which stalls the loading bar.
+
+
 111111111111111
+Mình đã đọc kỹ báo cáo Stage 3.5. Đây là một vòng làm việc khá tốt của OpenCode, đặc biệt ở phần responsive camera và xử lý multi-touch.
+
+Tuy nhiên, có một vấn đề mình muốn giải quyết trước khi tuyên bố NEON PULSE hoàn thiện: bốn dance pads tuy đã nằm trong màn hình điện thoại nhưng vẫn quá nhỏ và nằm quá cao.
+
+Theo mình, đây là vấn đề đáng ưu tiên hơn việc bổ sung thêm hiệu ứng.
+
+## 1. Đánh giá Stage 3.5
+
+Đạt phần lớn yêu cầu kỹ thuật| Hạng mục | Kết quả |
+| --- | --- |
+| Responsive camera | Tốt |
+| Hiển thị 4 pads | Đạt |
+| Desktop không thay đổi | Đạt |
+| Keyboard mapping | Đạt trong kiểm thử mô phỏng |
+| Multi-touch | Đạt trong kiểm thử mô phỏng |
+| Pointer release | Đã xử lý |
+| Note colors | Đồng bộ 4 pads |
+| WebGL shader | Đã sửa |
+| FPS | Khoảng 60 |
+| Thiết bị điện thoại thật | Chưa kiểm tra |
+
+Mình đặc biệt đánh giá cao `StageFraming.js`: việc tính toán vị trí các góc pad qua `PerspectiveCamera` tốt hơn nhiều so với chỉnh FOV bằng mắt.
+
+## 2. Vấn đề lớn nhất: Dance pads trên mobile
+
+Piano Dance Beat APK for Android - Download
+
+Beatstar - Popular Games for Kids | PlaymateKids.com
+
+BEAT MP3 - Rhythm Game - Apps on Google Play
+
+Hiện trạng theo báo cáo:
+
+- Bốn pads chỉ chiếm khoảng 6% chiều cao màn hình.
+- Nằm hơi dưới tâm màn hình.
+- Touch zone đã khớp vị trí pads nhưng trải nghiệm nhìn và chạm chưa thực sự tốt.
+
+Mình không muốn giải quyết bằng cách tăng FOV thêm nữa. FOV đã lên 90° và gần giới hạn hợp lý.
+
+### Phương án mình chọn
+
+Responsive Mobile Gameplay Layout
+
+Giữ nguyên thế giới 3D và chỉ thay đổi cách bố trí gameplay trên mobile:
+
+- Desktop: giữ nguyên camera, tunnel và bốn pads 3D.
+- Mobile: giữ tunnel làm nền, tăng diện tích hiển thị pads.
+- Pads vẫn có hình thang, màu neon và phối cảnh.
+- Có thể sử dụng một lớp tương tác 2D phối hợp với vị trí 3D, nhưng không được tạo cảm giác hai bộ pads chồng lên nhau.
+- Dancer panel thu gọn hợp lý để dành không gian cho gameplay.
+
+Như vậy không cần phá vỡ thiết kế Stage 1.
+
+## 3. Prompt tiếp theo cho OpenCode
+
+Mình muốn giao một vòng cuối tập trung vào mobile UX, không yêu cầu viết lại engine.
+
+Writing
+
+# NEON PULSE – STAGE 3.6: MOBILE GAMEPLAY EXPERIENCE
+
+Stage 3.5 is technically functional.
+
+However, the four dance pads are still too small and positioned too close to the vertical center on portrait screens.
+
+The objective is to improve actual mobile gameplay usability while preserving the established visual identity.
+
+IMPORTANT: Do not rewrite the gameplay engine. Do not change the four-lane chart architecture. Do not change scoring, timing windows or audio synchronization. Do not redesign desktop mode.
+
+## 1\. DESKTOP
+
+Desktop must remain visually identical to the current Stage 3.5 composition.
+
+Preserve:
+
+- Camera FOV.
+- Tunnel geometry.
+- Pad positions.
+- Pad proportions.
+- Note positions.
+- Dancer panel.
+- HUD layout.
+
+## 2\. MOBILE GAMEPLAY COMPOSITION
+
+Create a responsive portrait-specific composition.
+
+Requirements:
+
+- All four pads must be large enough to recognize and interact with comfortably.
+- Move the gameplay interaction area toward the lower portion of the screen.
+- Preserve the centered vanishing point.
+- Preserve tunnel depth and perspective.
+- Avoid excessively wide camera FOV.
+- Do not stretch the 3D scene.
+
+Explore a hybrid presentation if necessary:
+
+- Keep the existing 3D pads and tunnel as the visual environment.
+- Use a perspective-aligned 2D interaction overlay only if it improves mobile usability.
+- Never show two competing sets of pads.
+
+## 3\. PAD SIZE AND TOUCH TARGETS
+
+Prioritize comfortable finger interaction.
+
+Requirements:
+
+- Four equally sized interaction zones.
+- Clear separation between adjacent zones.
+- Adequate spacing from screen edges.
+- No accidental browser scrolling.
+- No touch-zone overlap.
+- Each touch zone maps to exactly one lane.
+
+## 4\. DANCER PANEL
+
+On portrait screens:
+
+- Reduce the dancer panel footprint if needed.
+- Keep the full white silhouette recognizable.
+- Avoid allowing the panel to compete with the four gameplay pads.
+
+Desktop dancer composition must remain unchanged.
+
+## 5\. REAL DEVICE VALIDATION
+
+Do not claim physical mobile testing unless an actual device is used.
+
+At minimum, provide:
+
+- 360×800
+- 390×844
+- 430×932
+
+For each viewport, report:
+
+- Visible pad width and height in pixels.
+- Touch-zone dimensions.
+- Distance from screen edges.
+- Whether all four touch zones are independently usable.
+
+## 6\. REGRESSION TESTS
+
+Verify:
+
+- Four-lane mapping.
+- Keyboard gameplay.
+- Touch gameplay.
+- Multi-touch.
+- Perfect/Great/Good/Miss.
+- Combo and score.
+- Pause/resume.
+- Seek/restart.
+- Desktop composition unchanged.
+- No WebGL errors.
+
+## 7\. DELIVERABLES
+
+Provide:
+
+- Desktop screenshot.
+- Three portrait screenshots.
+- Pad dimensions in pixels.
+- Touch-zone dimensions.
+- Short gameplay video.
+- Build result.
+- Remaining limitations.
+
+Do not optimize the mobile layout at the expense of desktop quality.
+
+## 4. Một quyết định thiết kế mình muốn bạn chọn
+
+Có hai hướng khác nhau cho mobile:
+
+Bạn thích kiểu hiển thị nào?
+
+hybrid A. Hybrid 3D + 2D
+
+Color Hop 3D - Music Ball Game by Amanotes Pte. Ltd.
+
+[appadvice.com](<https://appadvice.com/app/color-hop-3d-music-ball-game/1480683812?utm_source=chatgpt.com>)
+
+Tunnel vẫn 3D, pads có lớp tương tác 2D phối cảnh lớn hơn.
+
+Mình khuyên chọn
+
+B. Thuần 3D
+
+O2Jam : The Beginning on Steam
+
+[store.steampowered.com](<https://store.steampowered.com/app/4189880/O2Jam__The_Beginning/?utm_source=chatgpt.com>)
+
+Giữ tất cả pads trong không gian 3D, thay đổi camera và kích thước không gian.
+
+ Xác nhận lựa chọn
+
+Quan điểm của mình: NEON PULSE nên có hai chế độ trình bày theo thiết bị nhưng chỉ có một gameplay engine. Desktop là sân khấu 3D điện ảnh; mobile là phiên bản tối ưu thao tác nhưng vẫn giữ nguyên phong cách neon.
+
+Đó là cách cân bằng tốt nhất giữa hình ảnh đẹp và khả năng chơi thực tế.
+
+
+
+Picking this up from Stage 3.5. My plan: replace the "wide FOV + push pads deep" approach with a portrait-only *uniform scale + proximity* composition, so pads keep their exact proportions but land lower and much larger. Let me read the current layout code first.
+
+The Stage 3.5 approach was geometrically capped: pads were 71 px wide but only 50 px tall and sat mid-frame. I'll replace it with a portrait-only *uniform row scale* (pads keep exact proportions, no stretching), FOV back to 70°, and a lower placement; the authored desktop path is untouched.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Close — the pads slightly overhang equal-width zones. I'll align each touch column to the projected lane centres instead of equal quarters.
+
+
+
+
+
+
+
+Layout and build pass. Now I'll verify it visually at each portrait size in the live page.
+
+
+
+
+
+
+
+Portrait composition is live: pads now 82×76 px in the lower third. Capturing the other two portrait sizes and the desktop view.
+
+The tab went to the background and its chunked audio analysis stalled at 46% (a known background-tab issue, not a code change). I'll continue in a fresh foreground tab.
+
+The browser has throttled the background tab (RAF suspended), so live gameplay can't advance. Let me force it back into an active state.
+
+Rendering resumed once recording forced the tab active. Now the timing-tier session can run for real.
+
+
+
+
+Stage 3.6 is implemented. The Stage 3.5 approach (open the FOV to 90° and push the pads deep) was the wrong lever — it shrank the pads as much as it fitted them. This version keeps the authored 70° FOV and instead treats the pad row as a *smaller row placed lower*, with everything in the judgement assembly sharing one uniform scale.
+
+## What changed
+
+`src/world/StageFraming.js` now returns one layout object for every consumer (pads, notes, impact FX, touch columns):
+
+- **Portrait (aspect ≤ 0.8):** the pad row is scaled uniformly about the camera axis (pad geometry, lane centres, note size and note height all share one factor), its near edge stays at `PAD_NEAR_Z`, and the lane pitch tightens to 0.82× so each pad gets more screen width. Nothing is stretched — pads keep their exact authored proportions; the row is simply smaller and closer, which puts it in the lower third.
+- **Wide (desktop):** the authored values, untouched — same FOV, same z row, same lane x, same notes, same HUD.
+- Notes are judged inside the pad at the same scale, so they still land on the pad; the impact burst follows the judged note; the dancer silhouette stays proportionally above it all.
+- Touch columns are cut at the midpoints between the *projected lane centres*, so each column contains exactly its own pad and columns tile the width with no overlap.
+- Dancer panel: 72 px wide on portrait (was 84), top-left — the pads now own the bottom 25%, so the two no longer share any space.
+
+## Measurements (measured, not estimated — `node qa/stage36-layout-check.mjs`, exit 0)
+
+| Viewport | Pad (near edge) | Far edge | Gap | Edge margin | Row vertical band | Touch zone | 
+|---|---|---|---|---|---|---|
+| 360×800 | **76 × 70.4 px** | 38.3 px | 10.0 px | 13.1 px | 76.3 – 85.1 % | 86–94 × 158 px |
+| 390×844 | **82.3 × 75.8 px** | 41.3 px | 10.8 px | 14.2 px | 76.1 – 85.1 % | 93–102 × 168 px |
+| 430×932 | **90.8 × 83.6 px** | 45.5 px | 11.9 px | 15.7 px | 76.1 – 85.1 % | 103–112 × 185 px |
+| 1280×720 | 204.3 × 127.4 px | 70 px | 77.5 px | 115.2 px | 67.1 – 84.8 % | unchanged |
+| 1920×1080 | 306.4 × 191.2 px | 105 px | 116.2 px | 172.8 px | 67.1 – 84.8 % | unchanged |
+
+Stage 3.5 → 3.6 at 390×844: pad **72 × 50 px at 40.7 % of the height → 82.3 × 75.8 px at 76.1 – 85.1 %**. Roughly 1.7× the area, and it moved from mid-frame to the lower third.
+
+![Portrait gameplay at 390x844](screenshots/stage36-390x844.png)
+
+The four zones are contiguous lane columns and independently usable (measured in the live page at 390×844: lane 0 at x 0–102, lane 1 at 102–195, lane 2 at 195–288, lane 3 at 288–390, all 262 px tall).
+
+## Desktop
+
+Bit-identical to Stage 3.5: FOV 70, `padScale 1`, pads at x ±3/±1, `z` 7.2→3.8, hit depth 0, note scale 1, note height 1.05. Verified both numerically and from a fresh 1280×720 capture.
+
+![Desktop, unchanged](screenshots/stage36-1280x720.png)
+
+## Regression results
+
+Passed, measured live after the change:
+
+- Four-lane mapping: each touch zone emits only its own lane, lights only its own pad (pulse 0.35 on the pressed lane, zero elsewhere), and clears on release.
+- Duplicate `pointerdown` (same pointerId) emits the lane twice but scores nothing the second time.
+- Multi-touch: two outer zones pressed simultaneously → both pressed, lane events `[0, 3]`.
+- Release outside the zone: pressed state cleared (window-level release net).
+- Containment: `touch-action: none`, `user-select: none`, body overflow hidden, `scrollY 0`.
+- Restart path: loading → intro → playing with the portrait layout applied (used repeatedly).
+- Console: only Vite dev logs — no WebGL warnings, no runtime errors.
+- Build: `npm run build` exit 0 — 1,075.98 kB JS (294.95 kB gzip), 64.71 kB CSS.
+
+**Not verified, and why:** the browser suspended the page (`document.hidden`, RAF not firing), so the audio clock ran at ~0.16× wall time. That killed the controlled full-song timing sweep, pause/resume and seek timing deltas, the FPS benchmark, and the gameplay video (the recorder captured only the results screen — which did show all four tiers resolving: 1 perfect / 3 great / 2 good / 15 miss). Those need a visible browser window; say the word and I'll re-run them and capture a real clip.
+
+## Remaining limitations
+
+- **No physical device.** Everything ran in the local Chromium viewport with emulated sizes; touch input was synthetic pointer events.
+- **Pad width has a hard ceiling.** Four pads across a 390 px screen can be at most ~97 px each; with the authored 1.45 m pad width against a 2.0 m lane pitch, pad : gap is fixed at 1.45 : 0.55, which caps a pad at ~21–24 % of the screen width. That is why this is 82 px, not 120 px. Going bigger requires portrait-specific pad proportions (wider pads, thinner gaps) — a design change I did not make unilaterally.
+- Pad height is set by the floor-plane foreshortening at 70° FOV; the only way to make them relatively taller is a steeper (more top-down) portrait camera, which would visibly change the tunnel perspective.
+
+**Files changed:** `src/world/StageFraming.js`, `src/world/DancePads.js`, `src/objects/NoteManager.js`, `src/core/Game.js`, `src/game/Gameplay.js`, `src/ui/UIManager.js`, `src/styles/main.css`, plus new `qa/stage36-layout-check.mjs` and `qa-artifacts/stage36-{layout,validation}.json`.
+
+
+
+11111111111111
+
+Mình đây\! Và lần này mình thấy OpenCode đã giải quyết được vấn đề mobile theo hướng hợp lý hơn Stage 3.5. 👍
+
+Mình đánh giá Stage 3.6 đạt về bố cục responsive, nhưng chưa nên đóng Stage 3.6 hoàn toàn vì còn thiếu kiểm thử gameplay chạy liên tục.
+
+## 1. So sánh Stage 3.5 và 3.6
+
+Beatstar - Popular Games for Kids | PlaymateKids.com
+
+Stage 3.5
+
+Pads nhỏ, nằm giữa màn hình.
+
+Magic Beat Dancing APK for Android Download - 3761
+
+Stage 3.6
+
+Pads lớn hơn, đặt thấp hơn.
+
+Theo số liệu OpenCode cung cấp tại 390×844:
+
+| Thông số | Stage 3.5 | Stage 3.6 |
+| --- | --- | --- |
+| Pad width | 71–72 px | 82.3 px |
+| Pad height | 50 px | 75.8 px |
+| Vị trí | Giữa màn hình | 76–85% |
+| FOV | 90° | 70° |
+| Desktop | Đã thay đổi | Khôi phục nguyên bản |
+
+Diện tích mỗi pad tăng khoảng 74%. Đây là cải thiện đáng kể.
+
+## 2. Những gì mình đồng ý
+
+- Giữ FOV 70° thay vì mở rộng quá mức.
+- Scale đồng nhất, không bóp méo hình thang.
+- Giữ desktop nguyên bản.
+- Touch zones khớp với vị trí pad.
+- Không thay đổi gameplay engine.
+- Dancer panel thu nhỏ trên portrait.
+
+Đặc biệt, việc tính touch columns theo vị trí projected lane centres là chính xác hơn chia màn hình thành bốn phần một cách máy móc.
+
+## 3. Nhưng còn một vấn đề cần quyết định
+
+Giới hạn thiết kếPad rộng 82 px ở điện thoại 390 px vẫn chưa thật sự lớn.
+
+Mình muốn NEON PULSE có cảm giác như một game dance chuyên nghiệp, không phải một game rhythm với bốn nút bấm nhỏ.
+
+Có hai lựa chọn:
+
+A. Giữ nguyên tỷ lệ 3D hiện tại
+
+- Pads đúng hình học.
+- Tunnel giữ nguyên phối cảnh.
+- Không thay đổi thiết kế gốc.
+- Chấp nhận pads có kích thước hiện tại.
+  An toàn nhất
+
+B. Tối ưu riêng tỷ lệ pads trên mobile
+
+- Tăng chiều rộng pads.
+- Giảm khoảng trống giữa pads.
+- Giữ bốn lane riêng biệt.
+- Desktop không thay đổi.
+- Có thể phải điều chỉnh hình học riêng cho portrait.
+  Ưu tiên trải nghiệm chơi
+
+Cá nhân mình chọn B, nhưng chỉ khi giữ được phối cảnh đẹp và bốn pads không chồng lấn.
+
+## 4. Còn một việc bắt buộc: kiểm thử lại gameplay
+
+OpenCode đã nói rõ trình duyệt bị background throttle nên chưa kiểm tra được:
+
+- Pause/resume.
+- Seek/restart.
+- FPS thực tế.
+- Gameplay video.
+- Timing sweep liên tục.
+
+Mình muốn hoàn thành những kiểm thử này trước khi đóng Stage 3.6.
+
+Bạn có thể gửi OpenCode yêu cầu:
+
+Writing
+
+# NEON PULSE – STAGE 3.6 FINAL VERIFICATION
+
+The responsive layout implementation is accepted as the current baseline.
+
+Do not modify the layout, camera, pads, gameplay engine or visual design during this task.
+
+The previous evaluation was interrupted because the browser tab became background-throttled.
+
+Run the remaining tests with the browser visibly foregrounded.
+
+## Required tests
+
+1. Real audio playback with continuous animation.
+2. Pause/resume with accurate audio clock.
+3. Seek forward and backward.
+4. Restart from the beginning.
+5. Perfect/Great/Good/Miss timing verification.
+6. Four-lane keyboard and touch mapping.
+7. FPS benchmark during active gameplay.
+8. Console and WebGL error inspection.
+
+## Deliverables
+
+- Actual gameplay recording with audio.
+- Portrait screenshot at 390×844.
+- Desktop screenshot at 1280×720.
+- FPS and frame-time measurements.
+- Final regression report.
+
+Do not claim physical device testing.
+
+Do not introduce new visual changes.
+
+## 5. Tiến độ NEON PULSE
+
+Stage 1 – Visual
+
+Hoàn thành
+
+Stage 2 – Character
+
+Hoàn thành
+
+Stage 2.5 – Choreography
+
+Hoàn thành
+
+Stage 3 – Gameplay
+
+Đã tích hợp
+
+Stage 3.5 – Responsive
+
+Đã cải thiện
+
+Stage 3.6 – Mobile composition
+
+Đạt về bố cục
+
+Final verification
+
+Còn thiếu
+
+Một điều mình muốn giữ xuyên suốt dự án: Đừng hy sinh vẻ đẹp của tunnel để đổi lấy vài pixel của dance pads. NEON PULSE cần vừa đẹp khi nhìn, vừa thực sự thoải mái khi chơi.
+
+Gửi mình báo cáo tiếp theo nhé. Chúng ta đã đi khá xa rồi\!
+
+
+
+The tab is foregrounded now (`visibility: visible`, animation will run). Starting the live verification with a real playback session.
+
+Real playback confirmed: audio clock ratio 0.999 against wall time at 60 fps. Recording a gameplay clip with audio now.
+
+Pause/resume and both seek directions are exact. Now restart-from-zero plus a controlled timing-tier sweep with real key events.
+
+Tier mapping is exact: 0 ms → perfect, 120 ms → great, 220 ms → good, 420 ms → outside the window. Now lane mapping and the FPS benchmark during live play.
+
+Those console errors are from my own leftover QA `game:judge` listener, not app code. I'll clear the instrumentation, reload, and re-verify a clean console.
+
+Verification complete — **no source files were changed** in this task; the layout, camera, pads, gameplay engine and visuals are exactly the accepted baseline. Only tests, captures and the report were produced.
+
+## Real audio playback with animation
+
+Clementi Sonatina (real `.ogg` via the QA library), foregrounded tab:
+
+- Song clock vs wall clock over 20.31 s: **ratio 0.999** — audio time and animation advance together, no drift.
+- 60 fps sustained, 84-note combo at 100 % accuracy mid-run.
+
+## Pause / resume (audio clock)
+
+| Action | Result |
+|---|---|
+| Clock drift during a 1.0 s pause | **0.000 s** (frozen exactly) |
+| Advance in 0.7 s after resume | **0.703 s** |
+
+## Seek
+
+| Direction | From | Requested | Landed | Kept playing |
+|---|---|---|---|---|
+| Forward | 72.05 s | 80.05 s | 80.36 s | +0.50 s / 0.50 s |
+| Backward | 80.86 s | 70.86 s | 71.17 s | +0.50 s / 0.50 s |
+
+(Landings are 0.3 s past the target because playback continues during the 400 ms settle wait.)
+
+## Restart from the beginning
+
+From 85.54 s → **0.00 s**, through results → loading → intro → playing. Repeated several times during the session.
+
+## Timing tiers (medium: perfect ≤ 80 ms, great ≤ 173.6 ms, good ≤ 280 ms)
+
+Real `KeyboardEvent`s dispatched through `InputManager` at a controlled offset from each note:
+
+| Offset | Judgement |
+|---|---|
+| 0 ms | **perfect** |
+| 120 ms | **great** |
+| 220 ms | **good** |
+| 420 ms | no judgement — outside the window, note counted as **miss** |
+
+## Four-lane mapping
+
+- Keyboard: `KeyA → 0`, `KeyS → 1`, `KeyD → 2`, `KeyF → 3` — one lane event each, none crossed.
+- Touch: each of the four zones emitted only its own lane, reported `pressed` on pointerdown and released on pointerup.
+
+## FPS and frame time (active gameplay)
+
+| Viewport | FPS | Avg frame | p95 | Max | Draw calls | Triangles | Heap |
+|---|---|---|---|---|---|---|---|
+| 390×844 portrait | 60.38 | 16.561 ms | 16.8 ms | 16.9 ms | 166 | 14,914 | 39.05 MB |
+| 1280×720 desktop | 60.44 | 16.544 ms | 16.8 ms | 16.9 ms | 168 | 15,206 | — |
+
+24 shader programs, 16 textures, no quality reduction applied.
+
+## Console and WebGL
+
+`gl.getError()` → **null**, broken programs → **0**, app errors → **0**. The console after a clean reload contains only Vite dev logs.
+
+One transparency note: mid-session the console did show `[EventBus] handler for "game:judge" threw` errors — those came from a stale listener **my own test harness** had attached to `window.__TIER` (the stack points at `<anonymous>`, not app code). After removing the instrumentation and reloading, the session above ran clean. The app's EventBus caught and logged the foreign handler instead of crashing.
+
+## Deliverables
+
+- **Gameplay recording with audio:** `screenshots/stage36-gameplay.mp4` — 24 s, 480×802, H.264 + AAC, audio muxed from the live song position 36.16 s. Verified by extracting a frame: score 70,681, combo 151, four pads lit at the bottom.
+- **Portrait 390×844:** `screenshots/stage36-390x844.png` — all four pads visible in the lower third, combo 404.
+- **Desktop 1280×720:** `screenshots/stage36-1280x720.png` — wide mode, FOV 70, `padScale 1`, lanes at ±3/±1, hit depth 0, i.e. the authored composition.
+- **Data:** `qa-artifacts/stage36-validation.json` (now includes the full live-verification block), `qa-artifacts/stage36-layout.json`.
+- **Build:** `npm run build` exit 0 — 1,075.98 kB JS (294.95 kB gzip), 64.71 kB CSS.
+
+Portrait:
+
+![Portrait 390x844](screenshots/stage36-390x844.png)
+
+Desktop:
+
+![Desktop 1280x720](screenshots/stage36-1280x720.png)
+
+## Limitations
+
+- **No physical device.** Everything ran in this Chromium instance with emulated viewport sizes; touch was synthetic `PointerEvent`s and keys were synthetic `KeyboardEvent`s. Nobody has tapped a real phone screen.
+- Pad width is at its geometric ceiling (82.3 px of 390 px): four pads across with the authored 1.45 m pad width and 2.0 m lane pitch allow ~21–24 % of screen width per pad. Anything wider needs portrait-specific pad proportions.
+- Pad height comes from floor-plane foreshortening at 70°; making them relatively taller needs a steeper portrait camera, which would change the tunnel perspective you asked me to preserve.
+- The tab must stay foregrounded for live runs — when it was backgrounded earlier, Chromium suspended the render loop and the audio clock dropped to ~0.16× wall time, which is what interrupted the previous evaluation.
+
+
+
+111111111111111 giai đoạn 4 , stage 4, final và sửa chữa
+Tuyệt vời\! Lần này mình nghĩ chúng ta có thể đóng Stage 3.6 về mặt kỹ thuật. Đây là báo cáo đầy đủ nhất từ khi bắt đầu xây dựng NEON PULSE.
+
+Đặc biệt, OpenCode đã chạy lại các bài kiểm thử trong tab foreground và xác nhận audio clock, animation và gameplay hoạt động đồng bộ.
+
+## 1. Kết quả kiểm thử cuối cùng
+
+# 60.38
+
+FPS portrait
+
+# 60.44
+
+FPS desktop
+
+# 0.999
+
+Audio clock / wall clock
+
+# 0
+
+App errors sau reload
+
+Pause / Resume
+
+Pass
+
+Forward / Backward Seek
+
+Pass
+
+Restart
+
+Pass
+
+Four-lane mapping
+
+Pass
+
+Timing judgement
+
+Pass
+
+WebGL
+
+Pass
+
+## 2. Điều mình hài lòng nhất
+
+### Audio và animation đồng bộ
+
+Audio clock ratio 0.999 là kết quả rất tốt.
+
+Điều này quan trọng vì NEON PULSE là game dựa trên nhịp nhạc. Nếu animation chạy lệch khỏi audio thì dancer sẽ không còn cảm giác đang nhảy theo nhạc.
+
+### Timing judgement chính xác
+
+| Timing offset | Kết quả |
+| --- | --- |
+| 0 ms | Perfect |
+| 120 ms | Great |
+| 220 ms | Good |
+| 420 ms | Miss |
+
+Bốn lane cũng đã được xác nhận hoạt động độc lập.
+
+### Hiệu năng
+
+60 FPS ổn định ở cả portrait và desktop, không cần giảm chất lượng đồ họa.
+
+Đây là tín hiệu tích cực cho bước tiếp theo.
+
+## 3. Một giới hạn vẫn cần nhớ
+
+Chưa kiểm tra thiết bị thậtToàn bộ kiểm thử vẫn sử dụng Chromium với viewport giả lập.
+
+Chưa thể kết luận:
+
+- Cảm giác chạm trên màn hình điện thoại thật.
+- Độ trễ cảm ứng thực tế.
+- Hiệu năng trên GPU điện thoại cấu hình thấp.
+- Khả năng duy trì 60 FPS khi máy nóng.
+
+Ngoài ra, pads rộng 82.3 px ở màn hình 390 px vẫn chưa phải kích thước lý tưởng nhất.
+
+Mình chưa khuyên thay đổi tiếp vì có thể ảnh hưởng đến thiết kế 3D đã ổn định.
+
+## 4. Giai đoạn tiếp theo mình đề xuất
+
+Mình nghĩ đã đến lúc chuyển từ xây dựng nền tảng sang hoàn thiện sản phẩm.
+
+# NEON PULSE – Stage 4
+
+Gameplay Experience & Product Polish
+
+Spin Rhythm presskit
+
+Nine More Songs Revealed For Just Dance 2021 | Nintendo Life
+
+Steam Community :: Kizuna AI - Touch the Beat\!
+
+Các mục tiêu:
+
+1. Dance experience: Làm cho chuyển động dancer phản ứng âm nhạc tự nhiên và hấp dẫn hơn.
+2. Hit feedback: Perfect, Great, Good có hiệu ứng riêng biệt, rõ ràng.
+3. Results screen: Màn hình tổng kết đẹp, có điểm, accuracy, max combo và rank.
+4. Music selection: Chọn bài hát, xem BPM, độ khó và thời lượng.
+5. Difficulty balancing: Điều chỉnh mật độ note và độ khó thực tế.
+6. Mobile polish: Kiểm tra trên điện thoại thật.
+
+## 5. Prompt mở đầu Stage 4 cho OpenCode
+
+Mình khuyên trước tiên chỉ audit và đề xuất kế hoạch, chưa sửa code ngay.
+
+Writing
+
+# NEON PULSE – STAGE 4: GAMEPLAY EXPERIENCE & PRODUCT POLISH
+
+Stage 1 through Stage 3.6 are now considered the accepted technical baseline.
+
+The current build has:
+
+- Geometric neon tunnel.
+- Reflective floor.
+- Four independent dance pads.
+- White dancer silhouette.
+- Music-driven choreography.
+- Four-lane rhythm gameplay.
+- Scoring, combo and timing judgements.
+- Responsive portrait composition.
+- Stable audio synchronization.
+
+## IMPORTANT RULES
+
+Do not rewrite existing systems.
+
+Do not redesign the established Stage 1 visual environment.
+
+Do not modify the accepted four-lane architecture.
+
+Preserve the current camera and desktop composition.
+
+## PHASE 1 – AUDIT
+
+Inspect the entire application and identify opportunities to improve:
+
+1. Gameplay feedback and visual effects.
+2. Perfect/Great/Good/Miss presentation.
+3. Results screen.
+4. Music selection experience.
+5. Difficulty progression.
+6. Dance choreography responsiveness.
+7. Audio analysis and chart quality.
+8. Mobile usability.
+
+## PHASE 2 – PROPOSAL
+
+Before writing code, provide:
+
+- Current implementation status.
+- Weaknesses in the existing UX.
+- Proposed improvements.
+- Files that would need modification.
+- Regression risks.
+- A staged implementation plan.
+
+Do not modify any files during this audit.
+
+Wait for approval before implementation.
+
+The goal is to transform NEON PULSE from a technically working rhythm game into a polished, enjoyable product without sacrificing its established visual identity.
+
+Đánh giá của mình: Stage 3.6 đã hoàn thành tốt mục tiêu kỹ thuật. Mình muốn bảo vệ những gì đã xây dựng được, tránh để OpenCode liên tục sửa camera, tunnel và gameplay chỉ vì muốn cải thiện một vài chi tiết nhỏ.
+
+Bây giờ chúng ta nên tập trung vào một câu hỏi lớn hơn:
+
+NEON PULSE đã đủ hấp dẫn để người chơi muốn mở game lên và chơi hết bài hát chưa?
+
+Đó chính là mục tiêu của Stage 4.
+
+
+I'll audit the codebase first — reading the gameplay, scoring, UI, audio/chart, choreography and effects modules — then give you the findings and a staged plan. No files will be touched.
+
+I audited the code and probed the running build read-only — **no files were modified**. Here is what I found and what I propose.
+
+# Phase 1 — Audit
+
+## What exists and works (verified)
+
+| Area | Status |
+|---|---|
+| Four-lane core | 4 pads ↔ 4 lanes, 1:1, A/S/D/F + arrows + digits/numpad + touch |
+| Scoring | Combo → ×8 multiplier, weighted accuracy, health 100, 7/hit miss damage, 18/bomb, rank S+/S/A/B/C/D |
+| Timing | Perfect/Great/Good/Miss computed to the millisecond against `MusicPlayer.getTime()` |
+| Analysis | Clementi: BPM 175 (confidence 0.98), 396 kicks, 416 snares, 219 hats |
+| Structure | Sections (intro/verse/build-up/drop/breakdown/outro) + climax/drop detection |
+| FX | Impact bursts, pad flash, camera punch, screen shake, bloom, theme crossfades, 12 palettes |
+| Dancer | 7 motion families, 12-beat cycle, phrase arc, section bias, kick/snare accents |
+| Perf | 60.4 fps, 16.5 ms avg, 24 shader programs, 0 WebGL errors |
+| Responsive | Portrait composition accepted (pads 82.3×75.8 px at 390×844) |
+
+## Weaknesses, with evidence
+
+**1. The judgement system is computed but never shown.** In the live DOM right now: `.judgement` → `display:none`, `.hud__health` → `display:none`, `.hud__banner` → `display:none`, `.hud__intro` → `display:none`, `.hud__track-name` → `display:none`, `.hud__left-bottom` → `display:none`, `.lanes` → `display:none`. A block in `main.css` (~line 2763, "NEON TUNNEL REDESIGN") hides them all with `!important`. The result: **no PERFECT / GREAT / GOOD / MISS text ever appears**, there is no health bar (death is unexplained), no drop banner, no track title, and no mouse lane buttons. All of `showJudgement()`, `setSection()` and the health CSS are wired but invisible.
+
+**2. Charts are not reproducible.** Two generations from the *same* analysis diverged at note 0 and produced **403 vs 408 notes** — `BeatMapGenerator` uses `Math.random()` for pattern pick, hat sampling and bomb lane/roll. Same track + difficulty = a different chart every run, so scores can't be compared and "retry this chart" is impossible.
+
+**3. The difficulty ladder barely exists on dense music.**
+
+| Difficulty | Notes | Notes/s | Longest silence |
+|---|---|---|---|
+| EASY | 198 | 1.84 | 1.05 s |
+| NORMAL | 407 | 3.79 | 0.84 s |
+| HARD | 411 | 3.82 | 0.84 s |
+| EXPERT | 420 | 3.91 | 0.84 s |
+
+Normal → Expert is a 3 % density change; only the hit windows (280→170 ms) and scroll speed differ. Because notes are kick-driven with `kickEvery = 1`, density saturates at the kick rate and Hard/Expert have nothing left to add.
+
+**4. The "dodge the red" mechanic is effectively absent.** 67 snares exceeded the 0.9 strength gate, yet the charts contain **4 obstacles** (medium), 4 (hard), 2 (easy) in a 107 s song. The lane-free check (`|e.time − snare.time| < 0.3` on every lane) almost never passes on a 3.8 note/s chart, so hazards get dropped.
+
+**5. No persistence and no progression loop.** Only `Settings` and `Studio` touch `localStorage`. There is no per-track best score, rank, history or "new record" — the results screen is a dead end that always looks the same.
+
+**6. Results screen is thin.** Rank + score + accuracy + max combo + four counts + Retry/Change/Menu. Bombs are folded into the MISS number. No comparison to your best, no delta, no accuracy breakdown, no suggestion of what to try next, no quick difficulty switch.
+
+**7. Music selection is a 3-screen funnel with no memory.** Menu → Library → Difficulty → song. No continue/recent/favourites, no "last played", no BPM or length hint until the difficulty screen, no recommended difficulty, and Jamendo requiring a key means the library is mostly an upload box plus the demo track.
+
+**8. Dancer reactivity is coarse.** `Game` calls `silhouette.accent(strength, success)` from the judgement alone — it never learns *which lane* was hit, so left/right hits look identical, combo tiers don't change amplitude, and there is no recovery beat after a miss. The choreography itself is good and correctly time-derived.
+
+**9. Mobile gaps.** Touch zones are invisible (no finger-down indication on the pad itself), haptics fire only on perfect/bomb, no fullscreen/orientation affordance, and the three most useful feedback elements (judgement, health, track title) are the ones hidden by CSS.
+
+# Phase 2 — Proposal
+
+## Design guardrails
+
+Additive only: no camera, tunnel, floor, pad geometry/colour, four-lane mapping, scoring math, timing windows or audio-sync changes. New feedback must read as part of the minimal HUD language (thin type, mono, colour from the active palette).
+
+## Proposed improvements
+
+**A. Give the judgement system a face (highest impact, lowest risk)**
+- A compact judgement rail above the pad band: `PERFECT` / `GREAT` / `GOOD` / `MISS` with the delta in ms, colour-coded from `JUDGEMENTS`, 450 ms lifetime, stacked so rapid hits read.
+- Replace the hidden bar with a thin peripheral health edge (bottom-left corner glow) that desaturates and pulses red under 30 % — no new panel, keeps the frame clean.
+- Restore the drop banner and "NOW PLAYING" card, restyled to the current minimal type scale.
+
+**B. Deterministic charts**
+- Seeded PRNG keyed by `hash(track.id + difficulty + chartVersion)`; every `Math.random()` in the generator goes through it.
+- Guarantees identical charts per track/difficulty, which is the prerequisite for best scores, fair retries and any leaderboard later.
+
+**C. A real difficulty ladder**
+- Per-difficulty notes-per-second targets instead of "the kick rate": EASY ≤ 1.6, NORMAL ≤ 2.6, HARD ≤ 3.4, EXPERT ≤ 4.4, enforced by the spacing pass.
+- NORMAL thins kicks (every 2nd on dense tracks) so the step from EASY is meaningful; EXPERT adds 16th off-beats and 2-note chords only in free lanes.
+- Place hazards **before** the note fill and reserve their lane ±0.3 s, so obstacles land at a designed rate (≈1 per 12–18 s) instead of vanishing.
+
+**D. Results and progression**
+- Persistent store `neon-pulse:scores` → best score, best rank, max combo, plays per `(trackId, difficulty)`.
+- Results screen adds: NEW RECORD badge + delta vs best, accuracy ring, judgement distribution bar, "next step" hint (e.g. *"3.2 % from S — try HARD"*), and Retry that can switch difficulty in place.
+- Fails show how far the run got vs the chart (`78 % of the song`).
+
+**E. Dancer responsiveness**
+- Pass `lane` into `silhouette.accent` → mirror lean (left hits lean left), combo tier scales amplitude (1–4), miss adds a recoil and a 1-beat recovery, drop switches motion family for its duration. Still pure functions of song time, so seek/restart stays deterministic.
+
+**F. Music selection**
+- Continue-last-track card at the top of the library, favourites star, recent list (all local).
+- Collapse Library + Difficulty into one screen: track list on the left, difficulty + chart density preview on the right.
+- Show detected BPM/duration on the track row; recommend a difficulty from the stored best.
+
+**G. Mobile polish**
+- Visible lane press indication on the pad itself (edge flare in the lane colour), haptics on every judgement (short for good, double for miss), optional fullscreen toggle in the pause panel, and a one-time portrait hint.
+
+## Files that would change
+
+| Stage | Files |
+|---|---|
+| A | `src/styles/main.css`, `src/ui/UIManager.js`, `src/ui/templates.js` |
+| B | `src/audio/BeatMapGenerator.js`, `src/utils/math.js` (hash/PRNG helper) |
+| C | `src/audio/BeatMapGenerator.js` |
+| D | new `src/game/ScoreStore.js`, `src/ui/UIManager.js`, `src/ui/templates.js`, `src/styles/main.css`, `src/core/Game.js` (pass track/difficulty into results) |
+| E | `src/game/DanceSilhouette.js`, `src/core/Game.js` |
+| F | `src/ui/templates.js`, `src/ui/UIManager.js`, `src/music/MusicLibrary.js`, `src/styles/main.css` |
+| G | `src/ui/UIManager.js`, `src/styles/main.css`, `src/core/Settings.js` |
+
+Untouched by all of it: `world/*` (except nothing), `core/CameraRig.js`, `StageFraming.js`, `DancePads.js`, `NoteManager.js`, `Scoring.js`, `MusicPlayer.js`, `AudioManager.js`.
+
+## Regression risks
+
+| Risk | Mitigation |
+|---|---|
+| Unhiding HUD elements collides with the pad band on portrait | Position judgement rail from the same framing projection as the touch band; verify at 360/390/430 that it never overlaps pads or the dancer panel |
+| New HUD text competes with the minimal look | Mono type ≤ 11 px, palette colours, 450 ms life, opacity cap |
+| Seeded charts change every existing chart | Intentional; bump `chartVersion` and note it in the report. Existing QA JSON expectations must be regenerated |
+| Difficulty retuning makes a track too easy/hard | Enforce NPS targets in `enforceSpacing` and verify counts across all four QA tracks |
+| Persistence breaks in private mode | try/catch, memory fallback, namespaced key |
+| Dancer changes break seek determinism | Keep every value a function of `time`, `combo`, `lane` only — no accumulated state |
+
+## Staged plan
+
+| Stage | Scope | Acceptance |
+|---|---|---|
+| **4.1** | Judgement rail, health edge, banners, track title | Judgement text visible for all four tiers at 390/1280; no overlap with pads; 60 fps held; no visual change to the 3D scene |
+| **4.2** | Seeded charts + difficulty NPS ladder + hazard placement | Same seed → byte-identical charts; NPS within targets for all 4 difficulties; ≥ 6 hazards per track |
+| **4.3** | Score store + results screen upgrade | NEW RECORD appears on improvement; best/rank persist across reloads; delta correct |
+| **4.4** | Dancer lane/combo reactivity | Left/right hits produce mirrored lean; combo tiers scale amplitude; seek to any time reproduces the same pose |
+| **4.5** | Library/selection + mobile polish | One-screen pick flow; continue card; visible pad press; haptics on all judgements |
+
+I'd start with **4.1** — it is CSS/DOM only, touches no gameplay logic, and fixes the single biggest experience gap (the game currently never tells you how you hit a note).
+
+Nothing is implemented yet. Tell me to proceed with 4.1, approve the whole ladder, or cut/reshape any stage before I write code.
+
+
+Mình đã đọc toàn bộ bản audit. Và mình đồng ý với kết luận của OpenCode: nên bắt đầu Stage 4.1 trước, chưa nên triển khai tất cả cùng lúc.
+
+Thực ra, audit này phát hiện một vấn đề lớn hơn mình nghĩ: NEON PULSE đã có khá nhiều hệ thống gameplay, nhưng người chơi chưa nhìn thấy đầy đủ phản hồi từ những hệ thống đó.
+
+## 1. Đánh giá bản audit
+
+Mình đặc biệt chú ý 5 phát hiện:
+
+| Vấn đề | Mức độ |
+| --- | --- |
+| PERFECT/GREAT/GOOD/MISS bị ẩn | Rất cao |
+| Chart không deterministic | Cao |
+| HARD và EXPERT gần như giống nhau | Cao |
+| Không lưu thành tích | Cao |
+| Dancer chưa phản ứng theo lane/combo | Trung bình |
+
+Trong đó, việc ẩn judgement và health bar là vấn đề cần giải quyết đầu tiên.
+
+Một game rhythm mà người chơi không biết mình vừa đánh Perfect hay Good thì trải nghiệm bị giảm đáng kể.
+
+## 2. Mình phê duyệt lộ trình Stage 4
+
+Stage 4.1 – Gameplay Feedback
+
+Ưu tiên triển khai
+
+Judgement, health, track title, drop banner.
+
+Stage 4.2 – Chart Intelligence
+
+Seeded PRNG, difficulty ladder, hazard placement.
+
+Stage 4.3 – Progression
+
+Lưu điểm, thành tích, rank, results screen.
+
+Stage 4.4 – Dancer Intelligence
+
+Lane-aware movement, combo reactions, miss recovery.
+
+Stage 4.5 – Product Experience
+
+Music library, favourites, recent tracks, mobile feedback.
+
+## 3. Có 4 điều mình muốn bổ sung vào Stage 4.1
+
+Mình muốn OpenCode chú ý những điểm này trước khi triển khai.
+
+1. Judgement phải có cảm giác sống động
+
+- PERFECT: trắng sáng, nhấn mạnh.
+- GREAT: cyan.
+- GOOD: vàng.
+- MISS: đỏ.
+- Hiệu ứng xuất hiện nhanh, biến mất mượt.
+- Khi đánh liên tiếp, judgement không bị ghi đè ngay lập tức.
+
+2. Health bar không nên chiếm nhiều diện tích
+
+Không cần một thanh máu lớn. Chỉ cần một đường sáng mảnh ở cạnh màn hình, thay đổi màu theo health.
+
+3. Drop banner phải đồng bộ âm nhạc
+
+Khi bài hát chuyển sang DROP, banner xuất hiện đúng thời điểm, không xuất hiện trễ hoặc lặp liên tục.
+
+4. Không phá bố cục mobile Stage 3.6
+
+Đây là điều bắt buộc. Judgement rail không được đè lên bốn pads hoặc dancer silhouette.
+
+## 4. Prompt giao OpenCode triển khai
+
+Writing
+
+# NEON PULSE – STAGE 4.1: GAMEPLAY FEEDBACK IMPLEMENTATION
+
+Approved to implement Stage 4.1 only.
+
+The existing Stage 3.6 is the frozen baseline.
+
+## SCOPE
+
+Implement:
+
+1. Visible judgement feedback.
+2. Minimal health indicator.
+3. Section/drop banners.
+4. Current track information.
+
+## 1\. JUDGEMENT FEEDBACK
+
+Display:
+
+- PERFECT – bright white.
+- GREAT – cyan.
+- GOOD – warm yellow.
+- MISS – red.
+
+Requirements:
+
+- Fast, smooth entrance and exit animations.
+- Show timing offset in milliseconds where appropriate.
+- Support rapid consecutive hits without losing important feedback.
+- Prevent overlapping judgement messages.
+- Use the existing judgement events and scoring system.
+- Do not modify scoring mathematics or timing windows.
+
+## 2\. HEALTH INDICATOR
+
+Create a minimal peripheral health indicator.
+
+Requirements:
+
+- Visually integrated into the existing neon HUD.
+- Changes intensity according to health.
+- Below 30% health, introduce a subtle red warning pulse.
+- No large panel or distracting progress bar.
+- Health remains readable on portrait screens.
+
+## 3\. SECTION AND DROP BANNERS
+
+Restore section/drop announcements.
+
+Requirements:
+
+- Trigger only on genuine section transitions.
+- Avoid repeated banners on every frame.
+- Smooth fade-in and fade-out.
+- Respect pause, seek and restart.
+- Do not alter audio synchronization.
+
+## 4\. TRACK INFORMATION
+
+Restore current track title.
+
+Requirements:
+
+- Compact presentation.
+- No overlap with dancer or gameplay pads.
+- Support long filenames gracefully.
+- Preserve the minimal HUD aesthetic.
+
+## 5\. RESPONSIVE VALIDATION
+
+Test:
+
+- 360×800
+- 390×844
+- 430×932
+- 1280×720
+
+Verify every feedback element is visible and does not overlap the pads, touch zones or dancer.
+
+## STRICT PRESERVATION RULES
+
+Do not modify:
+
+- Tunnel geometry.
+- Reflective floor.
+- Camera.
+- Dance pads.
+- Four-lane mapping.
+- BeatMapGenerator.
+- Scoring mathematics.
+- Audio engine.
+- DanceChoreography.
+
+## DELIVERABLES
+
+Provide:
+
+- Before/after screenshots.
+- Gameplay recording showing all four judgements.
+- Mobile and desktop layout verification.
+- Build result.
+- FPS measurements.
+- Console/WebGL report.
+- List of modified files.
+
+Do not start Stage 4.2.
+
+Stop after Stage 4.1 and report results for approval.
+
+## 5. Một lưu ý chiến lược
+
+Mình muốn giữ nguyên nguyên tắc:
+
+- Mỗi stage chỉ giải quyết một nhóm vấn đề.
+- Có kiểm thử trước và sau.
+- Không sửa lại những phần đã được nghiệm thu nếu không có lý do.
+- Không chuyển stage khi chưa có báo cáo.
+
+Đặc biệt, Stage 4.2 sẽ rất quan trọng. Khi chart deterministic và difficulty thực sự khác nhau, NEON PULSE mới có nền tảng tốt để xây dựng hệ thống điểm cao và cạnh tranh thành tích.
+
+Bạn cứ cho OpenCode chạy Stage 4.1. Gửi mình báo cáo sau khi xong, mình sẽ review trước khi cho phép Stage 4.2.
+
+
+Implementing Stage 4.1 — feedback layer only. First, the current styles and the UI methods I'll be reusing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.1 is implemented and verified. The feedback layer existed in the DOM but was hidden by a blanket `display: none !important` block from the Stage 3.6 redesign — this stage unhides and restyles four of those elements only.
+
+## What changed
+
+**`src/styles/main.css`** — removed `.judgement`, `.hud__health`, `.hud__banner`, `.hud__track-name` from the hidden-HUD block (`.hud__times`, `.hud__chip--diff`, `.hud__left-bottom`, `.hud__intro`, `.lanes` stay hidden), then appended a Stage 4.1 block:
+- **Judgement rail** moved from 41% to 58% height (60–61% portrait) so it clears the pad band, with `translate` used for centring instead of `transform` so GSAP's scale/pop can't fight the centring. Tones: PERFECT pure white with white+cyan glow, GREAT `#7ef1ff`, GOOD `#ffd166`, MISS `#ff4d6d`. One ghost slot above the text.
+- **Health** shrunk from 5px to a 2px hairline whose fill opacity is `0.45 + health × 0.55`, themed gradient glow, and a `healthWarning` keyframe (red gradient, 1.1s pulse) under 30%.
+- **Banner** moved from `bottom: 21%` (which sat inside the portrait pad band) to 41% top / 47–50% portrait.
+- **Track label** single-line, `min(46vw, 340px)` desktop / `min(58vw, 250px)` portrait, ellipsis.
+
+**`src/ui/UIManager.js`** — `showJudgement` now writes the timing offset (`12ms EARLY` / `108ms LATE` / `ON TIME`), pushes the previous message into a single fading ghost (so rapid hits never stack two full-size messages), and uses a shorter 0.71s timeline. `updateHUD` drives the `--health` variable and `.is-low` class. `showBanner` dedupes identical copy inside 500ms and animates y; new `hideBanner()`/`hideJudgement()` are called from `showPause()`. `showGame` writes the full track name into `title` as well as the visible label.
+
+**`src/ui/templates.js`** — one added `judgement__ghost` span.
+
+Untouched: tunnel, floor, camera, pads, lane mapping, `BeatMapGenerator`, `Scoring.js`, audio engine, `DanceChoreography`.
+
+## Screenshots
+
+Before (Stage 3.6 baseline — no feedback on screen at all): `screenshots/stage36-390x844.png`
+
+After, live at 390×844 (rail + offset, health hairline under the title, banner, track label):
+
+![Stage 4.1 mobile](screenshots/stage41-390x844.png)
+
+The four tiers, captured from the recorded sessions:
+
+![PERFECT](screenshots/stage41-judgement-perfect.png)
+![GREAT](screenshots/stage41-judgement-great.png)
+![GOOD](screenshots/stage41-judgement-good.png)
+![MISS](screenshots/stage41-judgement-miss.png)
+
+Desktop 1280×720 (full layout captured at 0.375 scale because the browser surface is narrower than 1280 px, then upscaled — the numbers below are 1:1):
+
+![Stage 4.1 desktop](screenshots/stage41-1280x720.png)
+
+## Gameplay recording
+
+`screenshots/stage41-gameplay.mp4` — 480×802, 30 fps, H.264 + AAC, 19.3 s. Two real takes: the first shows PERFECT, GREAT, the `VERSE` section banner and MISS against a live score; the second is a run played at ~250 ms offset so GOOD lands on screen. Audio is the real track (`clementi-sonatina.ogg`) muxed in — it is not captured from the browser, so treat it as a soundtrack rather than a sync proof.
+
+## Responsive verification
+
+Measured live in the running app (rects + clearances in px):
+
+| Viewport | Judgement rail | Pad row top | Clearance to pads | Clearance to touch band | Overlaps pads / dancer |
+|---|---|---|---|---|---|
+| 360×800 | 474–502 | 610 | 108.5 | 51.1 | none / none |
+| 390×844 | 501–529 | 642 | 113.5 | 53.1 | none / none |
+| 430×932 | 555–582 | 709 | 126.9 | 60.3 | none / none |
+| 1280×720 | 412–444 | 483 | 39.4 | n/a (no band) | none / none |
+
+Banner sits 45–67 px above the judgement rail at every size; track label and health hairline sit at y 16–37, well clear of both. Long-filename test: a 711 px-wide name truncates to 176 px with an ellipsis and keeps the full text in `title`. Rapid-hit test: three judgements inside 180 ms produced exactly one rail container, ghost `GOOD`, main `MISS`. Low-health test at 22%: `.hud__health.is-low`, `animation: healthWarning`, red gradient, pulsing opacity 0.50. Banner dedupe confirmed by suppressing a repeated `DROP / SECTION 03 — BUILD`.
+
+## Build, FPS, WebGL, console
+
+- `npm run build` → exit 0. CSS 67.25 kB (gzip 14.55), JS 1,077.65 kB (gzip 295.39).
+- FPS, 90-frame rAF sample: **59.71** at 390×844 (16.748 ms avg, p95 16.9, max 33.4) and **60.36** at 1280×720 (16.567 ms avg, p95 16.8, max 16.9, DPR 1).
+- WebGL: `getError()` → 0, context not lost, 24 programs, quality `high`, canvas 1280×720 at DPR 1.
+- Console: no application errors. Only Vite HMR logs, plus `ERR_FILE_NOT_FOUND`/`ERR_ABORTED` on blob URLs caused by the QA harness restarting tracks (revoked object URLs), not app code.
+- Judgement windows observed against the real chart: PERFECT at 23–30 ms, GREAT at 143–149 ms, GOOD at 245–261 ms, MISS from dropped notes — consistent with the unchanged scoring windows.
+
+## Limitations, stated plainly
+
+- No physical device testing: every press was a synthetic `KeyboardEvent`, and layout was verified at emulated viewport sizes only.
+- The preview window was occluded for stretches of this session, which suspends `requestAnimationFrame` and freezes the surface; capture only worked while it was visible. That's why the recording is two short takes rather than one continuous run, and why the desktop still is a scaled capture.
+- I did not play through the game by hand, and I did not re-verify the tunnel/pads/camera beyond confirming no files in those systems were touched and desktop framing numbers are unchanged.
+
+Everything above is written to `qa-artifacts/stage41-validation.json`. Stopping here — Stage 4.2 not started.
+
+
+1111111111111111
+
+Tiếp tục nhé\! Mình sẽ chuyển sang Stage 4.2 — Deterministic Charts & Difficulty Progression.
+
+Mục tiêu là cải thiện hệ thống tạo chart mà không phá những phần đã hoàn thiện ở Stage 1–4.1.
+
+### Phạm vi triển khai
+
+1. Deterministic chart
+
+- Seeded PRNG dựa trên `track.id + difficulty + chartVersion`.
+- Loại bỏ mọi `Math.random()` không kiểm soát trong `BeatMapGenerator.js`.
+- Cùng bài nhạc, cùng difficulty phải tạo chart giống hệt nhau.
+- Retry không thay đổi vị trí note hoặc hazard.
+
+2. Phân cấp độ khó
+
+| Difficulty | Mục tiêu notes/s |
+| --- | --- |
+| EASY | ≤ 1.6 |
+| NORMAL | ≤ 2.6 |
+| HARD | ≤ 3.4 |
+| EXPERT | ≤ 4.4 |
+
+- EASY: nhịp đơn, ít chuyển lane.
+- NORMAL: thêm nhịp phụ.
+- HARD: syncopation và chuyển lane nhanh hơn.
+- EXPERT: off-beat, chord và pattern phức tạp.
+
+3. Hazard system
+
+- Đặt hazard trước khi fill note.
+- Dành khoảng trống an toàn quanh hazard.
+- Mục tiêu khoảng 1 hazard mỗi 12–18 giây.
+- Không để hazard xuất hiện ở vị trí bất khả thi.
+
+4. Regression tests
+
+- So sánh chart bằng hash.
+- Kiểm tra NPS từng difficulty.
+- Kiểm tra số hazard.
+- Kiểm tra lane mapping 0–3.
+- Kiểm tra không trùng note/hazard.
+- Build và kiểm tra gameplay với audio thật.
+
+### Những phần tuyệt đối giữ nguyên
+
+- Stage 1 tunnel, camera, floor và pads.
+- Stage 2.5 choreography.
+- Stage 3 four-lane mapping.
+- Stage 3.6 portrait framing.
+- Stage 4.1 judgement rail và HUD.
+- Scoring, combo, timing windows và audio synchronization.
+
+Một điều cần thiết: Hiện mình chưa có quyền truy cập workspace chứa source code trong phiên này. Bạn mở lại workspace/project hoặc gửi các file `BeatMapGenerator.js`, `config.js` và QA harness hiện tại nhé. Mình sẽ bắt đầu đọc code rồi triển khai trực tiếp, không giả lập kết quả hay báo build thành công khi chưa thực sự chạy.
+
+
+Được nhé\! 👍 Mình sẽ viết prompt yêu cầu AI tiếp tục Stage 4.2, tự tạo Git commit local nhưng tuyệt đối không tạo repository và không push.
+
+Bạn copy nguyên prompt này vào coding agent đang mở project:
+
+Writing
+
+# Stage 4.2 — Deterministic Charts & Difficulty Progression
+
+Continue development from the accepted Stage 4.1 baseline.
+
+Your task is to implement Stage 4.2 directly in the existing codebase. Do not rewrite existing systems or redesign the game.
+
+## 1\. First: Audit the Existing Code
+
+Before editing, inspect:
+
+- `src/audio/BeatMapGenerator.js`
+- `src/config.js`
+- Existing chart generation and spacing logic
+- Current obstacle/bomb generation
+- Existing QA harnesses and validation artifacts
+- How track IDs, BPM, difficulty and chart data are passed through the game
+
+Understand the current implementation before making changes.
+
+Do not assume the previous audit report is perfectly accurate. Verify everything against the actual source code.
+
+## 2\. Deterministic Chart Generation
+
+Implement a seeded PRNG.
+
+Seed should be derived from:
+
+`track.id + difficulty + chartVersion`
+
+Requirements:
+
+- Replace uncontrolled `Math.random()` calls inside chart generation.
+- All random pattern selection, hat sampling, lane selection and bomb placement must use the seeded generator.
+- Identical track + difficulty + chart version must produce byte-identical chart data.
+- Different difficulties should produce distinct charts.
+- Chart generation must not depend on playback state, frame rate or previous runs.
+- Keep the implementation deterministic across reloads and retries.
+
+Introduce a chart version constant so future chart-generation changes can be tracked explicitly.
+
+## 3\. Meaningful Difficulty Progression
+
+Target approximate note densities:
+
+| Difficulty | Target maximum NPS |
+| --- | --- |
+| EASY | 1.6 |
+| NORMAL | 2.6 |
+| HARD | 3.4 |
+| EXPERT | 4.4 |
+
+Implement genuinely different chart structures:
+
+- EASY: simpler kick-driven patterns, fewer lane transitions and longer breathing spaces.
+- NORMAL: additional rhythmic subdivisions and moderate variation.
+- HARD: stronger syncopation, faster lane transitions and more complex patterns.
+- EXPERT: off-beat patterns, occasional two-note chords and more demanding combinations.
+
+Do not achieve difficulty differences merely by changing hit windows or scroll speed.
+
+Preserve musical alignment and avoid artificial note spam.
+
+Treat NPS targets as design goals, not permission to destroy important musical accents. Document any unavoidable deviations.
+
+## 4\. Hazard / Bomb Placement
+
+Fix the current hazard-generation bottleneck.
+
+Requirements:
+
+- Place hazards before normal note filling.
+- Reserve safe time windows around hazards.
+- Avoid note/hazard collisions.
+- Preserve playable lanes and reasonable reaction time.
+- Target approximately one hazard every 12–18 seconds where the music supports it.
+- Never force hazards into unsuitable musical sections simply to meet a numerical quota.
+
+Keep hazard behavior and scoring unchanged.
+
+## 5\. Regression Testing
+
+Create or extend automated QA tests.
+
+Verify:
+
+1. Same seed generates identical chart data.
+2. Reload/retry produces identical charts.
+3. Different difficulties produce meaningfully different patterns.
+4. All notes use valid lanes 0–3.
+5. No invalid timestamps or NaN values.
+6. No impossible note/hazard overlaps.
+7. Hazard spacing is reasonable.
+8. NPS distribution is measured for all four difficulties.
+9. Existing scoring and judgement behavior remains unchanged.
+10. Existing Stage 4.1 feedback remains functional.
+
+Test with available real audio fixtures, especially:
+
+- Clementi
+- Chopin
+- Brahms
+
+Also test procedural or synthetic analysis inputs where useful, clearly distinguishing synthetic validation from real-audio testing.
+
+## 6\. Strict Preservation Rules
+
+Do not modify or redesign:
+
+- Neon tunnel
+- Camera and StageFraming
+- Reflective floor
+- Dance pads or their geometry
+- Four-lane mapping
+- DanceChoreography
+- DanceSilhouette
+- Judgement rail
+- Health indicator
+- Section banners
+- Track title HUD
+- Scoring formulas
+- Timing windows
+- Audio playback and synchronization
+
+Only touch additional files when technically necessary.
+
+## 7\. Build and Verification
+
+Run:
+
+- Existing QA tests
+- New Stage 4.2 tests
+- `npm run build`
+
+Report:
+
+- Note count per difficulty and track
+- NPS per difficulty
+- Hazard count and spacing
+- Determinism/hash comparison results
+- Invalid lane/collision counts
+- Build result
+- Any remaining limitations
+
+Do not fabricate test results. If a test cannot run, state why.
+
+## 8\. Git Commit — IMPORTANT
+
+After implementation and successful verification:
+
+- Check `git status` first.
+- Review the diff carefully.
+- Stage only files belonging to Stage 4.2.
+- Create one local Git commit.
+
+Suggested commit message:
+
+`feat(stage-4.2): deterministic charts and difficulty progression`
+
+IMPORTANT:
+
+- Do NOT run `git init`.
+- Do NOT create a GitHub repository.
+- Do NOT create any remote repository.
+- Do NOT add or modify Git remotes.
+- Do NOT run `git push`.
+- Do NOT upload or publish anything.
+- Do NOT commit unrelated existing user changes.
+
+I will create the repository myself later and handle the push manually.
+
+If the project is not currently inside a Git repository, do not initialize one. Finish the implementation and report that the local commit was skipped because no repository exists.
+
+## 9\. Final Report
+
+Provide:
+
+- Summary of implementation
+- Files modified
+- Test results
+- Build results
+- Commit hash, if created
+- Explicit confirmation that nothing was pushed and no repository was created
+
+Stop after Stage 4.2. Do not start Stage 4.3.
+
+Quy trình Git mình muốn giữ cho project:
+
+- AI code và test.
+- AI tạo commit local.
+- Bạn tự tạo GitHub repository khi sẵn sàng.
+- Bạn tự cấu hình remote và push.
+
+Như vậy lịch sử commit đã có sẵn, nhưng quyền kiểm soát repository và việc public code vẫn nằm ở bạn. 👌
+
+
+
+I'll start by auditing the actual chart generation code before changing anything.
+
+Now I have the full picture. Writing the deterministic generator:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.2 is done and green. Here is the full report.
+
+## What changed
+
+**`src/audio/BeatMapGenerator.js`** (the only gameplay file rewritten):
+- `CHART_VERSION = 2`; seed key `track.id::difficulty::v2` via `chartSeedKey()`, fed into `createSeededRandom()` (xmur3 hash + mulberry32). Every former `Math.random()` site (pattern pick, hat sampling, lane choice, bomb placement) now draws from that stream. `generatedAt: Date.now()` was removed so chart objects are byte-identical between runs.
+- Per-difficulty shaping fields kept separate from the frozen timing fields: `maxNps` (1.6 / 2.6 / 3.4 / 4.4), `grid`, `beatSlots`, `fillChance`, `onsetWindow`, `chordChance`, `restBars`, `hazardGap`, `diversify`. `hitWindow`, `perfectWindow`, `minGap`, `speed`, colours and labels are untouched.
+- Pipeline: hazards planned first (strong-snare only, per-difficulty 12–26 s gaps, reserved windows) → kick layer → subdivision grid (downbeats belong to kicks) → `collapseSimultaneous` (an accent at 1.400 s beats a grid slot at 1.375 s instead of being discarded) → per-lane spacing → expert chords → floor fill → hazard lane resolution (move or drop, never force) → two-window density governor (`1.02 s`/`2.02 s` so an inclusive 1 s measurement can never read one note over the cap) → final lane-flow repair so hard/expert never repeat a lane when a free one exists.
+
+**`src/core/Game.js`, `src/studio/Studio.js`, `src/studio/StudioStage.js`**: pass `trackId` into both `generate()` and `generateProcedural()`. Nothing else in those files changed (verified by mtime: `main.css`, `UIManager.js`, `templates.js` are untouched from Stage 4.1).
+
+**`qa/stage42-chart-check.mjs`** + `qa-artifacts/analysis/{clementi,chopin,brahms}.json` (real, unrounded in-app analyses) + `qa-artifacts/stage42-chart-check.json`.
+
+## Test results — `node qa/stage42-chart-check.mjs` → exit 0, 0 failures
+
+| track | diff | notes | taps | avg NPS | max 1 s | chords | median gap | hazards | hazard gap |
+|---|---|---|---|---|---|---|---|---|---|
+| synthetic 120 BPM | easy | 95 | 90 | 0.75 | 2 | 0 | 1000 ms | 5 | 24–28 s |
+| synthetic 120 BPM | medium | 242 | 236 | 1.97 | 3 | 0 | 500 ms | 6 | 18–21 s |
+| synthetic 120 BPM | hard | 312 | 305 | 2.54 | 4 | 0 | 500 ms | 7 | 14–21 s |
+| synthetic 120 BPM | expert | 426 | 419 | 3.49 | 5 | 31 | 275 ms | 7 | 16–21 s |
+| Clementi | easy | 107 | 102 | 0.95 | 2 | 0 | 720 ms | 5 | 18.5–21.6 s |
+| Clementi | medium | 211 | 206 | 1.92 | 3 | 0 | 372 ms | 5 | 19.0–27.6 s |
+| Clementi | hard | 305 | 299 | 2.78 | 4 | 0 | 325 ms | 6 | 14.7–18.5 s |
+| Clementi | expert | 404 | 398 | 3.70 | 5 | 8 | 213 ms | 6 | 13.7–23.3 s |
+| Chopin | easy | 200 | 191 | 0.80 | 2 | 0 | 894 ms | 9 | 21.5–27.2 s |
+| Chopin | medium | 445 | 434 | 1.81 | 3 | 0 | 465 ms | 11 | 15.7–24.4 s |
+| Chopin | hard | 673 | 661 | 2.76 | 4 | 0 | 325 ms | 12 | 15.4–24.4 s |
+| Chopin | expert | 870 | 858 | 3.58 | 5 | 32 | 241 ms | 12 | 13.1–24.4 s |
+| Brahms | easy | 162 | 155 | 0.89 | 2 | 0 | 871 ms | 7 | 18.9–27.5 s |
+| Brahms | medium | 343 | 334 | 1.91 | 3 | 0 | 511 ms | 9 | 16.1–22.1 s |
+| Brahms | hard | 507 | 497 | 2.84 | 4 | 0 | 325 ms | 10 | 13.4–18.2 s |
+| Brahms | expert | 658 | 648 | 3.71 | 5 | 23 | 256 ms | 10 | 13.1–18.9 s |
+
+Determinism (SHA-256 of the note array, first 16 hex): every track/difficulty identical across repeated generation (`True` for all 16), and identical again through a fresh module instance (4/4) as the reload analogue. Examples: Clementi expert `9ae8dac441e85e7f`, Chopin expert `ca55f50f9f591bb5`, Brahms expert `6e3dd5d939030d39`, synthetic expert `b0aeca5871fe510a`. Seed contract verified as `synthetic-120bpm::hard::v2`; explicit seed, different track id and different difficulty all produce different charts.
+
+Invalid data counts across all 16 charts: **0** invalid lanes, **0** invalid/NaN timestamps, **0** unsorted, **0** duplicate time+lane pairs, **0** note/hazard collisions, **0** per-lane spacing violations. Preserved behaviour re-asserted: timing windows easy 0.34/0.10, medium 0.28/0.08, hard 0.21/0.06, expert 0.17/0.052; scoring smoke test 120/90/210 score/93 health/60 % accuracy/rank D; bomb colour `#ff2d55`.
+
+## Browser verification
+
+- App boots to menu with no console errors after the change; a real run (`qa-real-clementi`, expert) produced **404 notes, seedKey `qa-real-clementi::expert::v2`, 6 hazards** — exactly matching the node chart, and the in-browser hash of that same chart (`9ae8dac441e85e7f`) equals the node hash, so browser and node agree byte for byte.
+- Stage 4.1 feedback still fires through its real event path: rail showed `PERFECT` / `14ms EARLY · 24 COMBO · ×3`, previous judgement pushed into the ghost slot, class `judgement is-perfect`; `updateHUD({health: 0.22})` gave `scaleX(0.22)` plus `is-low` on both the hairline and its meter, and `is-low` cleared at 0.9.
+
+## Build & other checks
+
+- `npm run build` → exit 0 (96 modules, `dist/assets/index-CFO3usYj.js` 1,083 kB, 451 ms). Re-run after the final source edit, still 0.
+- Existing QA: `node qa/stage36-layout-check.mjs` exit 0, `node qa/validate-exports.mjs` exit 0.
+
+## Commit — skipped
+
+`git rev-parse --is-inside-work-tree` → `fatal: not a git repository (or any of the parent directories): .git`. Per your instruction I did **not** run `git init`, did not create a repo or remote, did not stage, commit, push or publish anything. All changes are uncommitted files in `D:\AI\appDevelopment\3danceYTApp`.
+
+## Limitations (honest list)
+
+- The browser tab is occluded (`document.hidden: true`), so the app auto-pauses: I verified boot, chart generation, the judgement rail and health indicator through their real event paths, but did not play a live run with key presses this stage, and did not re-measure FPS.
+- NPS targets are treated as caps, not quotas: easy/hard sit below the ceiling on most tracks (e.g. hard 2.54–2.84 vs 3.4) because the density governor only removes filler and never invents notes to hit a number. This is the deliberate "don't destroy accents" deviation.
+- Hazard cadence meets 12–18 s for hard/expert (13.1–18.9 s); easy/medium run longer (up to 27.6 s) because hazards come only from strong snares and are dropped rather than forced.
+- Real-audio fixtures cover Clementi, Chopin and Brahms only (Mozart/Beethoven not captured). Synthetic cases are labelled `synthetic-120bpm` and validate the generator, not the analyser.
+- `offBeatRatio` and `sixteenthRatio` are reported but not asserted: on real recordings they are dominated by onset jitter, so the expert-differentiation assertions rest on NPS, median gap, chord presence and lane flow instead.
+
+Nothing for Stage 4.3 was started.
+
+
+
+11111111111111
+Quá ổn\! Stage 4.2 đã hoàn thành theo báo cáo. Đặc biệt có 3 điểm đáng chú ý:
+
+- PASS Deterministic: Node và browser tạo chart giống nhau.
+- PASS 16/16 chart không có lỗi lane, timestamp hoặc collision.
+- PASS Build thành công, Stage 3.6 và 4.1 regression tests vẫn chạy tốt.
+
+Có một điểm cần lưu ý: difficulty hiện là giới hạn mật độ tối đa, không phải cam kết đạt NPS mục tiêu. Đây là lựa chọn hợp lý để không tạo note spam.
+
+## Prompt tiếp theo: Stage 4.3
+
+Mình đề xuất tiếp tục với Score Persistence & Results Screen.
+
+Writing
+
+# Stage 4.3 — Persistent Scores & Results Progression
+
+Continue from the accepted Stage 4.2 implementation.
+
+Stage 4.2 is complete. Preserve all existing work.
+
+## 1\. Audit first
+
+Inspect:
+
+- `src/core/Game.js`
+- `src/game/Scoring.js`
+- `src/ui/UIManager.js`
+- `src/ui/templates.js`
+- `src/styles/main.css`
+- Track and difficulty data flow
+- Current results-screen lifecycle
+
+Understand exactly when a run ends, how results are calculated, and how Retry/Change Track/Menu currently work.
+
+Do not modify anything until the audit is complete.
+
+## 2\. Persistent score storage
+
+Create a new module:
+
+`src/game/ScoreStore.js`
+
+Use localStorage with the namespace:
+
+`neon-pulse:scores:v1`
+
+Store records keyed by:
+
+`trackId + difficulty + chartVersion`
+
+For each record, retain:
+
+- Best score
+- Best rank
+- Best accuracy
+- Highest combo
+- Best judgement distribution
+- Number of attempts
+- Last played timestamp
+
+Requirements:
+
+- Safe JSON parsing.
+- try/catch around localStorage.
+- In-memory fallback if storage is unavailable.
+- Handle missing or corrupted data.
+- Never crash the results screen because persistence fails.
+- Do not store audio files or unnecessary user data.
+
+## 3\. New record detection
+
+When a run finishes:
+
+- Compare its score against the existing personal best.
+- Detect a new high score.
+- Detect a new accuracy record independently.
+- Update the best rank and combo appropriately.
+- Preserve the previous record when the new run is worse.
+- Count every completed attempt.
+
+Do not accidentally count the same results event twice.
+
+## 4\. Results screen upgrade
+
+Keep the current visual identity and minimal neon aesthetic.
+
+Add:
+
+- NEW RECORD indicator when applicable.
+- Previous best score.
+- Score difference (+/-).
+- Best rank.
+- Best accuracy.
+- Personal-best combo.
+- PERFECT / GREAT / GOOD / MISS distribution.
+- Accuracy visualization.
+- Clear Retry action.
+- Quick difficulty change if supported by the current UI architecture.
+
+If the player fails, show the percentage of the song completed.
+
+Do not overload the screen with excessive panels or text.
+
+## 5\. Progression hints
+
+Add contextual suggestions based on actual results.
+
+Examples:
+
+- "3.2% from S rank — try again."
+- "Your accuracy improved by 4.1%."
+- "New personal-best combo."
+- "Try HARD for a greater challenge."
+
+Never invent progress percentages. Calculate them from the actual scoring thresholds and stored results.
+
+## 6\. Testing
+
+Create:
+
+`qa/stage43-score-store-check.mjs`
+
+Test:
+
+- First attempt.
+- New high score.
+- Lower subsequent score.
+- Accuracy record independent of score.
+- Best combo independent of score.
+- Multiple attempts.
+- Persistence across reload/module recreation.
+- Corrupted localStorage.
+- localStorage unavailable.
+- Duplicate results event protection.
+- Different track/difficulty/version isolation.
+
+Also verify:
+
+- Retry still works.
+- Change track still works.
+- Return to menu still works.
+- Stage 4.1 judgement rail remains unchanged.
+- Stage 4.2 chart generation remains deterministic.
+
+Run `npm run build` and all relevant regression tests.
+
+## 7\. Strict preservation
+
+Do not modify:
+
+- BeatMapGenerator chart-generation behavior
+- CHART\_VERSION or seeded PRNG
+- Scoring formulas
+- Timing windows
+- Audio engine
+- Four-lane mapping
+- Camera, tunnel, floor or pads
+- StageFraming
+- DanceChoreography or DanceSilhouette
+
+Only make the smallest changes necessary.
+
+## 8\. Git instructions
+
+Check Git status before doing anything.
+
+If this directory is still not a Git repository:
+
+- Do NOT run git init.
+- Do NOT create a remote.
+- Do NOT create GitHub repositories.
+- Do NOT push or publish.
+
+If a repository exists, do not commit unless explicitly instructed.
+
+I will create the repository and handle pushing myself.
+
+Do not commit unrelated changes.
+
+## 9\. Final report
+
+Include:
+
+- Files created/modified.
+- Storage schema.
+- Example before/after score comparison.
+- Persistence test results.
+- Results-screen screenshots.
+- Build and regression results.
+- Honest limitations.
+
+Stop after Stage 4.3. Do not start Stage 4.4.
+
+Lưu ý: Stage 4.2 chưa có Git commit vì project chưa có repository. Cứ để nguyên như vậy. Khi bạn tạo repo, mình sẽ hướng dẫn gom các stage thành lịch sử commit rõ ràng trước khi push.
+
+Tiếp tục Stage 4.3 nhé\!
+
+
+
+
+
+
+Now I have the audit. Applying the integration edits in one batch.
+
+
+
+
+
+
+
+Now the UIManager wiring: imports, refs, showResults, renderResults, and the difficulty-retry action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.3 is complete and verified.
+
+## Files created / modified
+
+**New**
+- `src/game/ScoreStore.js` — persistence, record comparison, rank maths, hint builder.
+- `qa/stage43-score-store-check.mjs` — node suite (writes `qa-artifacts/stage43-score-store-check.json`).
+- `screenshots/stage43-results-new-record-390.png`, `screenshots/stage43-results-vs-best-390.png`.
+
+**Modified (smallest possible)**
+- `src/core/Game.js` — per-run `attemptId`, and `finish()` now passes `trackId`, `chartVersion`, `elapsed`, `progress` in the results payload. Nothing else touched.
+- `src/ui/UIManager.js` — `showResults` commits the run then renders it; new `_storeResult` / `_renderResultRecord`; `retry-difficulty` action; results subtitle now uses the run's real difficulty.
+- `src/ui/templates.js` — results markup: record row, best line, accuracy bar, completion line, hint, difficulty chips.
+- `src/styles/main.css` — ~90 lines of results styles reusing existing tokens.
+
+Untouched: `BeatMapGenerator.js`, `Scoring.js`, `CHART_VERSION`/PRNG, timing windows, audio engine, camera/tunnel/floor/pads, StageFraming, choreography, silhouette.
+
+## Storage schema
+
+Namespace `neon-pulse:scores:v1`, one JSON payload `{ version: 1, records: { … } }`, keyed `"<trackId>::<difficulty>::v<chartVersion>"` (e.g. `qa-real-clementi::expert::v2`):
+
+```json
+{ "trackId": "qa-real-clementi", "difficulty": "expert", "chartVersion": 2,
+  "bestScore": 157320, "bestRank": "A", "bestAccuracy": 94.761904…,
+  "bestCombo": 206, "bestCounts": { "perfect": 180, "great": 20, "good": 6, "miss": 3, "bomb": 1 },
+  "attempts": 4, "lastScore": 98040, "lastPlayed": 1794505990695, "lastAttemptId": "e2e-4" }
+```
+
+No audio, no titles, no user data — 12 documented fields, roughly 320 bytes per record. Corrupt payloads are dropped; a blocked localStorage falls back to memory; `setItem` failures are swallowed.
+
+## Example before/after comparison (real browser, real `Game.finish`)
+
+| | Run 1 (first attempt) | Run 4 (worse, failed at 42 %) |
+|---|---|---|
+| Score | 157,320 | 98,040 |
+| Rank / accuracy | A / 94.8 % | B / 81.5 % |
+| Combo | 206 | 145 |
+| Badge | NEW RECORD | none |
+| Delta line | — (first run) | −59,280 VS 157,320 (red) |
+| Best line | BEST 157,320 · A · 94.8 % · 206 COMBO · RUN 1 | BEST 157,320 · A · 94.8 % · 206 COMBO · RUN 4 |
+| Hint | “First run logged — this is your baseline.” | none (next rank 6.5 % away, so no invented advice) |
+| Failure line | — | 42 % COMPLETED · 0:45 / 1:47 |
+
+Replaying the same results event (`attemptId e2e-1` twice) left attempts at 1 and did not rewrite storage; a genuinely new attempt counted normally.
+
+![New record](screenshots/stage43-results-new-record-390.png)
+
+![Against personal best](screenshots/stage43-results-vs-best-390.png)
+
+## Test results
+
+`node qa/stage43-score-store-check.mjs` → **exit 0, 0 failures**, covering: first attempt; new high score (12400 → 13640, delta +1240); lower run keeps the record (−3300 delta, best 12400, rank not downgraded); accuracy record independent (97.6 % at a lower score); combo record independent (260 at a lower score); five attempts with correct best/last; module recreation reading the same storage (attempts continued to 2); five corrupted payloads all recovered and rewrote valid JSON; read-only and fully blocked storage never throwing; duplicate `attemptId` protection; four-way isolation across track / difficulty / chart version; rank table cross-checked against `Scoring#rank` with **0 mismatches** over 1 100 generated accuracies; hint maths (`3.2 % from S rank`, `0.3 % from S+ rank with a clean run`, `Try HARD`, no advice for a plain run); preserved systems (chart determinism + `seedKey …::v2`, `CHART_VERSION === 2`, all four timing windows, scoring 120/90/210/93/60, bomb colour).
+
+Browser checks (all passed): first-attempt render, reload showing the stored record, worse run with negative delta and preserved best, duplicate event, corrupt-payload recovery, blocked-storage render, `RETRY` → `ui:restart` → `Game.restart`, `RETRY AS HARD` chip → `ui:start {trackId: 'qa-real-clementi', difficulty: 'hard'}`, `CHANGE TRACK` → library screen, `MENU` → menu screen, Stage 4.1 rail unchanged (`PERFECT`, `12ms LATE · 12 COMBO · ×2`, `judgement is-perfect`), `gl.getError() === 0`, console clean apart from Vite HMR lines. Layout at 390×844: panel 370 px wide, no horizontal overflow, chips on one row; at 1280×720 the panel measures 680×568, centred, inside the viewport.
+
+`npm run build` → exit 0 (`index-CtyJU-2F.js` 1,091.97 kB, 481 ms). Regressions: `qa/stage42-chart-check.mjs` 0, `qa/stage36-layout-check.mjs` 0, `qa/validate-exports.mjs` 0.
+
+## Git
+
+`git status` → `fatal: not a git repository`. Per your instructions I did not run `git init`, created no repository or remote, pushed and published nothing, and committed nothing. The changes are uncommitted files in `D:\AI\appDevelopment\yt…` — in `D:\AI\appDevelopment\3danceYTApp`.
+
+## Honest limitations
+
+- The browser tab is occluded (`document.hidden: true`), so the render loop is suspended. I drove `Game.finish()` directly with genuine `Scoring` state and a stubbed transport position instead of playing a song to the end; the results pipeline (finish → payload → store → DOM) is the real code path, but no actual gameplay run produced those numbers.
+- Screenshots show the results panel over an unpainted WebGL canvas (background reads near-black) for the same reason. The screenshot tool captures at 480 px wide, so no desktop-width image is included; the 1280×720 layout was measured, not photographed.
+- `bestCounts` is stored for the run that owns the best score, not merged per judgement.
+- Records are keyed by chart version, so a future `CHART_VERSION` bump starts clean records for everyone (intended, but it is a visible reset).
+- localStorage is per browser profile and origin; no sync, and clearing site data clears records.
+- All QA records created during verification were removed afterwards, so the browser starts with an empty score table.
+
+Stopped here; Stage 4.4 not started.
+
+
+
+111111111111
+Tuyệt\! Stage 4.3 đã hoàn thành. Báo cáo cho thấy phần lưu điểm và progression đã được tích hợp khá đầy đủ.
+
+### Đánh giá Stage 4.3
+
+PASSScore persistence
+
+- Lưu điểm cao nhất theo track + difficulty + chart version.
+- Phát hiện kỷ lục mới độc lập cho score, accuracy và combo.
+- Chống ghi nhận trùng kết quả.
+- Có memory fallback khi localStorage lỗi.
+
+PASSResults screen
+
+- NEW RECORD.
+- So sánh với personal best.
+- Accuracy bar.
+- Completion percentage.
+- Gợi ý cải thiện.
+- Retry và Retry as Hard.
+
+PASSRegression
+
+- Stage 4.2 deterministic charts vẫn hoạt động.
+- Stage 3.6 layout pass.
+- Stage 4.1 judgement rail không bị ảnh hưởng.
+- Build thành công.
+
+Một hạn chế cần nhớ: kết quả đã được kiểm tra qua `Game.finish()` thật, nhưng chưa có một lượt chơi thực tế chạy đến cuối bài nhạc trong phiên kiểm thử này.
+
+## Prompt tiếp theo: Stage 4.4 — Dancer Reactivity
+
+Đây là bước mình muốn ưu tiên tiếp theo: khiến dancer phản ứng trực quan hơn với cách người chơi đánh nhịp.
+
+Writing
+
+# Stage 4.4 — Responsive Dancer & Gameplay Expression
+
+Continue from the accepted Stage 4.3 baseline.
+
+Implement Stage 4.4 directly in the existing codebase.
+
+The goal is to make the existing white silhouette dancer visibly react to player performance without replacing the existing choreography system.
+
+## 1\. Audit first
+
+Read:
+
+- `src/game/DanceSilhouette.js`
+- `src/game/DanceChoreography.js`
+- `src/core/Game.js`
+- `src/game/Scoring.js`
+- Existing judgement event payloads
+- Existing section/drop data flow
+- Existing seek and restart handling
+
+Understand the current animation pipeline before editing.
+
+## 2\. Lane-aware reactions
+
+Currently, the dancer reacts to judgement strength but does not adequately distinguish which lane was hit.
+
+Add lane-aware accent behavior:
+
+- Lane 0: leftward body emphasis.
+- Lane 1: subtle left-centre emphasis.
+- Lane 2: subtle right-centre emphasis.
+- Lane 3: rightward body emphasis.
+
+The reaction must be visually readable but restrained.
+
+Avoid simply translating the entire silhouette off-centre. Prefer a combination of:
+
+- Torso lean
+- Shoulder rotation
+- Hip counter-shift
+- Arm emphasis
+
+Left and right reactions should be mirror-symmetric.
+
+## 3\. Combo-tier expression
+
+Make dancer accent intensity reflect combo tiers.
+
+Suggested tiers:
+
+- Combo 1–9: subtle reaction.
+- Combo 10–24: medium reaction.
+- Combo 25–49: strong reaction.
+- Combo 50+: expressive reaction.
+
+Higher combos should feel more energetic without breaking the existing pose proportions.
+
+Use smooth interpolation. Avoid sudden animation jumps.
+
+## 4\. Miss recovery
+
+A miss should create a distinct but controlled response:
+
+- Brief recoil.
+- Small shoulder drop.
+- Short recovery over approximately one beat.
+- Return smoothly to the normal song-driven choreography.
+
+Do not permanently alter the pose or accumulate offsets.
+
+## 5\. Drop / section expression
+
+During a drop or climax:
+
+- Increase choreography emphasis.
+- Use more expressive existing movement families.
+- Add restrained accent intensity.
+
+Do not replace the current seven movement families or introduce uncontrolled random animation.
+
+## 6\. Determinism — critical
+
+All added animation must be reproducible.
+
+Requirements:
+
+- Same song time + BPM + seed + section + gameplay event history must produce the same pose.
+- Seeking backwards and forwards must reproduce identical poses.
+- Pause must freeze the pose.
+- Restart must clear transient reactions.
+- No `Math.random()`.
+- No animation behavior that depends on accumulated frame-by-frame offsets.
+
+Use song-time-derived envelopes for accents and recovery.
+
+If event history is needed, store timestamped events and derive their influence from current song time.
+
+## 7\. Safety and anatomy
+
+Preserve:
+
+- Existing joint hierarchy.
+- Arm-length limits.
+- Leg-length limits.
+- Grounded support foot.
+- Full-body panel fitting.
+- Existing silhouette rendering style.
+
+Test at least 500 sampled poses across slow, medium and fast BPM.
+
+Check:
+
+- Finite joint coordinates.
+- No limb-length violations.
+- No joint clipping.
+- No foot drift.
+- No abrupt discontinuities.
+
+## 8\. Visual QA
+
+Capture:
+
+- Lane 0 vs lane 3 mirrored reactions.
+- All four combo tiers.
+- Miss recoil and recovery.
+- Normal section vs drop/climax.
+- Existing seven movement families.
+
+Use the actual silhouette renderer, not a separate mockup.
+
+## 9\. Preservation rules
+
+Do not redesign:
+
+- Neon tunnel.
+- Camera.
+- Reflective floor.
+- Pads.
+- Four-lane mapping.
+- Judgement rail.
+- Results screen.
+- ScoreStore.
+- BeatMapGenerator.
+- Audio engine.
+- Scoring formulas.
+
+Only touch files needed for dancer behavior and the minimum required integration.
+
+## 10\. Git instructions
+
+Check Git status first.
+
+Do not:
+
+- Run git init.
+- Create a repository.
+- Create remotes.
+- Push.
+- Publish.
+- Commit unless explicitly instructed.
+
+I will create the repository and handle pushing myself.
+
+## 11\. Final report
+
+Include:
+
+- Files changed.
+- Lane reaction measurements.
+- Combo tier intensity measurements.
+- Miss recovery duration.
+- Drop behavior.
+- 500+ pose validation.
+- Seek determinism results.
+- Build and regression results.
+- Screenshots or animation clips.
+- Honest limitations.
+
+Stop after Stage 4.4. Do not start Stage 4.5.
+
+Lộ trình hiện tại:
+
+| Stage | Trạng thái |
+| --- | --- |
+| 4.1 — Gameplay feedback | Done |
+| 4.2 — Deterministic charts | Done |
+| 4.3 — Score persistence | Done |
+| 4.4 — Dancer reactivity | Next |
+| 4.5 — Library & mobile polish | Pending |
+
+Và vẫn giữ nguyên quy tắc Git: không `git init`, không commit, không push. Bạn sẽ tự tạo repository và push sau nhé.
+
+
+
+
+
+
+
+
+
+Now the Game event wiring and a node harness to validate poses before visual QA.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.4 is implemented and green. Here is the report.
+
+## Files changed
+
+| File | Change |
+|---|---|
+| `src/game/DanceExpression.js` | **new**, 377 lines — all reaction math: lane emphasis, combo tiers, judgement strengths, hit envelopes, one-beat miss window, drop boost, and `applyExpression()` (rigid pose transforms only) |
+| `src/game/DanceSilhouette.js` | owns a `DanceExpression`; keeps `basePose` (pure choreography) separate from `lastPose` (choreography + expression); `accent(strength, success, {lane, judgement, combo})`; `seek()` clears transients; expression recomputed every frame |
+| `src/core/Game.js` | one block only — the `game:judge` handler now forwards `{lane, judgement, combo}` to `silhouette.accent()` instead of a bare strength |
+| `qa/stage44-dancer-check.mjs` | **new**, 652-line suite (anatomy sweep, mirror test, combo ladder, miss, drop, continuity, determinism, preservation) |
+| `qa-artifacts/stage44-dancer-check.json` | generated results |
+| `screenshots/stage44-dancer-sheet.png`, `…-small.jpg` | 19-tile contact sheet from the real renderer |
+
+Choreography, tunnel, camera, floor, pads, lane mapping, judgement rail, results screen, ScoreStore, BeatMapGenerator, audio engine and scoring formulas are untouched.
+
+## Lane reaction measurements (120 BPM, seed 7, combo 30)
+
+Joint deltas against the same frame with no hit — head / chest / hips (metres):
+
+| Lane | Head Δx | Chest Δx | Hips Δx | Shoulder-line Δy |
+|---|---|---|---|---|
+| 0 | −0.0347 | −0.0130 | **+0.0225** | +0.0905 |
+| 1 | −0.0118 | −0.0044 | **+0.0077** | +0.0260 |
+| 2 | +0.0118 | +0.0044 | **−0.0077** | −0.0260 |
+| 3 | +0.0346 | +0.0131 | **−0.0226** | −0.0904 |
+
+Read: torso leans toward the hit lane, shoulders roll with it, and the hips shift the *opposite* way (weight shift, not a slide). No translation of the silhouette — the panel still auto-centres the whole body.
+
+Mirror symmetry is exact: applying lane *n* to a mirrored pose reproduces the mirrored result with **0.0** deviation over all 21 joints for every lane pair.
+
+Rendered check on the actual 2D canvas (168×232 panel, bright-pixel mask, head-band vs hip-band centroid relative to the base frame): lane 0 **−4.69 px**, lane 1 −1.60, lane 2 +1.84, lane 3 **+4.89 px** — ordered, mirrored, and restrained (≈4 px of head displacement in a 168 px panel).
+
+## Combo tiers (lane 3)
+
+| Tier | Combo | Scale | Lean | Shoulder roll | Arm lift | Head shift | Wrist shift | Rendered tilt |
+|---|---|---|---|---|---|---|---|---|
+| subtle | 0–9 | 0.50 | 0.063 rad (3.6°) | 0.056 rad | 0.083 rad | 21.8 mm | 92 mm | +2.90 px |
+| medium | 10–24 | 0.75 | 0.094 (5.4°) | 0.083 | 0.125 | 32.6 mm | 138 mm | +3.55 px |
+| strong | 25–49 | 1.00 | 0.125 (7.2°) | 0.111 | 0.167 | 43.5 mm | 182 mm | +4.89 px |
+| expressive | 50+ | 1.30 | 0.163 (9.3°) | 0.145 | 0.217 | 56.4 mm | 234 mm | +6.45 px |
+
+Monotonic in every channel; intensities are multipliers on the same envelopes, so tier changes interpolate continuously rather than switching animation.
+
+## Miss recovery
+
+Envelope is a finite sine window, `sin(π·Δ/1.0)` beats: 0 at the hit, peak 0.32 at 0.50 beat, **exactly 0 at 1.00 beat** (0.5 s at 120 BPM, 0.469 s at 128 BPM). At the peak the body recoils 51.9 mm and the shoulder line drops 0.056 rad (3.2°) — the rendered tile is 12 px shorter than the base frame (159 vs 171 px). After the window the pose is bit-identical to the choreography frame: residual lean and miss are exactly 0, no accumulated offset.
+
+## Drop / climax
+
+The drop section applies a smoothstep section-age boost of **1.32** over 2 beats plus a slow beat-locked sway `sin(beat·τ/4)`. Same seven families, same events: head shift 38.2 → 47.8 mm (+25 %), wrist travel 188.4 → 243.5 mm (+29 %), rendered tilt +4.89 → +6.74 px.
+
+## 500+ pose validation
+
+600 samples × {70, 120, 175} BPM × seeded sections: `maxBoneDrift 0` (every `POSE_EDGES` bone length identical to the mm), `maxSupportDrift 0` (support ankle restored bit-exactly, 285 left / 315 right), `minJointGap 0.0306 m` (no joint clipping), all joint coordinates finite, all seven families exercised (`groove, upper, shoulders, arms, hips, legs, turn`).
+
+Continuity: worst frame-to-frame delta with expression **0.1317 m** versus **0.1323 m** without it — the layer adds nothing beyond the choreography's own fastest arm gesture (leftWrist at 10.15 s). Miss frames peak at 0.0731 m/frame. Exponential hit tails are tapered to zero inside a 4-beat window so an accent can never step off when its event leaves the history.
+
+## Determinism
+
+Same song time + BPM + section + event history → same pose hash; paused frames identical (verified both in Node and by comparing two `toDataURL()` captures of the real canvas); seek backward/forward reproduces the identical pose (`seekBackPose` matches); event insertion is order-independent (binary insert, capped at 28); restart clears transients (0 events, lean 0, miss 0). No `Math.random()` anywhere in the new module, and no value is carried over from the previous frame — every term is `f(songTime − event.time)`.
+
+Integration path verified through the real event bus (`game:judge` → `Game` → `DanceSilhouette.accent`): lane 2 perfect at combo 33 → lane 0.34, tier `strong`, lean −0.045; a miss → 0.318 at peak then 0; restart → 0.
+
+## Build & regressions
+
+`npm run build` **0** · `qa/stage44-dancer-check.mjs` **0 failures** · `qa/stage42-chart-check.mjs` **0** · `qa/stage43-score-store-check.mjs` **0** · `qa/stage36-layout-check.mjs` **0** (desktop layout preserved) · `qa/validate-exports.mjs` **0** (export smoke passes).
+
+## Screenshots
+
+![Stage 4.4 dancer expression sheet](screenshots/stage44-dancer-sheet-small.jpg)
+
+`screenshots/stage44-dancer-sheet.png` (900×1066) is the full-resolution sheet: lanes 0–3, the four combo tiers, miss peak and miss +0.5 s, verse vs drop, and the seven movement families — all captured from the real `DanceSilhouette` renderer on a real canvas, not a mockup. `screenshots/stage44-dancer-sheet-small.jpg` is the 640 px version embedded above.
+
+## Limitations
+
+- The Chrome tab is occluded (`document.hidden`), so rAF is suspended and I could not capture live gameplay; every frame above was produced by driving the real silhouette's `update()` on the real canvas, which is the same code path the game loop uses (the only difference is who calls it).
+- Image inspection was unavailable in this session, so I did not eyeball the sheet myself. The visual claims are backed by pixel measurements of those exact rendered frames (mask centroids, changed-pixel counts, tile heights), and the sheet is provided for your review.
+- Lane 1/2 reactions are deliberately subtle (0.0118 m head shift at combo 30); they read as slight leans rather than distinct poses at panel size.
+- Git: the brief both says to run `git init` and forbids creating a repository. The workspace has no `.git` (every git command fails), and the do-not list is authoritative, so I ran no `git init` and made no commit or remote — nothing to commit here.
+
+Stage 4.4 is complete; I have not started Stage 4.5.
+
+
+
+1111111111111
+
+Ngon rồi bạn\! Stage 4.4 đã hoàn thành. Giờ còn Stage 4.5 — Library/Selection + Mobile Polish, là stage cuối của Phase 4.
+
+Bạn gửi nguyên prompt dưới đây cho agent nhé. Mình đã thêm yêu cầu kiểm thử, bảo toàn các phần đã hoàn thành và đặc biệt là tạo Git commit nếu đã có repo, tuyệt đối không tự tạo repo và không push.
+
+## Prompt tiếp theo — Stage 4.5
+
+Writing
+
+We are continuing the Neon Pulse project after successfully completing Stages 4.1–4.4.
+
+Implement **Stage 4.5 — Library / Selection + Mobile Polish**.
+
+This is the final planned stage of Phase 4.
+
+## 1\. Before implementation
+
+Audit the existing code first:
+
+- `src/ui/templates.js`
+- `src/ui/UIManager.js`
+- `src/music/MusicLibrary.js`
+- `src/styles/main.css`
+- `src/core/Settings.js`
+- Existing input, touch and pause handling.
+
+Understand the current navigation and event flow before making changes.
+
+Do not rewrite working systems unnecessarily.
+
+## 2\. Library and music selection
+
+Implement:
+
+- A Continue / Last Played card at the top of the library.
+- Favourite tracks with a star toggle.
+- A locally persisted recent-played list.
+- Track BPM and duration displayed directly in library rows.
+- A recommended difficulty based on the player's existing ScoreStore records.
+- A streamlined selection experience that reduces unnecessary navigation.
+
+Where practical, combine track selection and difficulty selection into one responsive screen.
+
+Requirements:
+
+- Preserve the existing upload flow.
+- Preserve demo tracks and external music-library integration.
+- Handle missing BPM, duration and metadata gracefully.
+- Persist favourites and recent tracks locally.
+- Never lose existing score records.
+- Handle unavailable localStorage safely.
+
+## 3\. Mobile polish
+
+Implement:
+
+- Visible lane press feedback directly on the corresponding pad.
+- Haptic feedback for judgements:
+  - Perfect: short vibration.
+  - Great: lighter vibration.
+  - Good: subtle vibration.
+  - Miss: distinct double-pulse pattern.
+  - Bomb: distinct warning pattern.
+- Haptics must be optional and gracefully disabled when unsupported.
+- Avoid repeated vibration from duplicate pointer events.
+- Add an optional fullscreen toggle in the pause panel.
+- Add a one-time portrait orientation hint where appropriate.
+- Ensure the hint can be dismissed and does not repeatedly interrupt gameplay.
+
+Important:
+
+- Do not break multi-touch.
+- Do not break pointer capture or outside-release handling.
+- Do not introduce scrolling during gameplay.
+- Do not change lane mapping.
+
+## 4\. Strict preservation rules
+
+Do not change:
+
+- Camera or StageFraming.
+- Tunnel, floor or world geometry.
+- Pad geometry, proportions or colours.
+- Four-lane mapping.
+- Note judgement or scoring formulas.
+- Timing windows.
+- Audio synchronization.
+- BeatMapGenerator or chart determinism.
+- DanceChoreography or DanceExpression.
+- ScoreStore schema or existing records.
+- Existing results-screen functionality.
+
+Stage 4.5 must be additive and compatible with all completed stages.
+
+## 5\. Verification
+
+Create a dedicated test suite:
+
+`qa/stage45-library-mobile-check.mjs`
+
+Verify:
+
+**Library**
+
+- Favourite persistence across reload.
+- Recent-track persistence.
+- Continue-last-track action.
+- Missing metadata fallback.
+- Recommended difficulty from ScoreStore.
+- Existing upload and demo track flows still work.
+- No corruption of Stage 4.3 score records.
+
+**Touch**
+
+- Four zones still map to four lanes.
+- Correct pad lights on pointerdown.
+- Correct release on pointerup and pointercancel.
+- Multi-touch still works.
+- Outside release clears pressed state.
+- Duplicate events do not cause duplicate scoring or haptics.
+
+**Haptics**
+
+- Each judgement maps to the intended vibration pattern.
+- Unsupported devices do not throw errors.
+- Disabled haptics produce no vibration calls.
+
+**Fullscreen and orientation**
+
+- Fullscreen action handles unsupported browsers.
+- Portrait hint appears only when appropriate.
+- Dismissal persists.
+- Hint does not block input or overlap gameplay.
+
+**Regression**
+
+- `qa/stage42-chart-check.mjs`
+- `qa/stage43-score-store-check.mjs`
+- `qa/stage44-dancer-check.mjs`
+- `qa/stage36-layout-check.mjs`
+- `qa/validate-exports.mjs`
+- `npm run build`
+
+Verify portrait at 360×800, 390×844 and 430×932, plus desktop at 1280×720.
+
+Report actual measurements and test results. Do not claim physical-device testing if only browser emulation was used.
+
+## 6\. Git instructions — IMPORTANT
+
+After implementation and successful verification:
+
+1. Check whether the workspace is already inside a Git repository using `git rev-parse --is-inside-work-tree`.
+2. If a Git repository already exists:
+   - Review `git status`.
+   - Stage only the files belonging to Stage 4.5.
+   - Create a commit with message:`feat(stage-4.5): improve music library and mobile experience`
+   - Show the resulting commit hash and summary.
+3. If no Git repository exists:
+   - run `git init`.
+   - Create a commit with message:`feat(stage-4.5): improve music library and mobile experience`
+   - Show the resulting commit hash and summary.
+   - DO NOT configure a remote.
+   - DO NOT push anything.
+   - Report clearly that changes remain uncommitted.
+
+**Never push, publish, or upload anything. I will create the repository and push everything myself when I am ready.**
+
+## 7\. Final report
+
+Provide:
+
+- Files created and modified.
+- Features implemented.
+- Screenshots and recordings.
+- Test results.
+- Build result.
+- Regression results.
+- Actual mobile measurements.
+- Known limitations.
+- Git commit hash if a repository already exists, otherwise explicitly state that no repository was created and nothing was committed.
+
+Do not start any Stage 5 work.
+
+Begin with the audit, then implement Stage 4.5.
+
+Một lưu ý: Đây là stage khá rộng, nên cứ để agent audit trước rồi implement theo từng nhóm. Nếu có lỗi ở haptics hoặc fullscreen thì không nên hy sinh touch handling đang chạy tốt để sửa cho nhanh.
+
+Sau Stage 4.5, chúng ta sẽ có trọn bộ Phase 4. 👌
+
+
+I'll start with the audit — reading the library/selection, settings, touch and styles code, plus how the existing QA suites drive the DOM.
+
+Audit complete. Now writing the three new modules (library preferences, pad-zone math, haptics) plus the mobile fullscreen/orientation helpers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now the Stage 4.5 verification suite.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.5 is implemented, verified and committed. Report below.
+
+## Files created
+
+| File | Purpose |
+|---|---|
+| `src/music/LibraryPrefs.js` | favourites, recents, orientation flag; safe storage; `recommendDifficulty()`, `trackFacts()` |
+| `src/core/Haptics.js` | single owner of judgement vibration patterns, optional, deduped |
+| `src/ui/padLayout.js` | pad-zone / band math (extracted so it is testable) |
+| `src/ui/mobileUx.js` | fullscreen helpers + portrait-hint predicate |
+| `qa/stage45-library-mobile-check.mjs` | 138-check suite |
+| `qa/node-local-storage.mjs` | in-memory `localStorage` shim for Node suites |
+| `qa-artifacts/stage45-library-mobile-check.json` | machine-readable results |
+| `screenshots/stage45-*.png` | 6 captures (see below) |
+
+## Files modified
+
+`src/ui/templates.js` (continue slot, recent strip, favourites filter, fullscreen button, hint), `src/ui/UIManager.js` (library rendering, quick cards, handlers, pad press tracking, fullscreen, hint), `src/styles/main.css` (row layout, cards, pad glow, hint, touch targets), `src/core/Game.js` (pad zones via `computePadZones`), `src/main.js` (Haptics instance).
+
+## Library and selection
+
+- **Continue card** at the top of the library: newest playable recent track, its difficulty, BPM, duration and stored best (`BEST 15,230 · S · 98.2%`), plus a full-width CONTINUE button that starts it immediately. Hidden when nothing is playable (an upload that expired with the session is skipped).
+- **Favourites**: star per row (`aria-pressed`, gold left edge), `★ FAVES n` filter chip in the toolbar, persisted.
+- **Recents**: one entry per track, newest first, capped at 8, rendered as a horizontal strip; entries whose track is gone are dimmed and disabled.
+- **BPM + duration in every row**: `128 BPM · 1:07 · EDM · BUILT-IN`; missing values render `BPM AUTO` and `—:—` instead of a fake number (Jamendo/local tracks carry `bpm: null` until analysis).
+- **Recommended difficulty** from ScoreStore records: anchors on the hardest tier actually played, promotes at ≥97 % accuracy, demotes below 70 %, never past easy/expert. It preselects the row's difficulty, is marked gold when it differs from the chosen chip, and is labelled `REC NORMAL` in the stats column.
+- **One screen**: difficulty chips, star and PLAY live in the row, so starting a track is a single tap; clicking the title still opens the original difficulty detail screen, so the old flow and the results-screen "CHANGE TRACK" path are intact.
+- Upload flow, drop zone, demo track and Jamendo integration are untouched; the notice for a missing client id still renders.
+
+## Mobile polish
+
+- **Pad press feedback**: the pressed touch column lights with a theme-coloured glow (`opacity 1` + radial gradient) while held; pressed state is tracked per pointer id, so two fingers stay lit independently.
+- **Haptics**: perfect 12 ms, great 8 ms, good 5 ms, miss `[26, 36, 26]` double pulse, bomb `[40, 40, 40, 40, 70]` warning. Optional via the existing Settings toggle, silent when `navigator.vibrate` is missing or rejects, duplicates within 90 ms suppressed. The old ad-hoc vibrations in `UIManager` (12 ms on perfect, 8 ms on every pointerdown) are gone, so a hit no longer buzzes twice.
+- **Fullscreen** button in the pause panel, hidden on unsupported browsers, label flips to EXIT FULLSCREEN, listens to `fullscreenchange`/`webkitfullscreenchange`.
+- **Portrait hint**: a small non-blocking pill (container `pointer-events: none`, only the × is interactive) shown once per install on coarse-pointer portrait 360–820 px during gameplay, auto-hides after 7 s, dismissal persisted.
+
+Preserved as required: camera/StageFraming, world geometry, pad geometry and colours, four-lane mapping (`A/S/D/F → 0/1/2/3` verified), judgement/scoring formulas, timing windows, audio sync, BeatMapGenerator, DanceChoreography/DanceExpression, ScoreStore schema and records (verified byte-identical payload after library writes), results screen.
+
+## Screenshots
+
+![Library 390×844](screenshots/stage45-library-390x844.png)
+
+![Track row with favourites, BPM, duration and difficulty](screenshots/stage45-library-rows-390x844.png)
+
+![Pause panel with fullscreen](screenshots/stage45-pause-fullscreen-390x844.png)
+
+Also `stage45-library-360x800.png`, `stage45-library-430x932.png`, and `stage45-pad-glow-orientation-390x844-v2.png` (two pressed pads glowing, portrait hint visible).
+
+## Test results
+
+`node qa/stage45-library-mobile-check.mjs` → **138/138 checks, 0 failures**:
+
+- Library: favourite persistence across reload (2.4 k calls), one entry per track, cap, continue resolution skipping vanished tracks, metadata fallbacks (null/zero/string/number inputs), recommendation promote/demote/steady/ceiling/floor/hardest-tier anchor, storage blocked/quota/corrupt/wrong-type recovery.
+- Score isolation: score payload unchanged after all library writes, record still readable with counts and attempt id.
+- Touch/layout: 4 zones from 4 lane centres, ordered, contiguous, sum 100 %, each projected centre inside its own column, portrait centres 1:1, band clamps inside the viewport, key mapping unchanged, duplicate pointerdown guarded in source.
+- Haptics: every judgement maps to its pattern, perfect > great > good pulse length, duplicate suppression, different lane = new buzz, disabled silent, unsupported no-throw, rejecting vibrate no-throw, malformed payload no-throw.
+- Markup contract: all screen hooks, four lane buttons and four pad zones in order, `UIManager` no longer calls `navigator.vibrate`.
+
+Browser checks (Chrome, viewport emulation): favourites toggle → persisted after a real reload; continue card shows the last played HARD run; recommendation derived from a seeded 98.2 % easy record selected NORMAL; pick HARD → PLAY emitted `ui:start {trackId:'demo:neon-pulse', difficulty:'hard'}` and wrote a recent entry; pad zones emitted lanes `0,1,2,3`; both fingers lit, one release kept the other lit; outside release and `pointercancel` cleared; duplicate pointerdown produced one lane event; hint dismissal wrote `orientationHintDismissed:true` and stayed hidden when re-triggered; console clean after a fresh load.
+
+## Build and regressions
+
+`npm run build` **0** · `stage42-chart-check` **0** · `stage43-score-store-check` **0** · `stage44-dancer-check` **0** · `stage36-layout-check` **0** · `validate-exports` **0**.
+
+## Actual measurements (browser viewport emulation)
+
+| Viewport | Panel | Content vs visible | Row | Chip / star / play | Overflow X | Pad band |
+|---|---|---|---|---|---|---|
+| 360×800 | 340×772 | 1113 / 770 | 293×131, stacked | 45×32 / 34×34 / 40×40 | 0 | portrait, 4 zones |
+| 390×844 | 370×816 | 1051 / 814 | 323×127, stacked | 45×32 / 34×34 / 40×40 | 0 | top 62.18 %, height 32.11 %, zones 27.7/22.3/22.3/27.7 % |
+| 430×932 | 410×904 | 1048 / 902 | 363×131, stacked | 45×32 / 34×34 / 40×40 | 0 | top 68.96 %, height 31.04 % |
+| 1280×720 | 1080×648 | list 1006×160 | 1004×83, 5 columns 622/197/55/25/36 px | 41×21 / 25×28 / 36×36 | 0 | hidden (>1024 px, desktop lanes) |
+
+Portrait hint at 390×844 occupies 232×32 at (79,135) while the pad band starts at y = 582 — no overlap; band top + height = 94.3 % (inside the viewport).
+
+## Known limitations
+
+- **No physical-device testing.** Everything mobile was Chrome viewport emulation at 360/390/430/1280; real vibration output, iOS behaviour and true multi-touch hardware delivery were not exercised.
+- `pointer: coarse` is false on this desktop Chrome, so the portrait-hint path was triggered with a `matchMedia` stub in-page (the predicate itself is covered by unit tests); the pad-touch band appears by width, so the touch layout is real.
+- The browser panel is occluded (`document.hidden === true`), so GSAP entry tweens never finish and CSS transitions freeze. Screenshots forced the settled state (`visibility/opacity !important`, `transition: none`); the layout captured is the app's real computed layout, but the entry animation and pad-glow fade were not observed running.
+- Screenshot capture is fixed at 480 px wide regardless of the resize request, so no genuine 1280-wide image exists; desktop is verified by computed layout only. No video recording was produced for the same reason.
+- Jamendo is not configured, so the lists held one real track; the favourites/recent/continue/unavailable-entry paths were exercised with the demo track plus one synthetic recent entry.
+
+## Git
+
+`git rev-parse --is-inside-work-tree` reported no repository, so I ran `git init` as instructed and committed **only the Stage 4.5 files** (18 files): no remote configured, nothing pushed.
+
+**Commit `1564fddb0dea904276f91fdea74ae01cc7d340d9`** — `feat(stage-4.5): improve music library and mobile experience` (18 files, 7,696 insertions). The rest of the project is untracked in that fresh repo, so your baseline commit can add it.
+
+Stage 4.5 is complete; I have not started any Stage 5 work.
+
+
+1111111111111111  sửa
+sửa hiện tại cái sàn dance nó đang đứng yên, nó phải đi tới đúng ko (mà chậm thôi), còn mấy cái vật thể thì bay xuống đúng ko? bạn hiểu ý tôi ko
+
+
+Mình đề xuất giao cho AI coding agent thực hiện Stage 4.6 – Dynamic Dance Floor & Forward Motion. Prompt dưới đây yêu cầu audit trước, triển khai đúng phạm vi và chạy regression test. Không tạo Git repo, không push.
+
+Writing
+
+# Stage 4.6 — Dynamic Dance Floor & Forward Motion
+
+Implement a subtle, continuous forward-motion effect for the NEON PULSE rhythm game.
+
+## 1\. Objective
+
+The current dance floor appears static. It should create the illusion that the player is moving forward through a futuristic neon tunnel.
+
+The desired visual behavior:
+
+- The dance floor slowly scrolls toward the player.
+- Notes and bombs travel from the far end of the tunnel toward the player.
+- The tunnel itself remains visually stable.
+- Dance pads remain fixed at their existing judgement positions.
+
+The result should feel like a real 3D rhythm game, not a static scene with objects simply appearing and disappearing.
+
+## 2\. Mandatory audit before implementation
+
+Read and understand:
+
+- `src/world/` — floor, tunnel, lighting, materials and world updates.
+- `src/objects/NoteManager.js`
+- `src/core/Game.js`
+- `src/audio/MusicPlayer.js`
+- `src/world/StageFraming.js`
+- `src/world/DancePads.js`
+
+Identify:
+
+1. How the floor grid is currently rendered.
+2. Whether the floor uses a texture, shader, repeated geometry or vertex animation.
+3. How note positions are calculated and updated.
+4. How the judgement position is determined.
+5. How the game handles pause, resume, restart and seeking.
+6. Which existing animation systems already use song time.
+
+Do not start changing code until the current movement architecture is understood.
+
+## 3\. Dance floor animation
+
+Implement a subtle continuous forward-scrolling effect.
+
+Requirements:
+
+- The floor grid must move toward the player.
+- Use a slow, smooth and consistent speed.
+- The movement must create a clear sense of depth and forward travel.
+- Avoid excessive speed, flashing, camera shake or distracting visual effects.
+- Preserve the existing floor geometry, colours, materials and overall appearance.
+- Do not change the camera position, FOV or tunnel geometry.
+- Do not move the physical dance pads.
+
+The animation should remain subtle enough that it does not distract from hitting notes.
+
+## 4\. Notes and bombs movement
+
+Preserve the existing note travel system wherever possible.
+
+Verify that:
+
+- Notes spawn at the far end of the tunnel.
+- Notes travel toward the player.
+- Their apparent speed increases naturally as they approach, through existing perspective projection.
+- Notes reach the exact existing judgement position.
+- Bombs follow the same travel direction and timing model.
+- No change is made to scoring, timing windows, hit detection or chart timestamps.
+
+Do not introduce a second independent movement system if the existing NoteManager already handles this correctly.
+
+## 5\. Synchronization
+
+This is critical.
+
+Prefer a song-time-derived animation:
+
+`phase = songTime * scrollSpeed`
+
+Do not rely exclusively on accumulated frame delta.
+
+The floor must:
+
+- Freeze when paused.
+- Resume at the correct phase.
+- Return to its initial phase on restart.
+- Seek to the corresponding phase when the song is seeked.
+- Remain consistent across 30, 60 and 120 FPS.
+- Avoid drift between audio and visual movement.
+
+Use the existing MusicPlayer clock as the authoritative time source.
+
+If a separate visual clock is necessary, document why.
+
+## 6\. Responsive and performance requirements
+
+Test at:
+
+- 360 × 800
+- 390 × 844
+- 430 × 932
+- 1280 × 720
+
+Preserve the accepted portrait and desktop compositions.
+
+Performance targets:
+
+- Maintain approximately 60 FPS.
+- No additional expensive draw calls if avoidable.
+- No unnecessary geometry creation every frame.
+- No memory leaks or accumulating animation objects.
+- No WebGL errors.
+
+## 7\. Strictly protected systems
+
+Do NOT modify:
+
+- Camera position or FOV.
+- StageFraming calculations.
+- DancePads geometry, size or position.
+- Four-lane mapping.
+- Note judgement depth.
+- BeatMapGenerator.
+- Scoring formulas.
+- Timing windows.
+- Audio playback or synchronization logic.
+- DanceExpression or DanceChoreography.
+- Stage 4.1 feedback HUD.
+- Stage 4.3 ScoreStore.
+- Stage 4.5 Library and mobile UX.
+
+Only modify the minimum files required for the floor animation and its integration.
+
+## 8\. Verification
+
+Create:
+
+`qa/stage46-motion-check.mjs`
+
+Verify:
+
+1. Floor phase changes during playback.
+2. Floor phase remains unchanged while paused.
+3. Resume continues from the correct phase.
+4. Restart resets the floor phase.
+5. Seeking updates the floor phase correctly.
+6. The animation produces identical phases at different FPS for the same song time.
+7. Note judgement positions remain unchanged.
+8. Desktop and portrait framing remain unchanged.
+9. Existing gameplay regression suites still pass.
+10. Build succeeds.
+
+Capture screenshots or a short gameplay video demonstrating:
+
+- Static initial state.
+- Floor movement during playback.
+- Notes approaching the pads.
+- Portrait gameplay.
+- Desktop gameplay.
+
+If the browser is backgrounded or rendering is suspended, do not claim live animation verification. Bring the tab to the foreground and retry.
+
+## 9\. Git policy — IMPORTANT
+
+Do NOT:
+
+- Run `git init`.
+- Create a new Git repository.
+- Configure a remote.
+- Push or publish anything.
+- Commit unless a Git repository already exists and the user has explicitly authorized it.
+
+The user will create the repository and push manually.
+
+If there is no Git repository, leave all changes as ordinary workspace files and report that no commit was created.
+
+## 10\. Final report
+
+Provide:
+
+- Files changed and why.
+- Explanation of the floor movement implementation.
+- Explanation of synchronization with song time.
+- Measured movement speed.
+- FPS before and after.
+- All test results.
+- Screenshots/video paths.
+- Confirmation that protected systems were not modified.
+- Known limitations.
+
+Do not begin Stage 4.7 or any unrelated work.
+
+**Priority: natural, slow forward motion with perfect synchronization and zero regression to the existing gameplay experience.**
+
+Lưu ý: Prompt này cố tình yêu cầu AI kiểm tra NoteManager trước. Notes có thể đã bay đúng hướng rồi, vấn đề chính có thể chỉ nằm ở sàn đang thiếu animation. Không nên sửa một hệ thống đang chạy đúng chỉ để tạo hiệu ứng chuyển động.
+
+
+
+Starting Stage 4.6 with the audit — reading the world/floor, pads, note travel and the song clock.
+
+Audit complete: the floor is a single shader plane in `NeonTunnel` (ripples on wall-clock time, no directional scroll), notes are already pure `songTime` functions, and `Game.lastSongTime` is the authoritative visual clock. Implementing now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 4.6 is implemented, wired, and verified. Final report below.
+
+## Files changed
+
+| File | Change | Why |
+|---|---|---|
+| `src/world/FloorMotion.js` **(new, 74 lines)** | Pure module: `floorScroll`, `floorRungPhase`, `floorPatchOffset` + constants (`FLOOR_SCROLL_SPEED 1.35` m/s, `FLOOR_RUNG_SPACING 2.6` m, `FLOOR_LENGTH 270`, `FLOOR_PATCH_REPEAT_Y 3.2`, `FLOOR_RUNG_SECONDS 1.926`) | One testable definition of the phase; no three.js, no DOM, no timers |
+| `src/world/NeonTunnel.js` (+46/−4) | `uScroll` uniform on the floor and reflection-streak shaders; travelling rung train + slower outer-deck train in the floor fragment; drifting wet-patch texture offset; `update(..., scroll = 0)` | The floor is a single shader plane, so travel is a uniform — no geometry, no new draw calls |
+| `src/world/NeonWorld.js` (+10/−1) | Accepts `songTime`, stores `this.floorScroll`, forwards `scroll` to `tunnel.update`, clears on `reset()` | Keeps the world contract and makes the phase introspectable |
+| `src/core/Game.js` (+11/−1) | Passes `songTime: this.lastSongTime` into `world.update` | The floor reads the same music clock the silhouette and notes already read |
+| `src/studio/StudioStage.js` (+1) | Passes its existing `songTime` to the same call | Studio preview shows the same floor, no second code path |
+| `qa/stage46-motion-check.mjs` **(new)** | 133 checks (phase maths, pause/seek/restart/FPS, wiring, notes, framing, protected-file scan) | The required verification suite |
+| `qa-artifacts/stage46-motion-check.json` | Generated report | Machine-readable results |
+
+## How the floor moves
+
+The floor is one `PlaneGeometry(80, 270)` mesh whose fragment shader builds the neon grid. I did not touch its geometry, colours, alpha or the walkway/wall/beam layers. The only addition is one float uniform, `uScroll`, holding **metres travelled**:
+
+```glsl
+float metres     = y * 270.0;                               // 0 at the near edge
+float rungPhase  = mod(metres + uScroll, 2.6);              // 2.6 m rungs
+float rungLine   = 1.0 - smoothstep(0.0, 0.14, min(rungPhase, 2.6 - rungPhase));
+```
+
+Because `y` decreases toward the camera, *adding* `uScroll` makes each rung slide toward the player — rungs enter at the far end and pass under the pads. Three further cues ride on the same value so the whole floor reads as one surface: a second train on the outer deck at half rate (`uScroll * 0.5`), the wet-patch texture offset (`floorPatchTexture.offset.y`), and the reflection streaks (`uScroll / 270`). Intensity stays low (rung contribution ≈0.16 cyan, deck ≈0.045), faded in only outside the sliver of floor hidden under the pads, so the lane area where you read notes stays calm.
+
+Cost: **zero new meshes, materials, textures or draw calls** — one uniform write per material per frame. Measured scene: 48 draw calls, 6,498 triangles, floor still a single mesh.
+
+## Synchronisation
+
+```js
+phase = songTime * 1.35        // metres, straight from the transport
+```
+
+`songTime` is `Game.lastSongTime`, which is written from `MusicPlayer.getTime()` (latency-compensated) only while playing, is left untouched by `pause()`, is assigned by `seek()`, and is zeroed by `startSong()`/restart. Nothing accumulates `dt` — `NeonWorld.time += dt` still drives the ambient ripples, but the travel term never reads it. **No separate visual clock exists**, so there is nothing to keep in sync: pause freezes the grid because the clock stops, a seek jumps the phase because the clock jumps, restart returns to phase 0, and identical song times give bit-identical phases at any frame rate.
+
+Suite evidence: paused phase identical across 300 frames; resume continues with no jump; seeks to 40 s and back to 2 s produce exactly 54 m and 2.7 m (no accumulated distance); restart = 0; 30/60/120 FPS runs agree within 1e-9 m and 1e-9 phase, including ±65 % jittered frame times; 10 minutes of 60 FPS steps equal the closed form (no drift).
+
+## Measured motion
+
+- Speed **1.35 m/s (81 m/min)**; one rung passes every **1.926 s**; 1.755 m per 0.65× speed unit.
+- Pixel proof with the wall clock frozen (`dt = 0`) so only song time differs, songTime 0 → 1.3 s: floor band **11.0 %** of pixels changed (mean 3.1/255, peaks 35–53/255); upper tunnel region **0.00 %** changed (mean 0.009) — the tunnel is stable, only the floor travels.
+- Notes are 22× faster (30 m/s), verified unchanged: a note at its chart time sits exactly on the framing `hitZ` (6.26494 portrait, 0 desktop), travel distance is exactly `speed × Δtime`, bombs share the model, lead time `(hitZ − SPAWN_Z)/speed`.
+
+## FPS
+
+I could **not** sample live frame rate: this preview tab is occluded (`document.hidden === true`) and Chromium delivered **0 requestAnimationFrame callbacks per second**, so the game loop itself is suspended — there is no live frame pacing here to measure, before or after. What I measured instead is the synchronous cost of the full pipeline with `gl.finish()` at a 1280×720 buffer: **2.42 ms/frame with travel vs 2.21 ms/frame with the scroll parked** (~+0.2 ms, within single-run noise; implied ceiling ≈412 fps). The added shader work is a few ALU ops in an existing fragment shader plus one float assignment per frame.
+
+## Test results
+
+| Check | Result |
+|---|---|
+| `qa/stage46-motion-check.mjs` | **133/133 passed**, exit 0 |
+| `qa/stage45-library-mobile-check.mjs` | 138/138 passed, exit 0 |
+| `qa/stage42-chart-check.mjs` / `stage43-score-store-check.mjs` / `stage44-dancer-check.mjs` | exit 0, `failures: []` |
+| `qa/stage36-layout-check.mjs` (framing successor) | exit 0 |
+| `qa/validate-exports.mjs` | exit 0, 30 frames, 0 errors |
+| `npm run build` | exit 0, 1,112 kB bundle |
+| Fresh load, dev server | console clean; `gl.getError() = 0`; floor/streak uniforms binding correctly (0 → 0.8775 m → 1.755 m) |
+
+`qa/stage35-framing-check.mjs` exits 1 — **pre-existing, not caused by this stage**: it still asserts `fourPadsVisible` for a 70° portrait FOV, the composition Stage 4.x deliberately replaced with the scaled portrait row. Its only inputs (`StageFraming.js`, `config.js`) are untracked-by-me/unmodified (`git status` lists no change), so it fails identically on the pre-4.6 tree.
+
+## Screenshots
+
+All are real rendered frames of the live app, driven to a specific song time (labelled), because the occluded tab cannot animate on its own:
+
+- ![Floor at phase 0](screenshots/stage46-floor-phase0-portrait.png) — 390×844, 0 m travelled (static initial state)
+- ![Floor after 1.755 m](screenshots/stage46-floor-travel-portrait.png) — same viewport, songTime 1.3 s → 1.755 m; rungs and wet patches have advanced toward the pads
+- ![Notes approaching](screenshots/stage46-notes-approach-portrait.png) — real `NoteManager`, six taps at 0.35–3.1 s sitting at z −4.2 / −20.7 / −37.2 / −53.7 / −70.2 (perspective compression toward the pads)
+- `screenshots/stage46-desktop-phase0.png`, `screenshots/stage46-desktop-travel.png` — 16:9 desktop framing at phase 0 and after 1.755 m
+
+No video: a recording of this tab would capture a frozen canvas and would misrepresent the result.
+
+## Protected systems
+
+`git status` shows only the four modified files plus the new `FloorMotion.js`; the scan in the suite confirms `uScroll` exists in exactly one file (`NeonTunnel.js`) and `floorScroll(` in exactly two (`FloorMotion.js`, `NeonWorld.js`). Framing snapshot is byte-identical to the accepted composition at 360×800, 390×844, 430×932 and 1280×720 (FOV 70, padScale 0.33478 / 0.34377 / 0.34324 / 1, hitZ 6.2894 / 6.26494 / 6.26638 / 0, lane centres, note height), camera position/look-at unchanged, pads fixed at `PAD_NEAR_Z 7.2` on their framing lane centres. Untouched: `StageFraming`, `DancePads`, config/lane mapping, `NoteManager` depth, `BeatMapGenerator`, `Scoring`, timing windows, `MusicPlayer`, `DanceExpression`/`DanceChoreography`, Stage 4.1 HUD, `ScoreStore`, Stage 4.5 library/mobile UX.
+
+## Known limitations
+
+- Live playback, felt motion and true frame pacing could not be observed in this environment (occluded tab, 0 rAF/s); the motion is proven by phase maths, on-demand rendered frames and pixel deltas instead of by watching it run.
+- Shader compilation verified only on this machine's GPU (`glError = 0`, no console warnings).
+- Screenshots are limited to 480 px width; the desktop frames were taken by downscaling the drawing buffer to 480×270, so they show the composition, not native 1280 detail.
+- Ambient floor mist/ripples still follow wall-clock time exactly as before, so while paused the grid holds but the quiet haze keeps breathing — deliberate, and unchanged from the accepted look.
+- **No commit was created**: a repo exists (`41dc557`) but I was not authorized to commit, and nothing was staged, pushed or published.
+
+The preview is back at 390×844 with the app running. Since the floor's speed is the one judgement call in this stage, it's easy to tune if you want it quicker or gentler.
+
+
+1111111111111
 
