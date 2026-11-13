@@ -20780,3 +20780,978 @@ The full report is at **`PHASE94_GAMEPLAY_VALIDATION_REPORT.md`**, with evidence
 - No commit or push was made.
 
 111111111111111
+Được nhé\! Mình rất đồng ý với thay đổi này. Với game NEON PULSE, mình đề xuất thiết kế 4 lane cố định, có đường phân cách rõ ràng, để người chơi nhìn phát biết ngay vật thể thuộc lane nào.
+
+## Thiết kế 4 lane mới
+
+AeroBand/官方软件
+
+[aeroband.cn](<https://www.aeroband.cn/col.jsp?id=104&utm_source=chatgpt.com>)
+
+### 1. Đường chơi gồm 4 lane
+
+- Lane 1: ngoài cùng bên trái.
+- Lane 2: giữa bên trái.
+- Lane 3: giữa bên phải.
+- Lane 4: ngoài cùng bên phải.
+
+Mỗi lane có đường kẻ dọc phát sáng để phân biệt. Đường kẻ chạy xuyên suốt từ xa đến gần theo phối cảnh 3D.
+
+### 2. Vật thể phải bay đúng lane
+
+Rhythm Journey – Review – Higher Plain Games
+
+[higherplaingames.com](<https://higherplaingames.com/pc/rhythm-journey-review/?utm_source=chatgpt.com>)
+
+Nguyên tắc quan trọng:
+
+- Note lane 1 chỉ bay trên lane 1.
+- Note lane 2 chỉ bay trên lane 2.
+- Note lane 3 chỉ bay trên lane 3.
+- Note lane 4 chỉ bay trên lane 4.
+- Không được tự ý lệch sang lane bên cạnh.
+- Khi note đến vạch phán định, nó phải nằm chính giữa lane tương ứng.
+
+### 3. Quy tắc hiển thị
+
+| Thành phần | Thiết kế |
+| --- | --- |
+| Lane divider | Đường neon dọc |
+| Lane boundary | Giới hạn rõ ràng |
+| TAP | Nằm chính giữa lane |
+| HOLD | Nằm dọc trong lane |
+| DOUBLE | Hai lane đồng thời |
+| SLIDE | Di chuyển theo đường nối giữa lane |
+| BOMB | Nằm trong lane cần né |
+| Judgement Line | Vạch ngang chung cho 4 lane |
+
+### 4. Cách triển khai kỹ thuật
+
+Mình đề xuất sửa Three.js theo nguyên tắc:
+
+js
+
+```js
+const LANE_COUNT = 4;
+const LANE_WIDTH = 2.0;
+const LANE_SPACING = 2.0;
+
+function getLaneX(lane) {
+  return (lane - 1.5) * LANE_SPACING;
+}
+```
+
+Với lane đánh số từ 0 đến 3:
+
+js
+
+```js
+// Lane 0: -3
+// Lane 1: -1
+// Lane 2:  1
+// Lane 3:  3
+```
+
+Tất cả note phải lấy tọa độ X từ `getLaneX(lane)`, không tự tính vị trí riêng.
+
+Đặc biệt, cần dùng chung hệ tọa độ này cho:
+
+- Lane renderer.
+- Note spawner.
+- Note movement.
+- Hit detection.
+- HOLD và SLIDE.
+- BOMB collision.
+
+Như vậy đường kẻ và vật thể sẽ luôn khớp nhau.
+
+## 5. Một chi tiết mình muốn xác nhận
+
+Bạn muốn 4 lane theo kiểu nào?
+
+A. 4 lane cố định – khuyến nghị
+
+Oculus Quest 游戏《节奏共振》Resonark X Lite - 萌饭VR 免费VR
+
+Lane thẳng, song song, note bay đúng giữa từng lane. Dễ nhìn và dễ chơi.
+
+B. 4 lane phối cảnh 3D
+
+Sonic Surge - Rhythm Showdown on Steam
+
+Lane có chiều sâu và hiệu ứng không gian mạnh hơn, nhưng vẫn giữ đúng vị trí từng lane.
+
+Mình nghiêng về A vì giúp người chơi nhận diện vị trí note nhanh hơn, đặc biệt khi chơi HARD và EXPERT.
+
+
+
+Dưới đây là prompt mình viết để bạn đưa trực tiếp cho OpenCode / Claude Code thực hiện chỉnh sửa NEON PULSE. Prompt yêu cầu sửa trên code hiện tại, không viết lại game từ đầu.
+
+Writing
+
+# TASK: REDESIGN GAMEPLAY TRACK – FIXED 4-LANE SYSTEM
+
+## Project
+
+NEON PULSE / 3danceYTApp
+
+## Objective
+
+Redesign the existing gameplay track into a clean, fixed 4-lane rhythm highway.
+
+The game must have exactly 4 parallel lanes with clearly visible neon divider lines. All gameplay objects must travel strictly inside their assigned lanes.
+
+IMPORTANT: Modify the existing project. Do NOT rebuild the game from scratch. Preserve all existing gameplay mechanics, music engine, scoring, effects, UI and settings.
+
+## 1\. FOUR-LANE TRACK DESIGN
+
+Create exactly 4 fixed, parallel lanes:
+
+- Lane 0: Far Left
+- Lane 1: Center Left
+- Lane 2: Center Right
+- Lane 3: Far Right
+
+Requirements:
+
+- Four lanes must have equal width.
+- Lanes must be perfectly parallel.
+- Add visible vertical neon divider lines between lanes.
+- Add clear outer boundaries on both sides.
+- Add subtle floor/grid details.
+- Use a futuristic dark neon visual style.
+- Lane boundaries must remain visible from the far distance to the judgement line.
+- Use perspective projection to create depth.
+- Avoid excessive glow that makes lane boundaries blurry.
+
+## 2\. LANE POSITION SYSTEM
+
+Create one centralized lane coordinate system.
+
+Example:
+
+js
+
+```js
+const LANE_COUNT = 4;
+const LANE_WIDTH = 2.0;
+
+function getLaneX(lane) {
+  return (lane - 1.5) * LANE_WIDTH;
+}
+```
+
+All gameplay objects MUST use this centralized coordinate function.
+
+Never calculate lane positions independently in different gameplay modules.
+
+Validate that lane indices are integers from 0 to 3.
+
+## 3\. NOTE POSITIONING
+
+All notes must be positioned precisely at the center of their assigned lane.
+
+Requirements:
+
+- TAP: centered in one lane.
+- HOLD: remains inside its assigned lane throughout its entire length.
+- DOUBLE: occupies two distinct lanes simultaneously.
+- SLIDE: follows a clearly visible path between assigned lanes.
+- BOMB: stays centered in its assigned lane.
+
+No note may randomly drift between lanes.
+
+No note may visually overlap an adjacent lane unless the gameplay mechanic explicitly requires a transition, such as SLIDE.
+
+## 4\. NOTE MOVEMENT
+
+All notes must travel along the same forward direction toward the judgement line.
+
+Requirements:
+
+- Maintain constant lane X position during normal travel.
+- Only SLIDE may transition between lanes.
+- Ensure perspective scaling is consistent.
+- Ensure notes do not leave their lane boundaries.
+- Ensure the note's collision position matches its rendered position.
+
+## 5\. JUDGEMENT LINE
+
+Create one horizontal judgement line across all four lanes.
+
+Requirements:
+
+- Clearly visible.
+- Consistent with the neon theme.
+- All notes must reach the correct judgement position.
+- Maintain accurate audio synchronization.
+- Preserve existing PERFECT / GREAT / GOOD / MISS judgement logic.
+
+## 6\. INPUT AND COLLISION
+
+Preserve and verify the existing keyboard input system.
+
+Each lane must have a clearly defined input mapping.
+
+Requirements:
+
+- Input lane must match note lane.
+- Hit detection must use the centralized lane system.
+- HOLD must validate both lane and hold duration.
+- DOUBLE must validate both required lanes.
+- SLIDE must validate its lane transition sequence.
+- BOMB must detect interaction in the correct lane.
+
+Do not introduce timing regressions.
+
+## 7\. VISUAL DESIGN
+
+Visual direction:
+
+- Dark futuristic tunnel.
+- Cyan and blue neon lane boundaries.
+- Subtle purple ambient lighting.
+- Clear lane separation.
+- Slightly glowing floor.
+- Readable notes with distinct colors.
+- Consistent 3D perspective.
+
+The four lanes must be immediately recognizable even when multiple notes appear simultaneously.
+
+Avoid unnecessary visual clutter.
+
+## 8\. PERFORMANCE
+
+- Reuse existing Object Pool.
+- Reuse geometries and materials.
+- Avoid creating new objects every frame.
+- Use InstancedMesh where appropriate.
+- Preserve smooth rendering at approximately 60 FPS.
+- Avoid unnecessary post-processing.
+
+## 9\. REGRESSION TESTING
+
+Test all five existing note types:
+
+1. TAP
+2. HOLD
+3. DOUBLE
+4. SLIDE
+5. BOMB
+
+Verify:
+
+- All notes stay in their assigned lanes.
+- All four lanes have equal width.
+- Lane divider lines align with note positions.
+- No note drifts into adjacent lanes.
+- Judgement line alignment is correct.
+- Keyboard input matches the correct lane.
+- Audio timing remains accurate.
+- Existing score, combo and health systems still work.
+
+Test NORMAL, HARD and EXPERT.
+
+Test both desktop and mobile layouts.
+
+## 10\. IMPLEMENTATION RULES
+
+- Inspect existing source code before editing.
+- Identify all modules responsible for lane positioning and note rendering.
+- Reuse existing architecture wherever possible.
+- Avoid duplicating lane coordinate calculations.
+- Do not remove existing features.
+- Do not replace the audio engine.
+- Do not change existing scoring rules unless required to fix a confirmed bug.
+- Keep code modular and maintainable.
+
+## 11\. FINAL DELIVERABLE
+
+After implementation:
+
+1. Summarize all modified files.
+2. Explain the new 4-lane coordinate system.
+3. Provide screenshots of the new gameplay.
+4. Report test results for all five note types.
+5. Report any remaining issues.
+6. Confirm that existing gameplay and music synchronization remain functional.
+
+SUCCESS CRITERION:
+
+The final game must display exactly four clearly separated, fixed parallel lanes. Every gameplay object must travel precisely inside its assigned lane, creating a clean, readable and professional rhythm-game experience.
+
+Lưu ý của mình: Có một điểm rất quan trọng trong prompt này: không chỉ vẽ thêm ba đường kẻ để chia lane, mà phải đồng bộ lại tọa độ giữa `Lane Renderer`, `Note Spawner`, `Note Movement` và `Hit Detection`.
+
+Nếu chỉ sửa phần đồ họa, bạn sẽ thấy lane nằm một nơi nhưng note lại bay lệch một nơi khác. Prompt trên đã yêu cầu xử lý cả hai phần.
+
+
+
+I’ll start by mapping every lane-coordinate calculation, the track/highway geometry, judgement line and note-placement path before changing anything. Then I’ll centralize the lane math and rebuild the track visuals around it, preserving the existing rules and pooling.
+
+The codebase already has four lanes, but the lane centres are duplicated across framing, pads, effects and a legacy road shader, and the current stage has no explicit lane borders or judgement bar. I’m centralizing the lane math in `config.js`, then adding one lightweight shader-based lane deck plus a judgement bar and wiring it through the existing `NeonWorld` and responsive framing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The new track is live in the browser: four identical lane widths, five aligned boundaries, all five mechanics centered in their lanes, and a live keyboard run at EASY/NORMAL/HARD/EXPERT produced `4 EPIC + 1 BOMB`, `0 MISS`, health `0.82` in every difficulty. I’m running the full suite and build now, then I’ll write the handoff report.
+
+
+
+
+
+
+
+## Four-lane highway redesign complete
+
+The report is at **`PHASE95_FOUR_LANE_TRACK_REPORT.md`**.
+
+### What changed
+
+- **Central lane system** in `src/config.js`:
+  - exactly **4 lanes**
+  - fixed **2 m** desktop width
+  - centres `-3, -1, 1, 3`
+  - boundaries `-4, -2, 0, 2, 4`
+  - `getLaneX()`, `getLaneCenters()`, `getLaneBoundaries()` and lane validation
+- New **`src/world/LaneTrack.js`**: one shader deck with five neon lane boundaries, cyan outer rails, subtle grid and a judgement bar at the exact `hitZ`.
+- `StageFraming` now scales the lane width on portrait screens and derives all centres from the central function, keeping all four lanes equal and parallel.
+- Notes, pads, impact feedback, legacy hit-line, road shader and celebration effects now use the shared lane layout.
+- `NoteManager` validates lane indices and distinct `lane2` values; `Gameplay` ignores invalid input lanes.
+- Existing audio engine, scoring, combo, health, HOLD/DOUBLE/SLIDE/BOMB rules, UI and pool systems were preserved.
+
+### Verification
+
+- New **`qa/stage95-four-lane-track-check.mjs`: 39/39 passed**.
+- **30 QA suites passed**, including stage35, stage36, stage46, stage89, stage90, stage91, stage92, stage93, stage94 and stage95.
+- Live browser input at **EASY, NORMAL, HARD and EXPERT**:
+  - TAP, HOLD, DOUBLE and SLIDE: **EPIC**
+  - BOMB: collision registered
+  - **0 misses**, four EPIC hits, health `0.82`, score `600`
+  - lane X positions matched the central system at every difficulty
+- Renderer sample: **60.1 FPS average**, 59.2 FPS minimum, p95 frame **16.8 ms** at 623×803.
+- Production build passed: **148 modules**, 670 ms, no errors.
+
+### Screenshots
+
+![Four-lane gameplay](qa-artifacts/stage95-all-five-623x803.png)
+
+![HARD gameplay](qa-artifacts/stage95-lane-track-hard-623x803.png)
+
+![EXPERT gameplay](qa-artifacts/stage95-lane-track-expert-clean-623x803.png)
+
+### Remaining limitation
+
+The available Freebuff browser panel is **623 px wide**, so the screenshots are 623×803. The **1280×800 and 491×803 lane layouts are covered by geometry tests**, but a full 1280 px HUD screenshot was not obtainable in this session. Browser input was dispatched through the real input listener, not a physical keyboard. No commit or push was made.
+
+
+11111111111111111111
+
+Hiểu chính xác ý bạn\! Mình đã xem hình.
+
+Trong hình, DOUBLE đang nằm ở hai lane liền kề, nhưng khi chạm vạch judgement thì hiệu ứng kích hoạt chỉ xuất hiện ở một bên, bên còn lại không có hiệu ứng tương ứng.
+
+Đây là lỗi visual feedback của DOUBLE.
+
+## Hiệu ứng đúng phải như thế nào?
+
+Hiện tại – chưa đúngTapTap Music 2ポップミュージックリズムゲーム 최신 버전 Android/iOS용 - TapTap
+
+[taptap.io](<https://www.taptap.io/app/213489?utm_source=chatgpt.com>)
+
+Chỉ một lane phát sáng khi DOUBLE được đánh trúng.
+
+Mong muốn – đúngAdd over one million songs to Audica with this brilliant osu\! converter | Windows Central
+
+[windowscentral.com](<https://www.windowscentral.com/add-over-one-million-songs-audica-brilliant-osu-converter?utm_source=chatgpt.com>)
+
+Cả hai lane phải phát sáng và tạo hiệu ứng va chạm cùng một thời điểm.
+
+## Logic hiệu ứng DOUBLE cần sửa
+
+Khi người chơi đánh DOUBLE:
+
+1. Kiểm tra cả hai lane.
+2. Cả hai lane phải được xác nhận HIT.
+3. Kích hoạt hai hiệu ứng Impact độc lập.
+4. Hai hiệu ứng bắt đầu cùng timestamp.
+5. Hai vòng năng lượng, particle và ánh sáng xuất hiện đồng thời.
+6. Hiệu ứng PERFECT / EPIC hiển thị chung ở giữa hai lane, không hiển thị lệch một bên.
+
+Đặc biệt, không được chỉ gọi `spawnImpact(lane)` một lần. Phải xử lý cả `lane1` và `lane2`.
+
+## Prompt gửi OpenCode sửa lỗi
+
+Writing
+
+# BUG FIX – DOUBLE NOTE MUST TRIGGER TWO SIMULTANEOUS HIT EFFECTS
+
+## Problem
+
+In NEON PULSE, DOUBLE notes occupy two lanes simultaneously.
+
+However, when a DOUBLE note reaches the judgement line and is successfully hit, the visual impact effect appears on only one lane.
+
+This is incorrect.
+
+## Expected Behavior
+
+When a DOUBLE note is successfully hit:
+
+- Both lanes must trigger impact effects.
+- Both effects must appear at exactly the same time.
+- Each effect must be positioned at the center of its corresponding lane.
+- Both effects must have independent particle and energy-ring animations.
+- Both effects must have synchronized animation timing and duration.
+- The visual feedback must clearly communicate that TWO lanes were hit simultaneously.
+
+## Implementation
+
+### 1\. Inspect existing systems
+
+Inspect:
+
+- DOUBLE judgement logic.
+- lane1 and lane2 handling.
+- ImpactEffect / EffectManager.
+- Particle spawning.
+- Hit feedback animation.
+- Score and judgement display.
+
+Identify why only one impact effect is currently triggered.
+
+### 2\. Fix DOUBLE impact handling
+
+For a successful DOUBLE judgement:
+
+js
+
+```js
+spawnImpact(lane1, hitZ, judgement);
+spawnImpact(lane2, hitZ, judgement);
+```
+
+Use the existing effect architecture and centralized lane coordinates.
+
+Both effects must be scheduled from the same gameplay event and share the same start timestamp.
+
+Do not trigger the second effect through a delayed callback.
+
+### 3\. Visual requirements
+
+Each lane must independently display:
+
+- Bright circular energy impact.
+- Expanding neon ring.
+- Particle burst.
+- Brief lane illumination.
+- Matching judgement color.
+
+Both effects must be visually balanced.
+
+Display the PERFECT / EPIC text once, centered between the two affected lanes.
+
+### 4\. Other note types
+
+Do not change TAP, HOLD, SLIDE or BOMB behavior.
+
+Do not change scoring, combo, health or audio timing.
+
+### 5\. Regression tests
+
+Test DOUBLE on:
+
+- Lane 0 + Lane 1
+- Lane 0 + Lane 3
+- Lane 1 + Lane 2
+- Lane 2 + Lane 3
+
+Verify:
+
+- Exactly two impacts per successful DOUBLE.
+- Both impacts start simultaneously.
+- Each impact is centered on its assigned lane.
+- Neither impact is missing.
+- No duplicate impacts occur.
+- Missed DOUBLE does not incorrectly show successful hit effects.
+
+### 6\. Deliverables
+
+- Identify root cause.
+- List modified files.
+- Provide before/after screenshots.
+- Provide a test proving both impact effects trigger simultaneously.
+- Run existing QA suites.
+
+IMPORTANT: Fix the actual root cause. Do not simply add a decorative second glow that is disconnected from the DOUBLE judgement system.
+
+Mình nhấn mạnh thêm: Hai hiệu ứng phải là hai điểm va chạm độc lập nhưng đồng bộ tuyệt đối. Không phải một hiệu ứng lớn kéo dài qua hai lane.
+
+Như vậy người chơi sẽ cảm nhận được DOUBLE thực sự là đánh trúng hai lane cùng lúc.
+
+
+
+I’ll trace the DOUBLE judgement path from `Gameplay` through the effect manager and inspect how impact particles and rings are instantiated, then fix the event at its source and add a focused simultaneous-effect test.
+
+The DOUBLE judgement is scored once, but `_applyHit()` only flashes and bursts at the single completing lane. I’m checking the HUD’s use of the event lane now so the two impacts can be added without duplicating the judgement text or breaking lane-aware reactions.
+
+I’ve confirmed the source bug: DOUBLE is scored once, then `_applyHit()` emits a single pad flash and a single impact at the completing lane. I’ll capture a pre-fix frame first, apply the fix at that shared hit path, then capture the same double-lane hit after.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The fix is in place: the hit path now emits one impact per lane for a completed DOUBLE, with a shared timing object, while the judgement event remains single. The new regression suite passes 70/70 across all four lane pairs, plus miss/partial cases and real `ImpactFX` timing. I’m capturing the matching post-fix frame and then running the existing suites.
+
+The live anchor check caught a real coordinate bug in my first HUD pass: it projected the desktop lane width instead of the responsive `notes.laneX`. I’m correcting that before finalizing so the label sits between the actual rendered lane centres, not their unscaled positions.
+
+
+
+
+
+
+
+
+
+
+## Root cause
+
+`Gameplay._applyHit()` used only the lane of the press that completed the DOUBLE:
+
+```js
+this.world.hitLine.flash(lane, ...);
+this.impactFX.burst(positionAt(lane), ...);
+```
+
+`lane2` was correctly stored on the note and the DOUBLE was correctly scored once, but neither lane-expanded pad feedback nor a second impact was ever emitted.
+
+A second timing issue would have remained: `ImpactFX` randomizes ring duration per burst, so two independent calls could start together but finish at different times. DOUBLE impacts now receive one shared timing object from the same hit event.
+
+## Fix
+
+- `Gameplay` now derives both lanes for a completed DOUBLE and emits:
+  - one pad flash per lane;
+  - one `ImpactFX.burst()` per lane, at each live lane centre and the judgement depth.
+- Both bursts use the same `startedAt` and the same `0.48 s` ring duration. They are called synchronously from one hit event, not through a delayed callback.
+- Scoring, combo, health, judgement tier and audio timing remain once-per-object.
+- A missed DOUBLE takes the miss path and produces no successful impact.
+- A partial DOUBLE only lights the lane that was actually pressed.
+- The judgement event remains single and now carries `lanes`, allowing the HUD to keep one label while positioning it between the two lanes.
+- The HUD anchor uses the **live responsive `notes.laneX`** values, including portrait scaling.
+
+## Verification
+
+`qa/stage96-double-impact-check.mjs` — **70/70 passed**:
+
+| Pair | Judges | Scored | Impacts | Pads | Shared start | Shared duration |
+|---|---:|---:|---:|---:|---|---:|
+| 0 + 1 | 1 | 1 | 2 | 2 | yes | 0.48 s |
+| 0 + 3 | 1 | 1 | 2 | 2 | yes | 0.48 s |
+| 1 + 2 | 1 | 1 | 2 | 2 | yes | 0.48 s |
+| 2 + 3 | 1 | 1 | 2 | 2 | yes | 0.48 s |
+
+The suite also verifies that each impact is at its assigned lane X, both are at `hitZ`, both use the same judgement colour/weight, and the real `ImpactFX` creates independent ring, shockwave, flare and particle instances whose paired rings advance in lockstep. Missed and partial DOUBLE cases are covered.
+
+**31 QA suites pass** after the change, including the existing mechanics, judgement, bomb, note-visual and four-lane suites. The stage93 feedback-count assertion was updated because a DOUBLE now correctly produces two lane impacts.
+
+`npm run build` passes: **148 modules**, **693 ms**.
+
+## Before
+
+The pre-fix hit on lanes **0 + 3** shows only the right-lane energy ring. The dim left pad glow is the existing double-arm flash, not a second impact.
+
+![DOUBLE before fix](qa-artifacts/stage96-double-impact-before-623x803.png)
+
+## After
+
+The same lanes **0 + 3** now show two simultaneous lane-centred impacts and one EPIC label.
+
+![DOUBLE after fix](qa-artifacts/stage96-double-impact-after-623x803.png)
+
+## HUD anchor
+
+DOUBLE on lanes **0 + 1** shows two impacts with the single EPIC label centred between them. The live measured anchors matched their projected lane midpoints for all four pairs (`33.255%`, `50%`, `50%`, `66.745%`).
+
+![DOUBLE 0+1 anchor](qa-artifacts/stage96-double-anchor-0-1-623x803.png)
+
+The full report is in **`PHASE96_DOUBLE_IMPACT_REPORT.md`**.
+
+## Modified files
+
+- `src/game/Gameplay.js`
+- `src/effects/ImpactFX.js`
+- `src/core/Game.js`
+- `src/ui/UIManager.js`
+- `qa/stage96-double-impact-check.mjs` (new)
+- `qa/stage93-note-visual-readability-check.mjs` (expected feedback count)
+- QA artifacts and `PHASE96_DOUBLE_IMPACT_REPORT.md`
+
+## Limitations
+
+Screenshots are **623×803**, not a full 1280 px HUD capture. The lane 0 + 3 case is exercised directly in the engine and QA; normal map validation still requires DOUBLE lanes to be adjacent. No commit or push was made.
+
+
+1111111111111  save chart edit
+Có, đây là vấn đề cần kiểm tra. Nếu bạn đang vào chế độ Edit để thêm obstacle (vật cản/BOMB) mà không thấy nút Save, có thể Chart Editor hiện mới hỗ trợ thao tác chỉnh sửa trong bộ nhớ tạm nhưng chưa có giao diện lưu thay đổi.
+
+Mình nghĩ cần xử lý triệt để, không chỉ thêm một nút Save cho có. Khi lưu xong, các obstacle mới phải được ghi vào chart và vẫn còn nguyên khi tải lại game.
+
+## Prompt gửi OpenCode sửa Chart Editor
+
+Writing
+
+# BUG FIX / FEATURE – ADD SAVE FUNCTION TO CHART EDITOR
+
+## Problem
+
+When entering Edit mode and adding new obstacles (BOMB) or other notes, there is no visible Save button.
+
+Users need to save their chart modifications and preserve them after leaving the editor or refreshing the browser.
+
+## 1\. Inspect existing implementation
+
+Before coding, inspect:
+
+- Chart Editor UI
+- Note/Obstacle creation logic
+- BeatMap data structure
+- Chart loading and serialization
+- Existing music library
+- Existing local persistence system
+
+Identify whether edits are currently stored only in memory.
+
+Do not rebuild the editor.
+
+## 2\. Add a visible SAVE button
+
+Add a clearly visible SAVE button to the Chart Editor toolbar.
+
+Requirements:
+
+- Always visible in Edit mode.
+- Use a recognizable save icon.
+- Highlight the button when there are unsaved changes.
+- Show a saved indicator after successful saving.
+- Disable Save when there are no changes.
+- Display an error if saving fails.
+
+Suggested UI:
+
+\[ + NOTE \] \[ + OBSTACLE \] \[ UNDO \] \[ REDO \] \[ SAVE \]
+
+## 3\. Save functionality
+
+When clicking SAVE:
+
+- Serialize the complete current chart.
+- Include all existing notes.
+- Include newly added obstacles.
+- Include TAP, HOLD, DOUBLE, SLIDE and BOMB.
+- Preserve lane positions.
+- Preserve timestamps and durations.
+- Preserve BPM and chart metadata.
+- Preserve difficulty settings.
+- Preserve the original music reference.
+
+Do not lose or overwrite existing chart data accidentally.
+
+## 4\. Persistent storage
+
+Implement reliable local persistence using IndexedDB if the project does not already have an appropriate storage mechanism.
+
+Requirements:
+
+- Save charts between browser sessions.
+- Reload previously saved charts.
+- Update an existing chart without creating unwanted duplicates.
+- Maintain a unique chart ID.
+- Track the last modified timestamp.
+- Handle storage errors gracefully.
+
+Do not rely exclusively on JavaScript variables or temporary application state.
+
+## 5\. Export and Import
+
+Also provide:
+
+- EXPORT JSON: Download the current chart as a JSON file.
+- IMPORT JSON: Load a previously exported chart.
+- Validate imported chart structure before replacing the current chart.
+- Keep the original chart safe if import fails.
+
+## 6\. Unsaved Changes Protection
+
+If the user modifies a chart and attempts to:
+
+- Leave Edit mode.
+- Return to the main menu.
+- Load another song.
+- Refresh or close the page.
+
+Show a confirmation dialog:
+
+"You have unsaved changes. Save before leaving?"
+
+Options:
+
+- Save
+- Discard
+- Cancel
+
+Do not silently discard user edits.
+
+## 7\. Undo / Redo
+
+Verify that adding, deleting and moving notes can be undone and redone.
+
+Save must persist the current state, not an earlier undo state.
+
+## 8\. Testing
+
+Test the following scenario:
+
+1. Open a song.
+2. Enter Edit mode.
+3. Add 5 BOMB obstacles.
+4. Add 3 TAP notes.
+5. Move one obstacle to another lane.
+6. Click Save.
+7. Leave the editor.
+8. Reload the browser.
+9. Reopen the same song and chart.
+
+Verify that all changes remain exactly as saved.
+
+Also test export/import JSON and unsaved-change protection.
+
+## 9\. Deliverables
+
+- Root cause of missing Save functionality.
+- List of modified files.
+- Screenshot showing the Save button.
+- Screenshot showing successful save confirmation.
+- Persistence test results.
+- QA results.
+- Production build result.
+
+IMPORTANT: Saving a chart must never modify the original audio file. Chart data and music assets must remain separate.
+
+Preserve all existing gameplay, audio synchronization, lane coordinates and scoring mechanics.
+
+## 2. Mình đề xuất giao diện sau khi sửa
+
+CHART EDITOR
+
+SavedLast saved: Just now
+
+Add Note
+
+Add Obstacle
+
+Undo
+
+Redo
+
+SAVE CHART
+
+Export JSON
+
+Import JSON
+
+Một khuyến nghị quan trọng: Nên có cả Save thủ công và Auto-save. Auto-save giúp tránh mất công chỉnh sửa, còn Save thủ công giúp người dùng chủ động lưu phiên bản chart hoàn chỉnh.
+
+
+
+I’ll trace the existing editor toolbar, draft/commit model, and map store before changing anything. The key question is whether edits are already committed through an existing persistence layer but lack a visible save action, or whether the editor is genuinely memory-only.
+
+The editor already has a robust `SongMapStore` and an internal explicit save path, so this is not a missing persistence engine. The actual gap is the UI and leave/import workflow: the only save control is a header “SAVE DRAFT”, there is no toolbar Save/Export/Import, and closing/opening another song can bypass a proper Save/Discard/Cancel decision. I’ll reuse the existing store, add the visible toolbar workflow, and preserve the current chart on failed imports.
+
+
+
+
+
+
+
+The controller now has explicit `exportMap()` / `importMap()` handling that validates the payload, rejects wrong song/difficulty/audio-length charts, and only adopts the working copy after validation succeeds. Next I’m wiring the toolbar, Save status, three-way unsaved dialog and page-leave guard into the existing editor shell.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The data-layer suite is green: **83/83 checks**, including the exact 5 BOMB + 3 TAP + lane-move scenario, reload persistence, export/import failure safety, undo/redo save semantics and storage failure handling. The production build also passes. I’m checking the actual editor UI now for button state, save confirmation and the unsaved dialog, then I’ll capture the required screenshots.
+
+The live editor confirms the visible behavior: the Save button is always in the Chart file group, turns amber with **UNSAVED** when dirty, disables with **SAVED** when clean, and the close guard shows exactly **SAVE / DISCARD / CANCEL**. I also verified after a real browser refresh that the saved chart reopened with **50 notes, 6 obstacles, revision 14**, and the moved BOMB remained on its new lane; the Discard path left the stored revision untouched. I’m running the full existing QA suite now.
+
+## Root cause
+
+The editor already had a working full-map persistence layer (`SongMapStore`), so edits were not only in memory. The real problems were:
+
+- Save existed only as a small header **SAVE DRAFT** button, not a visible toolbar control.
+- No Save status, dirty highlighting, disabled clean state, or `Ctrl/Cmd+S`.
+- No Export JSON / Import JSON.
+- Closing the editor offered only **Close anyway / Cancel**, with no Save choice.
+- Opening another song used `close({ force: true })`, bypassing any save decision and potentially discarding edits.
+- Refresh/close had no `beforeunload` protection.
+- There was no import validation path that guaranteed the existing chart stayed intact.
+
+The fix reuses the project’s existing localStorage chart store rather than introducing a second IndexedDB storage layer. That store already provides the stable `songId::difficulty` chart key, revisions, `updatedAt`, previous revisions, and quota handling.
+
+## Modified files
+
+- `src/ui/mapEditorMarkup.js` — toolbar Save/Export/Import controls, save icon, status area, third modal action.
+- `src/game/map/MapEditor.js` — Save states, Ctrl/Cmd+S, export download, import file flow, Save/Discard/Cancel dialog, refresh guard, safe song switching.
+- `src/game/map/editor/MapEditorController.js` — `saveChart()`, `exportMap()`, validated `importMap()`, safer close behavior.
+- `src/styles/mapEditor.css` — visible Save button, dirty/saved/error states, toolbar layout.
+- `qa/stage97-chart-save-check.mjs` — new 83-check persistence/import/undo/storage suite.
+- `qa-artifacts/stage97-*.png` — UI evidence.
+
+No audio files or audio data are touched. The saved chart contains the audio fingerprint only, and the QA checks confirm no `data:audio` is written.
+
+## Save UI
+
+![Save button](qa-artifacts/stage97-chart-save-button.png)
+
+![Unsaved state](qa-artifacts/stage97-chart-save-unsaved.png)
+
+![Successful save](qa-artifacts/stage97-chart-save-success.png)
+
+The button is always present in Edit mode. It turns amber with **UNSAVED** when dirty, disables and shows **SAVED** when clean, and the successful-save toast shows the new revision.
+
+## Unsaved protection
+
+![Unsaved changes dialog](qa-artifacts/stage97-unsaved-dialog.png)
+
+The in-app close path now presents **SAVE / DISCARD / CANCEL**. Verified in the live editor:
+
+- **Cancel** kept the editor open with edits intact.
+- **Discard** closed the editor, left the saved revision unchanged, and removed the autosave recovery draft.
+- The same guard is used before opening a different song.
+
+Refresh/close uses the browser’s native `beforeunload` confirmation. Browsers do not allow custom three-button text there, so it uses the native leave prompt while synchronously flushing an autosave recovery draft.
+
+## Persistence results
+
+Live browser test:
+
+- Opened the existing song; chart started at 42 notes, revision 13.
+- Added 5 BOMBs and 3 TAPs.
+- Moved one BOMB from lane 2 to lane 0.
+- Clicked toolbar **SAVE** → revision 14.
+- Refreshed the browser and reopened the same song/chart.
+- Reopened with **50 notes, 6 obstacles, 40 TAPs, revision 14**; the moved BOMB remained on lane 0.
+- BPM, duration, title, difficulty and audio fingerprint were preserved.
+- After capturing evidence, the demo chart was restored to its original 42-note revision 13.
+
+Automated scenario also verifies exact note/time/lane/duration/reference equality after a fresh store/controller reload.
+
+## Export / import and other checks
+
+- Export/import round-trip preserves all five note types, durations, doubles, slide destinations, metadata and title.
+- Invalid JSON, wrong song, wrong difficulty, wrong audio length and invalid note data are rejected without changing the current working chart or stored revision.
+- Imported charts save as one map, not duplicates.
+- Undo/redo verified for add, delete and move; Save persists the current post-undo/post-redo state.
+- Storage failure leaves the chart dirty for retry and reports `SAVE FAILED`.
+- Export/import was tested through the real controller methods; the OS file picker/download itself was not automated.
+
+## QA and build
+
+- `qa/stage97-chart-save-check.mjs`: **83/83 passed**
+- All existing stage suites: **32/32 passed**
+- Production build: **148 modules transformed, built in 629 ms**
+- Browser console: no runtime errors; only Vite/HMR debug messages and successful 200 responses.
+
+The new revision-history-panel idea would make saved chart changes easier to compare and roll back.
+
+
+11111111111111
