@@ -21755,3 +21755,835 @@ The new revision-history-panel idea would make saved chart changes easier to com
 
 
 11111111111111
+FIX – REMOVE APPROVED MAP SAVE LOCK
+Objective
+
+Allow users to edit and save an already approved map directly.
+
+The current application displays:
+
+"This map is approved and locked. Restore a previous version to replace it."
+
+This restriction must be removed.
+
+Required behavior
+Users can edit approved maps normally.
+The Save button must work regardless of whether the map is approved or locked.
+Clicking Save commits the current working chart immediately.
+The saved chart becomes the active chart used by the game.
+No Restore Previous Version action is required.
+No Unlock action is required.
+No additional confirmation is required.
+Save logic
+
+When saving:
+
+Persist the current working chart.
+Increment revision.
+Update updatedAt.
+Preserve songId.
+Preserve difficulty.
+Preserve audio fingerprint.
+Preserve chart metadata.
+Keep the map approved after saving.
+Clear the dirty/unsaved state.
+Update the saved status to SAVED.
+Remove restrictions
+
+Inspect and remove all inappropriate Approved/Locked restrictions from:
+
+MapEditorController.js
+MapEditor.js
+SongMapStore
+Save validation
+Restore/approval state handling
+Any UI logic that disables Save for approved maps.
+
+Do not simply hide the warning message. Fix the underlying save restriction.
+
+Important
+Do not require users to restore a previous revision.
+Do not create duplicate maps.
+Do not change song identity or difficulty.
+Do not delete revision history.
+Keep Export/Import functional.
+Keep Undo/Redo functional.
+Keep Save/Discard/Cancel working.
+Preserve existing unsaved-change protection.
+QA
+
+Test the following scenario:
+
+Open an approved and locked map.
+Add 5 BOMB notes.
+Add 3 TAP notes.
+Move one BOMB to another lane.
+Click Save.
+Verify that saving succeeds immediately.
+Refresh the browser.
+Reopen the same song and difficulty.
+Verify all changes persist.
+Verify the map remains approved and usable in gameplay.
+
+Also test storage failures and invalid chart data.
+
+Run all existing QA suites and production build.
+
+Report modified files, test results and screenshots.
+
+The final user workflow must be:
+
+EDIT → SAVE → PLAY
+
+No Restore or Unlock steps.
+
+
+
+
+I’ll trace every place approval currently blocks a write or disables editing, then change the explicit save path so an approved chart stays approved while still incrementing revision. I’ll keep regeneration’s separate safety confirmation out of the Save workflow unless it also blocks normal edits.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The save restriction was in `SongMapStore.write()`: it rejected every write against an approved map unless `force` was passed, and the editor never passed it. I changed the store rule so an **approved working copy may update an approved map directly**; generated/unapproved replacements are still blocked, so the regeneration safety is preserved. Controller tests now save approved maps with approval retained, revision incremented, and gameplay resolving the new revision.
+
+
+
+
+## Root cause
+
+The lock was real, not just UI text. `SongMapStore.write()` rejected every write against an approved map unless `force` was passed, and the editor’s Save path called `store.write(map)` without `force`. So the controller stayed dirty and the UI surfaced:
+
+> This map is approved and locked. Restore a previous version to replace it.
+
+Hiding that message would not have fixed saving.
+
+## Fix
+
+`SongMapStore` now allows an **approved working copy to update an approved map directly**. Generated or unapproved replacements are still blocked, and hand-edited/generated protections remain intact.
+
+The explicit editor Save path now:
+
+- Persists the current working chart.
+- Increments revision.
+- Updates `updatedAt`.
+- Preserves `songId`, difficulty, audio fingerprint, title and metadata.
+- Keeps `approved: true`.
+- Clears dirty state and shows `SAVED`.
+- Keeps the previous revision for rollback.
+- Writes one map, not a duplicate.
+
+Importing into an approved chart also preserves approval, so **Save after Import** works without an unlock step.
+
+## Modified files
+
+- `src/game/map/SongMapStore.js` — approved-to-approved writes allowed; generated/draft replacement protection retained.
+- `src/game/map/editor/MapEditorController.js` — removed lock wording, preserves approval on import, updated save rules.
+- `src/game/map/MapEditor.js` — approved notice now says Save updates directly and keeps approval.
+- `qa/stage83-map-editor-check.mjs` — updated expected behavior: approved save succeeds.
+- `qa/stage98-approved-save-check.mjs` — new 57-check approved-save QA suite.
+- `qa-artifacts/stage98-approved-*.png` — screenshots.
+
+`RESTORE PREVIOUS` remains available as optional rollback, but is not required. There is no Unlock step.
+
+## Screenshots
+
+Approved chart with 5 BOMBs + 3 TAPs added, one BOMB moved, Save enabled:
+
+![Approved map unsaved](qa-artifacts/stage98-approved-unsaved.png)
+
+Save succeeded immediately, revision 14, approval retained:
+
+![Approved map saved](qa-artifacts/stage98-approved-saved.png)
+
+After browser refresh and reopening the same song/difficulty:
+
+![Approved map reloaded](qa-artifacts/stage98-approved-reloaded.png)
+
+## Verification results
+
+Live browser test:
+
+- Opened an approved map at revision 13.
+- Added 5 BOMBs and 3 TAPs; moved one BOMB from lane 1 to lane 0.
+- Clicked Save → **revision 14**, still approved.
+- Stored chart: **50 notes, 6 obstacles, 40 TAPs**, same audio fingerprint.
+- Refreshed and reopened → **revision 14, approved, 50 notes**, moved BOMB still on lane 0.
+- Gameplay gate resolved the same chart as **`approved-map`, revision 14, playable**.
+- The demo chart was restored to its original revision 13 / 42 notes after evidence capture.
+
+Automated results:
+
+- `stage98-approved-save-check.mjs`: **57/57 passed**
+- `stage83-map-editor-check.mjs`: **177/177 passed**
+- All stage suites: **33/33 passed**
+- Production build: **148 modules transformed, built in 699 ms**
+- Browser console: no runtime errors
+
+The final workflow is now **EDIT → SAVE → PLAY**, with no Restore or Unlock step.
+
+The natural next addition would be a comparison view for approved revisions, so editors can inspect exactly what changed between saves.
+
+
+
+11111111111 fix nút hold, hiện tại khó nhìn
+Được\! Và mình nghĩ nên thiết kế lại Hold gần như từ đầu về mặt hình ảnh, chứ không chỉ đổi màu hoặc tăng kích thước.
+
+Vấn đề hiện tại là người chơi nhìn vào không nhận ra đây là một thao tác cần GIỮ. Một Hold tốt phải truyền đạt được ngay ba thông tin: bắt đầu ở đâu – giữ bao lâu – kết thúc ở đâu.
+
+## 1. Thiết kế Hold mới mình đề xuất
+
+Đề xuất: Neon Hold 2.0楽曲プレイ - InFalsus Wiki\*
+
+Mình muốn Hold có 4 thành phần riêng biệt:
+
+1. HOLD HEAD
+
+Đầu Hold có hình dạng riêng, lớn hơn TAP khoảng 20–30%, có viền Neon rõ ràng.
+
+2. HOLD BODY
+
+Một thanh năng lượng dài, dày, chạy dọc theo lane. Có lõi sáng và hiệu ứng chuyển động.
+
+3. HOLD TAIL
+
+Điểm kết thúc có biểu tượng riêng, dễ nhận biết và không nhầm với một TAP khác.
+
+4. HOLD FEEDBACK
+
+Khi giữ đúng, thanh năng lượng sáng dần. Khi hoàn thành, phát hiệu ứng ánh sáng và âm thanh xác nhận.
+
+## 2. Cách phân biệt TAP và HOLD
+
+Đây là điều rất quan trọng: người chơi phải phân biệt được ngay cả khi nhìn thoáng qua.
+
+| Đặc điểm | TAP | HOLD |
+| --- | --- | --- |
+| Hình dạng | Một khối ngắn | Đầu + thân + đuôi |
+| Kích thước | Nhỏ | Lớn hơn |
+| Màu | Màu lane | Cyan Neon nổi bật |
+| Chuyển động | Di chuyển đơn | Dải năng lượng liên tục |
+| Thao tác | Nhấn | Nhấn và giữ |
+
+Mình đề xuất dùng màu Cyan/Blue Neon cho Hold, nhưng vẫn giữ màu nhận diện lane để tránh mất thông tin vị trí.
+
+## 3. Hiệu ứng khi người chơi giữ Hold
+
+中英文字幕-Unity实时魔法冰霜火焰能量治疗游戏剑气特效教程 Real-time VFX course in Unity - CG资源网
+
+[cgzy.net](<https://www.cgzy.net/real-time-vfx-course-in-unity/?utm_source=chatgpt.com>)
+
+Mình muốn có trạng thái trực quan:
+
+- Chưa chạm: thanh năng lượng phát sáng nhẹ.
+- Bắt đầu giữ: Head phát sáng mạnh.
+- Đang giữ: một dòng năng lượng chạy dọc thân thanh.
+- Giữ đúng: thanh được lấp đầy dần.
+- Hoàn thành: Tail phát sáng, particle bung ra.
+- Thả sớm: thanh chuyển đỏ/cam và vỡ thành hiệu ứng nhỏ.
+
+Lưu ý: hiệu ứng phải đẹp nhưng không gây rối mắt hoặc che các note khác.
+
+## 4. Prompt giao cho AI Coding Agent
+
+Mình viết sẵn yêu cầu để triển khai trực tiếp vào dự án hiện tại.
+
+Writing
+
+# STAGE 99 – COMPLETE HOLD NOTE VISUAL REDESIGN
+
+## Objective
+
+Completely redesign the existing HOLD note visual presentation.
+
+The current Hold note is difficult to recognize and players cannot easily understand what it represents or how to interact with it.
+
+The goal is to make HOLD instantly recognizable as a "PRESS AND HOLD" gameplay mechanic.
+
+This is primarily a visual and UX redesign. Preserve the existing Hold gameplay logic unless a change is strictly necessary.
+
+## 1\. New Hold Visual Design
+
+Implement a distinctive three-part Hold note:
+
+### HOLD HEAD
+
+- Visually distinct from TAP.
+- Approximately 20–30% larger than a regular TAP.
+- Strong neon outline.
+- Clearly identifiable starting point.
+- Maintain lane identity.
+
+### HOLD BODY
+
+- A continuous, thick, glowing energy beam.
+- Extends from Head to Tail.
+- Follows the correct perspective and lane geometry.
+- Has a bright inner core and softer outer glow.
+- Uses subtle animated energy flowing along its length.
+- Must remain clearly visible against every existing environment theme.
+
+### HOLD TAIL
+
+- Distinctive ending marker.
+- Visually different from the Head.
+- Clearly communicates where the Hold ends.
+- Provides completion feedback.
+
+## 2\. Visual States
+
+Implement these visual states:
+
+- APPROACHING: subtle glowing body.
+- HOLD STARTED: Head lights up.
+- HOLDING: energy progressively fills the body.
+- COMPLETED: Tail produces a satisfying completion effect.
+- FAILED: visual feedback for releasing too early.
+
+The visual state must reflect the actual gameplay state.
+
+## 3\. Gameplay Readability
+
+- Players must immediately distinguish HOLD from TAP.
+- The full duration must be visually understandable.
+- Maintain lane alignment.
+- Avoid confusing HOLD with obstacle objects.
+- Ensure readability during dense note sequences.
+- Support different Hold durations.
+
+## 4\. Theme Compatibility
+
+Test the new Hold design against all existing visual themes.
+
+The Hold must remain recognizable in:
+
+- Neon Tunnel
+- Purple Tunnel
+- Electric Storm
+- Fire Mode
+- Matrix Mode
+- Rainbow Mode
+
+Do not allow theme colors to destroy Hold visibility.
+
+## 5\. Performance
+
+- Reuse existing Three.js geometry and materials where practical.
+- Use object pooling.
+- Avoid creating unnecessary objects every frame.
+- Properly dispose of resources.
+- Maintain the existing performance target.
+
+## 6\. Preserve Existing Functionality
+
+Do not break:
+
+- TAP
+- HOLD timing and judgment
+- Undo/Redo
+- Chart Save/Load
+- Import/Export
+- Approved map behavior
+- Gameplay synchronization
+- Existing note editor functionality
+
+## 7\. QA
+
+Test:
+
+- Short Hold
+- Medium Hold
+- Long Hold
+- Multiple Holds simultaneously
+- Holds in all lanes
+- Holds in every environment theme
+- Hold overlapping with nearby TAP sequences
+- Hold start, continuous holding and completion
+- Early release and missed Hold
+
+Provide screenshots showing the new Hold at different durations and gameplay states.
+
+Run all existing QA suites and production build.
+
+The final result must make HOLD immediately recognizable without requiring players to guess what the object represents.
+
+## 5\. Một yêu cầu mình đặc biệt nhấn mạnh
+
+Đừng chỉ làm Hold đẹp hơn. Hãy làm nó dễ hiểu hơn trong 0,5 giây đầu tiên khi người chơi nhìn thấy.
+
+Đó mới là tiêu chuẩn thành công của thiết kế này.
+
+Mình cũng khuyên giữ nguyên gameplay và hệ thống lưu chart hiện tại, chỉ thay đổi renderer, material và visual feedback trước. Như vậy sẽ tránh làm hỏng các Hold đã được tạo và Approved trong thư viện nhạc.
+
+
+
+I’ll trace how HOLD notes are currently built, how their mesh is updated from gameplay state, and how theme colours are applied before changing the visual. Then I’ll redesign the head/body/tail without touching judgement or timing, and add focused visual-state QA.
+
+The current HOLD is one octahedron head, a rectangular box beam, and a small torus tail; its beam shrinks with remaining time and there is no sustained-state fill. I’m replacing that with a larger outlined head, a fixed-length full-duration beam with a flowing core and fill layer, and a square tail marker with completion/failure burst states.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The new HOLD now passes the existing readability suite, including the updated full-duration beam and fill checks. Next I’m adding a dedicated Stage 99 suite for state transitions, duration/lane coverage, theme contrast, pooling, and gameplay compatibility, then I’ll capture the requested in-game screenshots.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The HOLD implementation and Stage 99 suite are already in place; the last edits were visual tuning (lime fill, blue-violet core, completion tail collapse). I’m checking the current worktree and rerunning the HOLD suites before finishing the screenshot pass.
+
+The functional suites pass, but the first screenshot pass shows the long tail marker disappearing into fog. I’m making the tail a tall, fog-independent end gate so the endpoint stays visible at long durations, without changing timing or scoring.
+
+
+
+
+
+
+
+
+
+
+
+
+
+The state screenshots now cover approaching, started, holding, completed, failed, and TAP-vs-HOLD side by side. I’m running the full Node QA set and the production build next, then I’ll report the verified results and any suites that need a browser.
+
+
+
+
+All 35 stage suites are green except a Stage 8.9 cleanup expectation that still assumed the old 0.2 s fade; I updated it to allow the new 0.46 s completion presentation. I’m rerunning the full set once more so the final report reflects the finished tree.
+
+## Stage 99 complete
+
+### HOLD redesign
+
+Implemented in `src/objects/NoteManager.js`:
+
+- **Head**
+  - 24% larger than TAP.
+  - Royal-blue body with a bright lime front halo.
+  - Two-bar press glyph and separate lane ring.
+  - Clear diamond silhouette distinct from TAP.
+
+- **Body**
+  - Fixed full-duration beam, so the complete required hold remains visible.
+  - Wide outer glow, animated shader core, and a bright fill layer.
+  - Fill grows from the far tail toward the held head.
+  - Keeps lane alignment and stays independent of environment palettes.
+
+- **Tail**
+  - Tall square-ended lime gate, deliberately different from the round head halo.
+  - Fog-independent material keeps the endpoint visible on long holds.
+  - Completion collapses the tail toward the head with a burst ring.
+
+- **States**
+  - `approaching`
+  - `started`
+  - `holding`
+  - `completed`
+  - `failed`
+
+Failure collapses the beam and shows a red burst; success keeps the held body visible for the completion effect. HOLD timing, judgement, scoring, undo/redo, chart save/load, import/export, approved-map behavior and editor behavior were not changed.
+
+### Verification
+
+- **Stage 99 HOLD suite:** `106/106` passed
+- **Stage 6.9 visual readability suite:** `159/159` passed
+- **All 35 `qa/stage*.mjs` suites:** passed
+- **Production build:** passed — `148 modules`, `662 ms`
+- **Browser console:** no runtime errors; only Vite connection messages
+
+Stage 8.9’s cleanup assertion was updated to wait through the intentional `0.46 s` completion presentation instead of the old `0.2 s` fade. Its gameplay assertions remain unchanged.
+
+### Screenshots
+
+HOLD versus TAP, with DOUBLE for comparison:
+
+![HOLD versus TAP](qa-artifacts/stage99-hold-vs-tap.png)
+
+All four lanes, with short, medium and long HOLD durations:
+
+![HOLD durations](qa-artifacts/stage99-hold-durations-final.png)
+
+HOLD started:
+
+![HOLD started](qa-artifacts/stage99-hold-started-final.png)
+
+HOLD holding, with progress fill:
+
+![HOLD holding](qa-artifacts/stage99-hold-holding-final.png)
+
+HOLD completed, showing the collapsing tail burst:
+
+![HOLD completed](qa-artifacts/stage99-hold-completed-final.png)
+
+HOLD failed, showing the red early-release feedback:
+
+![HOLD failed](qa-artifacts/stage99-hold-failed-final.png)
+
+The Stage 99 suite also checks all six requested themes numerically: Cyan Neon, Purple Tunnel, Electric Storm, Fire Mode, Matrix Mode and Rainbow Mode. The screenshots above were visually checked in the running app at the current portrait viewport; a full six-theme screenshot gallery was not captured.
+
+
+
+1111111111111
+
+Mình có 2 nhận xét rất quan trọng. Thực tế, cả hai đều liên quan đến cảm giác gameplay chứ không đơn thuần là đồ họa.
+
+Mình đồng ý với bạn: Stage 99 đã cải thiện hình dạng Hold, nhưng chưa giải quyết đúng trải nghiệm tương tác của Hold.
+
+## 1. Hold phải xuất hiện từ xa và chạy đến vị trí nhấn
+
+Yêu cầu cần sửaHiện tại, theo mô tả của bạn, Hold xuất hiện ngay tại vòng tròn nhấn. Như vậy người chơi không có thời gian nhận biết và chuẩn bị.
+
+Mình muốn chuyển sang cơ chế:
+
+楽曲プレイ - InFalsus Wiki\*
+
+bangdream手游长的音符怎么按 绿色长条键怎么打\_biubiu加速器
+
+Luồng chuyển động:
+
+1. Hold xuất hiện ở cuối đường hầm, phía xa camera.
+2. Head và Tail cùng di chuyển về phía người chơi.
+3. Body kéo dài liên tục giữa Head và Tail.
+4. Head đến đúng vòng tròn lane thì người chơi bắt đầu giữ.
+5. Tail tiếp tục tiến đến vòng tròn.
+6. Tail chạm vị trí nhấn thì hoàn thành Hold.
+
+Điểm rất quan trọng: Head và Tail phải di chuyển đồng bộ với song time, không được tự chạy theo animation độc lập.
+
+## 2. Vòng tròn lane phải sáng trong suốt thời gian Hold
+
+Yêu cầu cần sửaĐây mới là phần thiếu lớn nhất về phản hồi gameplay.
+
+Khi người chơi nhấn đúng Hold, vòng tròn lane phải chuyển sang trạng thái đang giữ.
+
+Sci Fi 3d Render Of A Reflective Concrete Room With Glowing Blue Neon Circle Futuristic Stage For Settings Backgrounds | JPG Free Download - Pikbest
+
+[pikbest.com](<https://pikbest.com/backgrounds/sci-fi-3d-render-of-a-reflective-concrete-room-with-glowing-blue-neon-circle-futuristic-stage-for-settings_9771902.html?utm_source=chatgpt.com>)
+
+Mình đề xuất các trạng thái:
+
+| Trạng thái | Vòng tròn lane |
+| --- | --- |
+| Chưa có Hold | Bình thường |
+| Hold đang tiến đến | Nhấp nháy nhẹ |
+| Head chạm vòng tròn | Phát sáng mạnh |
+| Đang giữ | Sáng liên tục, pulse theo nhạc |
+| Giữ đúng | Có vòng năng lượng chạy quanh |
+| Hoàn thành | Nổ sáng và tắt dần |
+| Thả sớm | Chuyển đỏ, hiệu ứng vỡ |
+
+Đặc biệt, ánh sáng phải duy trì trong toàn bộ thời gian giữ, không phải chỉ phát nổ khi kết thúc.
+
+## 3. Mình muốn bổ sung một điểm nữa
+
+Khi người chơi đang giữ Hold, nên có một đường năng lượng kết nối từ vòng tròn lane lên thân Hold.
+
+【無料・商用OK】サイバー・デジタル系の近未来背景素材30選！かっこいいイラストを登録不要で配布
+
+[backgrounds-free.com](<https://backgrounds-free.com/cyberworld-background-material/digital-society-image-free-background.html?utm_source=chatgpt.com>)
+
+Điều này giúp người chơi nhìn thấy mối liên kết giữa thao tác tay và vật thể trên đường chạy.
+
+## 4. Prompt sửa Stage 99 – HOLD Visual & Gameplay Feedback
+
+Mình viết yêu cầu để AI Coding Agent sửa trực tiếp, không phá hệ thống timing hiện tại.
+
+Writing
+
+# STAGE 99.1 – HOLD APPROACH ANIMATION & LANE HOLD FEEDBACK
+
+## Objective
+
+Fix two critical HOLD gameplay presentation problems.
+
+1. HOLD notes currently appear directly at the hit circle instead of approaching from the far end of the 3D track.
+2. The lane hit circle does not visually react while the player is holding. It only produces an effect when HOLD finishes.
+
+These behaviors must be redesigned.
+
+Preserve existing HOLD timing, judgement, scoring and chart data.
+
+## REQUIREMENT 1 – HOLD MUST APPROACH FROM DISTANCE
+
+HOLD must follow the same world-space approach system as TAP notes.
+
+- Spawn HOLD at the far end of the track.
+- Head, Body and Tail must move together toward the player.
+- Preserve the complete HOLD duration visually.
+- Body length must represent the actual HOLD duration.
+- Head must arrive at the lane hit position at the exact scheduled start time.
+- Tail must arrive at the hit position at the exact scheduled end time.
+- Use song-time-based positioning, not independent animation timers.
+- Support short, medium and long HOLD notes.
+- Support all four lanes.
+- Maintain correct perspective and lane alignment.
+
+IMPORTANT: Do not spawn the HOLD head directly at the hit circle. Do not animate the head and tail independently. Do not change existing note timing or judgement windows.
+
+## REQUIREMENT 2 – LANE CIRCLE MUST LIGHT UP WHILE HOLDING
+
+Integrate HOLD visual feedback with the existing lane hit-circle system.
+
+States:
+
+### IDLE
+
+Normal lane appearance.
+
+### HOLD APPROACHING
+
+Subtle lane anticipation glow when a HOLD is approaching.
+
+### HOLD STARTED
+
+When the player successfully hits the HOLD head:
+
+- Lane circle activates immediately.
+- Bright cyan/lime glow.
+- Visible activation pulse.
+
+### HOLDING
+
+Throughout the entire hold duration:
+
+- Lane circle remains illuminated.
+- Continuous outer glow.
+- Animated energy ring.
+- Subtle rhythmic pulse.
+- Optional energy connection between the lane circle and HOLD body.
+
+### HOLD COMPLETED
+
+- Strong completion flash.
+- Energy ring expands.
+- Smooth return to normal lane appearance.
+
+### HOLD FAILED
+
+- Lane circle flashes red.
+- Brief break/crack visual effect.
+- Smooth return to normal state.
+
+IMPORTANT: The lane must remain illuminated for the entire actual HOLD duration. Do not wait until HOLD completion to trigger the effect.
+
+## REQUIREMENT 3 – SYNCHRONIZATION
+
+Use the existing authoritative gameplay HOLD state.
+
+Do not create a second independent HOLD timer.
+
+Ensure:
+
+- Head collision/start timing is accurate.
+- Lane activation starts on successful HOLD judgement.
+- Lane stays active while the player is actually holding.
+- Lane deactivates correctly after completion or failure.
+- Multiple simultaneous HOLD notes are handled correctly.
+
+## REQUIREMENT 4 – VISUAL QUALITY
+
+- Maintain the existing HOLD head/body/tail redesign.
+- Maintain high visibility in all six themes.
+- Prevent excessive Bloom.
+- Avoid obscuring nearby TAP and DOUBLE notes.
+- Keep lane colors recognizable.
+- Keep animations smooth.
+
+## REQUIREMENT 5 – REGRESSION TESTING
+
+Test:
+
+1. HOLD approaching from far distance.
+2. HOLD head reaching the hit circle.
+3. Lane activation on successful head hit.
+4. Continuous lane glow during HOLD.
+5. Lane glow ending at HOLD completion.
+6. Early release feedback.
+7. Long HOLD.
+8. Multiple simultaneous HOLDs.
+9. All four lanes.
+10. All six visual themes.
+11. Refresh and saved chart compatibility.
+
+Do not change chart format or existing approved-map behavior.
+
+Run all existing QA suites and production build.
+
+Provide screenshots and video evidence showing the complete sequence:
+
+FAR SPAWN → APPROACH → HEAD HIT → LANE GLOW → HOLDING → TAIL HIT → COMPLETED.
+
+Final acceptance criterion:
+
+A player must be able to see a HOLD approaching from a distance, recognize when to press, and clearly see that the lane is actively being held until the endpoint arrives.
+
+## 5. Tiêu chuẩn mình muốn đạt được
+
+## HOLD gameplay flow
+
+1. FAR SPAWN
+   Hold xuất hiện ở xa.
+2. APPROACH
+   Head và Tail tiến dần về người chơi.
+3. HEAD HIT
+   Người chơi nhấn đúng thời điểm.
+4. LANE ACTIVE
+   Vòng tròn lane sáng liên tục, năng lượng chuyển động.
+5. TAIL HIT
+   Đuôi Hold đến vòng tròn.
+6. COMPLETED
+   Hiệu ứng hoàn thành, lane trở về bình thường.
+
+Ý kiến cuối của mình: Đừng xem Hold là một vật thể dài. Hãy xem nó là một hành động tương tác liên tục giữa người chơi, lane và dòng năng lượng 3D. Khi làm được điều đó, Hold sẽ dễ hiểu và có cảm giác chơi tốt hơn rất nhiều.
+
+
+
+
+I’m tracing the current HOLD spawn/update path and the lane-ring ownership first, because the head should already follow world-space timing. I need to find where HOLD positioning or lane feedback breaks before changing it.
+
+The approach bug is in Auto Dance: `collectDue(auto)` marks a HOLD as started as soon as it spawns, so the head is pinned to the hit line for the whole approach. I’m fixing that timing and changing the HOLD body to a remaining-duration beam, with a lime consumed segment, so the tail genuinely reaches the hit line at the scheduled end.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The new Stage 99.1 suite passes 39/39, including far spawn, head arrival, tail landing at the hit line, all durations/lanes, Auto Dance timing, and lane uniforms for start/holding/completion/failure. I’m now checking the real browser shader and capturing the visual sequence.
+
+The browser shader is compiling cleanly, and the live lane ring now stays lime for the full hold and flashes on completion. I’m recording one continuous far-spawn → approach → head hit → lane glow → tail landing → completion sequence for the requested video evidence.
+
+
+
+
+
+
+
+The live sequence is captured: far spawn, approach, head hit, lime lane glow, holding with the tail advancing, completion flash, and the red failure ring. I’m doing the final full-suite/build pass now.
+
+
+
+
+The only regression was a Stage 9.0 assertion sampled after a 0.6 s hold had already ended; it now samples at 3.5 s, while the pair is still held. All HOLD behavior suites are green again; I’m running the final complete pass.
+
+The screenshot sequence is solid, but the tab recorder only captured throttled frames. I’m capturing the canvas itself through a `MediaRecorder` so the delivered video is a true continuous live sequence rather than a slideshow.
+
+## STAGE 99.1 — complete
+
+### What changed
+
+- **HOLDs now approach in world space.** HOLD head, body, and tail spawn at the far end of the track and move together toward the hit line. Auto Dance no longer starts a HOLD at spawn; it waits until the chart’s exact start time.
+- **HOLD timing is preserved.** The head reaches the hit position at `data.time`; the tail reaches it at `data.time + duration`.
+- **HOLD body now represents remaining duration after activation.** The head stays pinned at the hit line, the active body shortens as time is consumed, and the tail advances until it lands at the endpoint. The lime fill represents the consumed portion.
+- **Lane circles now respond to authoritative HOLD state** in `DancePads`:
+  - subtle approach anticipation
+  - immediate lime activation on successful head hit
+  - continuous glow, progress arc, and animated energy arc while holding
+  - completion flash and expanding ring
+  - red failure ring and radial crack on early release/miss
+  - smooth return to idle
+- **Two-lane HOLDs light both lanes**, and multiple simultaneous HOLDs are aggregated correctly.
+- **No chart-format or approved-map behavior changes.**
+
+### Evidence
+
+Live canvas capture of the controlled sequence — far spawn → approach → head hit → lane glow → holding → tail hit → completion:
+
+[Open stage99-1-hold-live.mp4](qa-artifacts/stage99-1-hold-live.mp4) — 3.5 s, 624×804.
+
+![HOLD approaching](qa-artifacts/stage99-1-hold-approaching.png)
+
+![HOLD head hit and lane activation](qa-artifacts/stage99-1-hold-head-hit-lane-glow.png)
+
+![Lane glow during the hold](qa-artifacts/stage99-1-hold-holding-lane-glow.png)
+
+![HOLD completed and lane flash](qa-artifacts/stage99-1-hold-completed-lane-flash.png)
+
+![HOLD failure feedback](qa-artifacts/stage99-1-hold-failed-lane-red.png)
+
+### Verification
+
+- **Stage 99.1:** `44/44 passed`
+- **Stage 99 HOLD redesign:** passed
+- **Stage 93 note readability:** passed
+- **Stage 89 advanced notes:** `150/150 passed`
+- **Stage 90 mechanics:** `92/92 passed`
+- **All 36 `qa/stage*.mjs` suites:** exit `0`
+- **Production build:** passed — `148 modules transformed`, built in `650 ms`
+- **`git diff --check`:** clean
+- **Browser console:** no shader compile or runtime errors after the lane feedback changes
+
+The visual capture used a controlled paused demo chart so each state could be inspected directly. Real `Gameplay` + `NoteManager` press/release/completion transitions were covered separately by the live synchronization checks; I did not perform a full manual keyboard playthrough of an entire song.
+
+The next useful step would be tuning the lane feedback across the remaining five themes while keeping the lime HOLD accent and lane colors distinct.
+
+
+
+1111111111111
