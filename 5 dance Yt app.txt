@@ -22587,3 +22587,2324 @@ The next useful step would be tuning the lane feedback across the remaining five
 
 
 1111111111111
+
+cho thêm 2 cái cuối xuống và nhảy lên dc ko, ví dụ là 1 cái chạy tới thì người chơi phải cuối xuống, và thêm 1 cái nữa là người chơi phải nhảy lên á dc ko?
+
+Được nhé\! Mình rất khuyến khích thêm hai động tác này. Như vậy NEON PULSE sẽ không chỉ là game nhấn phím bằng tay/chân mà còn trở thành game tương tác toàn thân (Full Body Rhythm Game).
+
+Mình đề xuất thêm hai loại note mới:
+
+## 1. CROUCH – Cúi người xuống
+
+Showcase :: LASERS
+
+[steamcardexchange.net](<https://www.steamcardexchange.net/index.php?gamepage-appid-2675290=&utm_source=chatgpt.com>)
+
+- Một thanh chướng ngại vật chạy về phía người chơi.
+- Khi đến vùng phán định, người chơi phải cúi thấp người.
+- Hệ thống dùng webcam và MediaPipe Pose để nhận diện.
+- Cúi đúng thời điểm: Perfect / Great / Good.
+- Không cúi hoặc cúi quá muộn: Miss.
+
+## 2. JUMP – Nhảy lên
+
+LASERS Playtest - Game nhảy parkour né laze chết chóc - Download.com.vn
+
+[download.com.vn](<https://download.com.vn/lasers-177935?utm_source=chatgpt.com>)
+
+- Một tín hiệu hoặc chướng ngại vật xuất hiện trên đường chạy.
+- Người chơi phải nhảy lên khi nó đến vùng phán định.
+- Hệ thống nhận diện chuyển động nhảy bằng webcam.
+- Nhảy đúng thời điểm được tính điểm.
+- Không nhảy hoặc nhảy sai thời điểm sẽ Miss.
+
+## 3. Bộ note mới sau khi nâng cấp
+
+About: Beat Duel - Music Battle (iOS App Store version) | | Apptopia
+
+TAP
+
+Nhấn phím hoặc bước chân.
+
+Invector: Rhythm Galaxy Release Dates
+
+HOLD
+
+Giữ động tác.
+
+Serie Toy Club für Grundschulkinder entdecken | TOGGO Eltern
+
+CROUCH
+
+Cúi người xuống.
+
+Jump Pad Testing in New Immersive Sim Project : LevelUpTalk
+
+JUMP
+
+Nhảy lên.
+
+## 4. Cách nhận diện bằng MediaPipe Pose
+
+| Động tác | Điều kiện nhận diện |
+| --- | --- |
+| CROUCH | Hông hạ thấp rõ rệt so với tư thế đứng |
+| JUMP | Hông nâng lên, cơ thể có pha rời khỏi mặt đất |
+| STAND | Trở lại tư thế đứng bình thường |
+
+Nên sử dụng thêm trạng thái chuyển động, không chỉ kiểm tra một tọa độ tại một thời điểm. Điều này giúp tránh nhận nhầm khi người chơi chỉ cúi đầu hoặc nhún nhẹ đầu gối.
+
+## 5. Một đề xuất rất quan trọng
+
+Mình muốn thiết kế hai loại note này thành hai chướng ngại vật 3D riêng biệt:
+
+- CROUCH: thanh laser ngang phía trên, người chơi phải chui xuống.
+- JUMP: chướng ngại vật thấp trên sàn, người chơi phải nhảy qua.
+
+Như vậy nhìn vào màn hình là hiểu ngay phải thực hiện động tác gì.
+
+Đề xuất bổ sung vào gameTên hai loại note chính thức:
+
+- `CROUCH_NOTE`
+- `JUMP_NOTE`
+
+Và cần tích hợp chúng vào cả Song Map Generator, Song Map Editor, Auto Play, Real Player và Video Creator. Trong Auto Play, nhân vật 3D sẽ tự cúi hoặc nhảy; trong Real Player, webcam sẽ kiểm tra động tác thực tế.
+
+Đặc biệt, nên cho phép chỉnh mức độ cúi và độ cao nhảy để phù hợp với trẻ em, người lớn và người có không gian chơi hạn chế.
+
+
+Dưới đây là prompt mình viết để bạn đưa trực tiếp cho OpenCode / Claude Code thực hiện nâng cấp NEON PULSE. Prompt yêu cầu AI đọc source code hiện tại, tận dụng kiến trúc sẵn có và tích hợp CROUCH + JUMP xuyên suốt game, không tạo hệ thống rời rạc.
+
+Writing
+
+# TASK: UPGRADE NEON PULSE – ADD CROUCH & JUMP RHYTHM MECHANICS
+
+You are a senior game developer specializing in Three.js, JavaScript, Web Audio API, MediaPipe Pose and rhythm game architecture.
+
+Your task is to upgrade the existing NEON PULSE – Dance Rhythm 3D project by introducing two new full-body rhythm mechanics:
+
+1. CROUCH – Player must crouch down to avoid an overhead obstacle.
+2. JUMP – Player must jump up to overcome a ground-level obstacle.
+
+IMPORTANT: This is an extension of the existing project. Do NOT rebuild the game or replace existing systems.
+
+## PHASE 1 – SOURCE CODE AUDIT
+
+Before modifying anything:
+
+- Inspect the complete existing project structure.
+- Identify the current note system and note types.
+- Identify Song Map Generator and Song Map Editor.
+- Identify Auto Play and Real Player implementations.
+- Identify MediaPipe Pose integration.
+- Identify scoring, combo and judgement systems.
+- Identify character animation and choreography systems.
+- Identify Video Creator and rendering pipeline.
+
+Understand existing architecture and reuse its conventions.
+
+Create a short implementation plan before making changes.
+
+## PHASE 2 – NEW NOTE TYPES
+
+Add two new note types.
+
+### A. CROUCH\_NOTE
+
+Gameplay concept:
+
+- A horizontal neon obstacle approaches the player.
+- The obstacle passes above the player's normal standing position.
+- The player must crouch before the obstacle reaches the judgement line.
+- Staying upright results in MISS.
+
+Visual design:
+
+- Horizontal futuristic laser barrier.
+- Neon orange / yellow / red.
+- Clear forward movement and collision timing.
+- Visually distinct from existing TAP and HOLD notes.
+
+Player action:
+
+- Lower hips and bend knees.
+- Upper body moves downward.
+- Maintain crouched posture during the required timing window.
+- Return to standing after the obstacle passes.
+
+### B. JUMP\_NOTE
+
+Gameplay concept:
+
+- A low-profile obstacle approaches the player.
+- The obstacle travels along the floor.
+- The player must jump when it reaches the judgement line.
+- Failure to jump results in MISS.
+
+Visual design:
+
+- Glowing floor barrier.
+- Neon cyan / blue.
+- Clear obstacle height and movement.
+- Visually distinct from CROUCH\_NOTE.
+
+Player action:
+
+- Detect upward body movement.
+- Detect actual airborne phase when possible.
+- Detect landing and recovery.
+- Avoid counting ordinary head movement as a jump.
+
+## PHASE 3 – MEDIAPIPE POSE DETECTION
+
+Implement robust full-body detection using the existing MediaPipe Pose infrastructure.
+
+CROUCH detection:
+
+- Track left and right hips.
+- Track knees and shoulders.
+- Estimate normalized hip height relative to body proportions.
+- Detect meaningful downward movement.
+- Require a stable crouch state for a configurable minimum duration.
+- Avoid triggering when the player only bends their head.
+
+JUMP detection:
+
+- Track hip center and ankle positions.
+- Detect upward movement relative to the standing baseline.
+- Use temporal movement analysis.
+- Detect airborne phase where camera visibility and pose landmarks allow it.
+- Detect landing and reset state.
+- Prevent false positives from simple knee bending or arm movement.
+
+Important:
+
+- Normalize coordinates relative to the player's body size.
+- Calibrate a neutral standing pose.
+- Support different camera distances.
+- Handle partial landmark visibility.
+- Apply smoothing and confidence thresholds.
+- Add cooldown and state transitions to prevent duplicate detections.
+
+Provide configurable settings for:
+
+- Crouch threshold.
+- Jump threshold.
+- Minimum confidence.
+- Detection duration.
+- Cooldown.
+- Calibration.
+
+Do not hardcode assumptions that every player has the same body proportions.
+
+## PHASE 4 – GAMEPLAY JUDGEMENT
+
+Integrate CROUCH and JUMP into the existing judgement system.
+
+Support:
+
+- PERFECT
+- GREAT
+- GOOD
+- MISS
+
+Judgement must use the existing synchronized audio/game timeline.
+
+Do not create an independent timing clock.
+
+Calculate accuracy using:
+
+- Action start time.
+- Correct action state.
+- Required timing window.
+- Action duration where applicable.
+
+Prevent:
+
+- Multiple scoring events for one note.
+- Duplicate combo increments.
+- False activation outside the judgement window.
+
+Integrate with existing score, combo, accuracy and result screens.
+
+## PHASE 5 – AUTO PLAY
+
+Auto Play must support both new note types.
+
+When CROUCH\_NOTE is active:
+
+- Character automatically performs a natural crouch.
+- Use smooth hip, knee and upper-body movement.
+- Hold the pose for the correct duration.
+- Recover smoothly.
+
+When JUMP\_NOTE is active:
+
+- Character performs a natural jump.
+- Animate takeoff, airborne phase and landing.
+- Synchronize the movement with the note timing.
+
+Use existing character rig and animation architecture.
+
+Avoid abrupt transitions and unnatural skeleton movement.
+
+## PHASE 6 – SONG MAP GENERATOR
+
+Update the Song Map Generator to support:
+
+- CROUCH\_NOTE
+- JUMP\_NOTE
+
+Requirements:
+
+- Add appropriate generation rules.
+- Consider beat strength and musical structure.
+- Avoid excessive consecutive crouches or jumps.
+- Avoid physically impossible combinations.
+- Respect song difficulty.
+- Support Easy, Normal, Hard and Expert.
+
+Do not randomly assign CROUCH and JUMP without musical reasoning.
+
+Add configurable generation parameters for the frequency of each new note type.
+
+## PHASE 7 – SONG MAP EDITOR
+
+Update the existing editor.
+
+Add:
+
+- CROUCH tool.
+- JUMP tool.
+- Distinct colors and icons.
+- Timeline visualization.
+- Drag and reposition.
+- Copy and delete.
+- Duration editing.
+- Difficulty validation.
+
+Ensure old Song Maps continue working.
+
+Existing maps must load without requiring migration unless absolutely necessary.
+
+If schema migration is needed:
+
+- Implement versioning.
+- Preserve backward compatibility.
+- Add tests for old and new formats.
+
+## PHASE 8 – VIDEO CREATOR
+
+Update the choreography and rendering pipeline.
+
+CROUCH\_NOTE:
+
+- Character crouches naturally.
+- Camera should retain visibility of the full-body action.
+
+JUMP\_NOTE:
+
+- Character performs a visible jump.
+- Camera should capture takeoff and landing.
+
+Ensure both actions are synchronized with music during video export.
+
+Support existing camera angles and multi-view layouts.
+
+## PHASE 9 – UI/UX
+
+Update the game's instructions and help screen.
+
+Display clear instructions:
+
+CROUCH: "DUCK DOWN\!"
+
+JUMP: "JUMP UP\!"
+
+Add a short tutorial animation before the first gameplay session.
+
+Make both mechanics understandable without reading a long instruction manual.
+
+Ensure mobile layouts remain usable.
+
+Do not introduce unnecessary HUD clutter.
+
+## PHASE 10 – ACCESSIBILITY & SAFETY
+
+The game should allow:
+
+- Adjustable crouch depth.
+- Adjustable jump sensitivity.
+- Optional seated/low-impact mode.
+- Alternative input controls for users unable to perform full-body movements.
+
+Never require extreme crouching or high jumps.
+
+Do not force players to perform unsafe movements.
+
+## PHASE 11 – PERFORMANCE
+
+Maintain smooth gameplay.
+
+Requirements:
+
+- Avoid creating new Three.js objects every frame.
+- Reuse geometries and materials.
+- Use object pooling where appropriate.
+- Avoid expensive pose calculations on every render frame.
+- Keep detection and rendering workloads appropriately separated.
+- Maintain stable audio synchronization.
+
+## PHASE 12 – TESTING
+
+Add automated tests for:
+
+1. CROUCH detection.
+2. JUMP detection.
+3. False-positive prevention.
+4. Timing judgement.
+5. Score and combo integration.
+6. Song Map generation.
+7. Song Map save/load.
+8. Backward compatibility.
+9. Auto Play animation triggers.
+10. Video timeline synchronization.
+
+Also manually test:
+
+- Different player heights.
+- Different camera distances.
+- Different lighting conditions.
+- Different body orientations.
+- Fast and slow songs.
+- Mobile and desktop.
+
+## PHASE 13 – FINAL VERIFICATION
+
+Run the existing project test suite and production build.
+
+Do not claim features are completed unless they have actually been implemented and tested.
+
+Provide a final report containing:
+
+- Files modified.
+- New modules created.
+- New note types implemented.
+- MediaPipe detection approach.
+- Song Map changes.
+- Auto Play changes.
+- Video Creator changes.
+- Test results.
+- Remaining limitations.
+- Known issues.
+
+## CRITICAL DEVELOPMENT RULES
+
+1. Preserve existing gameplay.
+2. Do not remove or break existing note types.
+3. Do not replace the existing audio engine.
+4. Do not introduce a second independent game clock.
+5. Reuse existing architecture.
+6. Keep modules maintainable and independent.
+7. Do not fake MediaPipe detection with keyboard input.
+8. Do not mark incomplete functionality as complete.
+9. Run regression tests after integration.
+10. Prioritize correctness, timing synchronization and natural movement over visual effects.
+
+FINAL GOAL:
+
+NEON PULSE should become a full-body rhythm game where players can interact through existing rhythm inputs as well as real physical movements.
+
+The two new mechanics must work consistently across Real Player, Auto Play, Song Map Generator, Song Map Editor and Video Creator.
+
+## Lưu ý khi triển khai
+
+Mình khuyên bạn yêu cầu OpenCode thực hiện theo từng phase, không làm tất cả trong một lần.
+
+Thứ tự tốt nhất:
+
+1. Hoàn thiện CROUCH và JUMP detection.
+2. Tích hợp gameplay và scoring.
+3. Tích hợp Auto Play.
+4. Tích hợp Song Map Generator và Editor.
+5. Tích hợp Video Creator.
+6. Chạy regression test toàn bộ game.
+
+Điểm quan trọng nhất: Phải kiểm tra được người chơi thực sự cúi xuống hoặc nhảy lên bằng webcam, chứ không chỉ nhận diện một chuyển động bất kỳ của cơ thể. Đây là yếu tố quyết định hai tính năng mới có thực sự chơi được hay không.
+
+
+
+I’ll audit the existing note pipeline, pose input, generator/editor, Auto Play and video export first, then extend the established systems rather than adding parallel ones. After that I’ll implement the two note types end-to-end and run the existing suites plus the production build.
+
+The audit confirms the project has a strong existing lane-note pipeline but no MediaPipe dependency or pose provider yet; Auto Dance currently uses a deterministic procedural pose provider. I’m mapping the exact seams now so the body mechanics share the same song clock and scoring rather than introducing a parallel gameplay path.
+
+The implementation path is now clear: one shared “body gesture” state feeds gameplay, Auto Dance, Studio, and accessibility input; charts get two full-width obstacle note types; and the camera path is a real MediaPipe Tasks provider using local wasm/model assets, with a visible setup state if the camera or assets are unavailable. I’m starting with the schema and pure detection/judgement core, then wiring each consumer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+No changes to existing files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The new body mechanics suite passes 56/56. I’m running the full existing QA set now to catch regressions from the new note types, visuals and generator version.
+
+
+
+
+No changes to existing files.
+
+
+
+
+
+
+
+
+
+
+
+No changes to existing files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+All 36 existing QA suites plus the new body-mechanics suite pass. I’m doing a quick runtime smoke check of the built app now, then I’ll summarize the implementation and the manual-only camera checks.
+
+
+
+
+Implemented the CROUCH/JUMP full-body rhythm upgrade without replacing the existing gameplay, audio engine or note architecture.
+
+## What was added
+
+### New modules
+- `src/game/BodyMechanics.js` — shared body-action rules, durations, timing helpers, generation conversion and action cues.
+- `src/game/pose/BodyPoseTracker.js` — normalized pose classifier with calibration, smoothing, confidence checks, partial-visibility handling, cooldowns and seated/low-impact modes.
+- `src/game/pose/MediaPipePoseInput.js` — real on-device MediaPipe Pose Landmarker camera input using the vendored `@mediapipe/tasks-vision` runtime and local model.
+- `qa/stage100-body-mechanics-check.mjs` — automated body-mechanics test suite.
+- `public/mediapipe/` — local WASM runtime and `pose_landmarker_lite.task` model, with no runtime CDN dependency.
+
+### Note types
+- `CROUCH` (`crouch`) — orange/yellow full-width overhead barrier with a held timing window.
+- `JUMP` (`jump`) — cyan/blue full-width floor gate with an airborne timing window.
+- Both use the existing song timeline and the existing judgement tiers. They are excluded from lane press matching so tapping a lane cannot score them.
+- Body objects are pooled inside `NoteManager` and rendered as full-width barriers; they do not create new Three.js objects every frame.
+
+### MediaPipe detection
+- Tracks shoulders, hips, knees, ankles and wrists.
+- Normalizes against the player’s calibrated shoulder-to-ankle body height, so camera distance and body proportions are less important.
+- Requires body-relative hip/knee/shoulder movement for crouch; head-only movement does not trigger it.
+- Requires upward hip and ankle movement for jump; knee bending or arm movement alone does not trigger it.
+- Supports raised-arm jump detection in seated mode.
+- Includes configurable thresholds, minimum confidence, minimum duration, smoothing, calibration and cooldown.
+- Inference is throttled independently of the render loop.
+- Keyboard alternative is explicitly opt-in (`C` crouch, `Space` jump) and is labelled as an accessibility input, not MediaPipe detection.
+
+### Judgement, scoring and Auto Play
+- Body judgement runs through `NoteManager.collectBodyDue()` on the same song clock as every other note.
+- A crouch must be active at the barrier and held through its duration.
+- A jump must be airborne inside its timing window.
+- Each body object resolves once; duplicate scoring/combo events are prevented.
+- Auto Play starts and completes crouches and jumps from the chart clock.
+- `AutoPoseProvider`, `DanceChoreography`, `DanceSilhouette`, `GameAvatarView` and `StudioStage` now accept body actions for natural crouch/jump posing.
+
+### Generator and editor
+- Generator version 8 adds musically selected body objects from accents and section character.
+- Body notes avoid chords, nearby lane notes, body-note chains and song-tail overflow.
+- Configurable `bodyCrouchFrequency` and `bodyJumpFrequency` generation parameters are supported.
+- Existing layout seed behavior is preserved so adding body mechanics does not churn existing base lane layouts.
+- Editor now has CROUCH/JUMP tools, colors, timeline gates, drag/resize duration handling, copy/delete support and body counts.
+- Old maps without body notes still validate and load.
+
+### UI/accessibility
+- “HOW TO PLAY” now documents `CROUCH: “DUCK DOWN!”` and `JUMP: “JUMP UP!”`.
+- Adds a first-run tutorial overlay with animated crouch/jump cues.
+- Adds camera enable/disable, calibration, keyboard alternative, crouch-depth, jump-sensitivity, seated and low-impact controls.
+- HUD tutorial is compact and designed for mobile widths.
+
+## Verification run
+
+- `npm run build` — passed.
+- All `qa/stage*.mjs` suites — **37/37 passed**.
+- New `qa/stage100-body-mechanics-check.mjs` — **56/56 passed**, covering detection, false positives, cooldown, seated mode, timing, judgement, score/combo, generation, save/load, editor placement, Auto Play and video cues.
+- Runtime smoke check: Vite app loaded, menu and HOW TO PLAY rendered, keyboard alternative toggled, and no console errors were reported.
+
+## Limitations / not verified
+
+- I could not perform physical-camera tests for different player heights, camera distances, lighting conditions or body orientations. The MediaPipe camera path is implemented, but actual webcam inference has not been exercised in this environment.
+- Camera permission, GPU/CPU delegate fallback and real-world pose accuracy remain dependent on the user’s browser and camera.
+- Video Studio inherits the existing camera presets; body posing is synchronized, but I did not visually export and inspect a video with a real performance capture.
+- Generated body notes require either camera input or the keyboard alternative to be playable.
+
+No commit was created.
+
+
+111111111111111 progress bar
+
+Add a horizontal song progress bar at the top center of the gameplay screen
+
+Show the full song progress from start to finish.
+The filled portion should increase smoothly as the music plays.
+Synchronize precisely with the existing audio playback timeline.
+Use a sleek neon style consistent with NEON PULSE.
+Keep it compact and centered at the top of the screen.
+Do not obstruct gameplay or existing HUD elements.
+Support desktop and mobile layouts.
+Do not modify any existing gameplay mechanics, scoring, notes, or audio behavior.
+
+
+Add an ON/OFF visibility setting for the horizontal song progress bar in the Admin panel.
+
+Requirements:
+
+Add a toggle named "Song Progress Bar".
+Admin can enable or disable the progress bar.
+When enabled, display it at the top center during gameplay.
+When disabled, completely hide it.
+Save the setting and persist it across page reloads.
+Apply changes immediately without restarting the game.
+Keep the default state ON.
+Do not modify any other gameplay mechanics or UI settings.
+
+
+
+
+111111111111111 dance layout
+cái background neon hiện đang giống người khác làm rồi, bạn có nghĩ dc kiểu khác ko, sợ giống nhau bị dính bản quyền...? or làm nhiều kiểu luôn tôi muốn nhảy với kiểu nào thì chỉ cần chọn thôi dc ko?
+ý là làm nhiều kiểu, để tôi là admin tôi chọn bài nhạc tôi chọn nền nhảy là dc, còn người chơi chỉ chọn nhạc chơi thôi dc ko?
+
+
+
+Mình nghĩ nên làm theo hướng nhiều Dance Environment (không gian sân khấu 3D) để người chơi tự chọn trước khi nhảy. Đây là hướng tốt hơn nhiều so với chỉ có một background neon cố định.
+
+Và mình đồng ý với bạn về vấn đề bản quyền: nếu background hiện tại quá giống một game hoặc sản phẩm cụ thể, nên thay đổi ngôn ngữ thiết kế, bố cục, hình khối, màu sắc, ánh sáng và hiệu ứng, thay vì chỉ đổi màu neon.
+
+Mình đề xuất biến NEON PULSE thành game có nhiều sân khấu riêng, mỗi sân khấu có phong cách nghệ thuật khác nhau.
+1. Mình đề xuất 8 phong cách sân khấu
+Luxury 3d Podium Stage With Lighting Background Backgrounds | JPG Free Download - Pikbest
+ 
+
+1. GOLDEN PALACE
+
+Sân khấu vàng, ánh sáng sang trọng, kiến trúc hoàng gia.
+An underwater dancer performs a mesmerizing routine in a shimmering cave, their elegant movements synchronized with the gentle tides - Text to Image - Free AI image generator | vivago.ai
+ 
+
+2. DEEP OCEAN
+
+Đại dương, sứa phát sáng, bong bóng và ánh sáng xanh.
+Bamboo Forest  | SideFX
+ 
+
+3. MYSTIC FOREST
+
+Rừng tre, đom đóm, ánh trăng và sương mù.
+Hype Cycle: Machine Learning by Universal Everything — DESIGNCOLLECTOR
+ 
+
+4. WHITE FUTURE
+
+Không gian trắng, kiến trúc tối giản, chuyển động hình học.
+Slow-motion close-up of spice melange being poured from a container — Guaardvark Video Gallery
+ 
+
+5. DESERT SUNSET
+
+Sa mạc, mặt trời khổng lồ, cát chuyển động.
+Galaxy light stage galaxy | Free Photo  - rawpixel
+ 
+
+6. COSMIC DREAM
+
+Vũ trụ, hành tinh, thiên hà và bụi sao.
+Cread : Ecole Architecture Intérieur | Yohann Chabuel Spécialiste de l'Intelligence Artificielle
+ 
+
+7. BLOOM GARDEN
+
+Vườn hoa, kính trong suốt, cánh hoa bay.
+7 Iconic Squid Game References in K-pop Music Videos
+ 
+
+8. RETRO ARCADE
+
+Phong cách retro, màu sắc vui nhộn, hình học cổ điển.
+2. Cách hoạt động mình muốn
+TekkenMods - Tekken 8 Stage Select UI Mod
+ 
+
+Trước khi bắt đầu nhảy, người chơi vào mục SELECT ENVIRONMENT:
+
+    Xem hình preview từng sân khấu.
+
+    Click để chọn.
+
+    Có nút Preview để xem sân khấu 3D.
+
+    Nhấn Confirm để sử dụng.
+
+    Lần sau có thể chọn sân khấu khác.
+
+Có thể bổ sung thêm:
+
+    Random Environment.
+
+    Favorite Environment.
+
+    Environment Music Reactive.
+
+    Chỉnh ánh sáng và màu sắc.
+
+
+
+À, hiểu rồi! :D Bạn muốn Admin toàn quyền quyết định sân khấu cho từng bài nhạc, còn người chơi chỉ cần chọn bài hát và nhấn Play.
+
+Ví dụ:
+
+    Bài A → Admin thiết lập Deep Ocean.
+
+    Bài B → Admin thiết lập Golden Palace.
+
+    Bài C → Admin thiết lập Mystic Forest.
+
+    Bài D → Admin thiết lập Cosmic Dream.
+
+Người chơi không nhìn thấy menu chọn background, cũng không thể tự đổi background. Mỗi bài nhạc sẽ tự động tải đúng sân khấu mà Admin đã thiết lập.
+
+
+
+Đây là bản FULL PROMPT hoàn chỉnh để đưa vào OpenCode. Mình đã gộp hệ thống nhiều background 3D, Admin chọn background cho từng bài nhạc, người chơi chỉ chọn nhạc, preview sân khấu, hiệu ứng theo nhạc, tối ưu hiệu năng và tích hợp toàn bộ chế độ chơi.
+
+Writing
+
+# NEON PULSE – MULTI-ENVIRONMENT DANCE STAGE SYSTEM
+
+## Admin-Controlled Environment Assignment Per Song
+
+You are a senior Three.js game developer and technical architect.
+
+Your task is to upgrade the existing NEON PULSE – Dance Rhythm 3D project with a complete multi-environment 3D stage system.
+
+The goal is to create multiple visually distinct, original 3D dance environments.
+
+IMPORTANT DESIGN DECISION:
+
+**ADMIN controls which environment is assigned to each song. PLAYERS only select songs.**
+
+Players must NOT have access to environment selection or environment switching.
+
+When a player selects a song, the game automatically loads the environment assigned to that song by Admin.
+
+Do not rebuild the existing game. Extend the current architecture and preserve all existing gameplay features.
+
+---
+
+# PHASE 1 – AUDIT EXISTING PROJECT
+
+Before modifying code:
+
+1. Inspect the complete project structure.
+2. Identify the existing Three.js scene architecture.
+3. Identify the current background, tunnel, lighting and particle systems.
+4. Identify the song library and song management system.
+5. Identify Admin panel architecture.
+6. Identify the existing game-loading pipeline.
+7. Identify Auto Play, Real Player, Dance Studio and Video Creator.
+8. Identify existing audio analysis and music synchronization.
+9. Identify existing settings persistence.
+10. Identify current performance optimization and resource disposal mechanisms.
+
+Reuse existing modules whenever possible.
+
+Do not create duplicate scene managers, audio engines or configuration systems.
+
+Create an implementation plan before making changes.
+
+---
+
+# PHASE 2 – CREATE MULTIPLE ORIGINAL 3D ENVIRONMENTS
+
+Replace the dependency on a single neon background with a modular collection of independently designed environments.
+
+Create the following initial environments.
+
+## 1\. GOLDEN PALACE
+
+Visual identity:
+
+- Luxurious golden architectural stage.
+- Large elegant geometric structures.
+- Warm golden lighting.
+- Reflective dark floor.
+- Floating golden particles.
+- Cinematic spotlights.
+
+Atmosphere: Elegant, premium and spectacular.
+
+## 2\. DEEP OCEAN
+
+Visual identity:
+
+- Deep underwater environment.
+- Bioluminescent jellyfish.
+- Floating bubbles.
+- Glowing underwater plants.
+- Blue and turquoise lighting.
+- Subtle underwater fog.
+
+Atmosphere: Magical, peaceful and immersive.
+
+## 3\. MYSTIC FOREST
+
+Visual identity:
+
+- Fantasy forest environment.
+- Bamboo and large trees.
+- Glowing fireflies.
+- Moonlight.
+- Atmospheric fog.
+- Floating leaves and particles.
+
+Atmosphere: Mysterious and beautiful.
+
+## 4\. WHITE FUTURE
+
+Visual identity:
+
+- Minimalist futuristic architecture.
+- White and silver materials.
+- Large geometric sculptures.
+- Moving architectural elements.
+- Clean studio lighting.
+- Subtle reflective surfaces.
+
+Atmosphere: Modern, clean and sophisticated.
+
+## 5\. DESERT SUNSET
+
+Visual identity:
+
+- Large cinematic sunset.
+- Desert dunes.
+- Orange and red atmospheric lighting.
+- Floating dust particles.
+- Long shadows.
+- Warm reflective surfaces.
+
+Atmosphere: Cinematic and dramatic.
+
+## 6\. COSMIC DREAM
+
+Visual identity:
+
+- Space environment.
+- Large planets.
+- Nebula clouds.
+- Stars and galaxies.
+- Floating cosmic particles.
+- Purple, blue and pink lighting.
+
+Atmosphere: Epic, dreamy and futuristic.
+
+## 7\. BLOOM GARDEN
+
+Visual identity:
+
+- Beautiful botanical garden.
+- Glowing flowers.
+- Transparent glass architecture.
+- Floating petals.
+- Soft sunlight.
+- Colorful atmospheric lighting.
+
+Atmosphere: Fresh, elegant and colorful.
+
+## 8\. RETRO ARCADE
+
+Visual identity:
+
+- Original retro-inspired geometric architecture.
+- Colorful platforms.
+- Animated geometric shapes.
+- Checkerboard-inspired floor elements.
+- Dynamic colorful lighting.
+
+Atmosphere: Energetic, playful and nostalgic.
+
+## 9\. NEON LEGACY
+
+Preserve the existing NEON PULSE neon environment as an optional environment.
+
+Do not delete the existing design.
+
+---
+
+# PHASE 3 – ORIGINALITY AND VISUAL DESIGN
+
+IMPORTANT COPYRIGHT REQUIREMENTS:
+
+All new environments must have original visual identities.
+
+Do not directly reproduce:
+
+- Existing commercial game stages.
+- Copyrighted environment artwork.
+- Existing game logos.
+- Proprietary visual assets.
+- Distinctive copyrighted stage compositions.
+
+Use original combinations of:
+
+- Geometry.
+- Architecture.
+- Lighting.
+- Materials.
+- Color palettes.
+- Particle systems.
+- Camera composition.
+- Environmental animation.
+
+The environments should feel like different professionally designed music video sets, not simply the same neon tunnel with different colors.
+
+Each environment must have its own visual identity.
+
+---
+
+# PHASE 4 – MODULAR ENVIRONMENT ARCHITECTURE
+
+Create or extend a centralized EnvironmentManager.
+
+Each environment must be independently configurable.
+
+Suggested configuration structure:
+
+- environmentId
+- name
+- description
+- thumbnail
+- previewConfiguration
+- sceneConfiguration
+- lightingConfiguration
+- materialConfiguration
+- particleConfiguration
+- audioReactiveConfiguration
+- qualityConfiguration
+- assetDependencies
+
+Each environment should expose a consistent lifecycle:
+
+- preload()
+- create()
+- activate()
+- update()
+- deactivate()
+- dispose()
+
+Use the project's existing conventions where appropriate.
+
+Make adding future environments easy without changing core gameplay logic.
+
+Do not hardcode environment selection inside individual gameplay components.
+
+---
+
+# PHASE 5 – ADMIN ENVIRONMENT ASSIGNMENT
+
+This is the most important feature.
+
+Add an Environment Assignment section to the existing Admin song management interface.
+
+For every song, Admin must be able to select exactly one environment.
+
+Example:
+
+Song A → GOLDEN PALACE
+
+Song B → DEEP OCEAN
+
+Song C → MYSTIC FOREST
+
+Song D → COSMIC DREAM
+
+Song E → RETRO ARCADE
+
+## Admin features
+
+1. Display all available environments.
+2. Show a visual thumbnail for each environment.
+3. Allow Admin to preview each environment in 3D.
+4. Assign an environment to the selected song.
+5. Change the assigned environment at any time.
+6. Save the assignment.
+7. Display the currently assigned environment in the song list.
+8. Filter songs by assigned environment.
+9. Provide an unassigned-environment filter.
+10. Allow Admin to configure a default environment.
+
+The Admin interface should make it easy to see which stage belongs to each song.
+
+Use the existing Admin authentication and authorization system.
+
+Only authorized Admin users may modify environment assignments.
+
+---
+
+# PHASE 6 – PLAYER EXPERIENCE
+
+Players must only select songs.
+
+DO NOT add an environment selection screen to the player interface.
+
+DO NOT allow players to change environments.
+
+Expected flow:
+
+1. Player opens the song library.
+2. Player selects a song.
+3. Game reads that song's environment assignment.
+4. EnvironmentManager loads the assigned environment.
+5. The stage becomes active.
+6. Player starts the game.
+
+Example:
+
+Player selects Song A.
+
+The game automatically loads GOLDEN PALACE.
+
+Player selects Song B.
+
+The game automatically loads DEEP OCEAN.
+
+This behavior must be automatic and consistent.
+
+## Fallback behavior
+
+If a song has no assigned environment:
+
+- Load the Admin-configured default environment.
+- If the configured default is unavailable, load NEON LEGACY.
+- Never leave the game with a blank scene.
+
+The player must never see an environment selection menu.
+
+---
+
+# PHASE 7 – ENVIRONMENT PREVIEW FOR ADMIN
+
+Implement a proper 3D preview system inside Admin.
+
+When Admin chooses an environment:
+
+- Show the actual 3D environment.
+- Display the dancer inside the environment.
+- Preview the lighting.
+- Preview particle effects.
+- Preview the floor and background.
+- Allow switching between environment previews.
+
+Provide a preview mode that does not affect the currently active gameplay session.
+
+Do not initialize the full gameplay engine unnecessarily just to preview an environment.
+
+---
+
+# PHASE 8 – AUDIO-REACTIVE ENVIRONMENTS
+
+Each environment should respond naturally to the selected music.
+
+Use the existing Web Audio API and audio analysis engine.
+
+Do not create a second audio engine.
+
+Examples:
+
+GOLDEN PALACE:
+
+- Golden lights pulse with bass.
+- Spotlights respond to strong beats.
+- Architectural lighting changes with musical intensity.
+
+DEEP OCEAN:
+
+- Jellyfish glow with bass.
+- Bubbles react to frequency intensity.
+- Underwater lighting changes smoothly.
+
+MYSTIC FOREST:
+
+- Fireflies brighten with music.
+- Floating leaves react subtly to beats.
+- Environmental lighting responds to musical sections.
+
+WHITE FUTURE:
+
+- Geometric structures react to rhythm.
+- Light panels change intensity.
+- Architecture responds to strong musical accents.
+
+DESERT SUNSET:
+
+- Atmospheric lighting reacts to music.
+- Dust particles move subtly.
+- Sunset intensity changes with musical sections.
+
+COSMIC DREAM:
+
+- Stars pulse with bass.
+- Cosmic particles react to frequency bands.
+- Nebula lighting changes with song intensity.
+
+BLOOM GARDEN:
+
+- Flowers emit light in response to music.
+- Petals move with rhythm.
+- Environmental lighting reacts to strong beats.
+
+RETRO ARCADE:
+
+- Geometric structures pulse with the beat.
+- Lighting responds to musical intensity.
+- Animated shapes synchronize with rhythm.
+
+All effects must be subtle enough to preserve note visibility.
+
+---
+
+# PHASE 9 – GAMEPLAY INTEGRATION
+
+The assigned environment must work consistently across all existing game modes.
+
+Required integration:
+
+1. Auto Play.
+2. Real Player.
+3. Dance Studio.
+4. Video Creator.
+5. Song Preview.
+6. Gameplay Result and Replay.
+
+Preserve every existing gameplay feature.
+
+Specifically preserve:
+
+- TAP notes.
+- HOLD notes.
+- CROUCH notes.
+- JUMP notes.
+- Existing judgement system.
+- Score.
+- Combo.
+- Accuracy.
+- Song Map.
+- Choreography.
+- Camera controls.
+- Existing HUD.
+- Song Progress Bar and its Admin visibility setting.
+
+The environment must never change gameplay timing or note behavior.
+
+All notes and obstacles must remain clearly visible regardless of environment.
+
+If an environment has bright or complex lighting, automatically maintain sufficient contrast for gameplay objects.
+
+CROUCH and JUMP obstacles must remain visible against all backgrounds.
+
+---
+
+# PHASE 10 – VIDEO CREATOR INTEGRATION
+
+The Video Creator must use the environment assigned to the selected song.
+
+When creating a video:
+
+1. Read the selected song.
+2. Read its assigned environment.
+3. Load the corresponding 3D stage.
+4. Load the selected dancer.
+5. Play the choreography.
+6. Apply environment-specific lighting.
+7. Apply camera direction.
+8. Render the video.
+
+The assigned environment must remain consistent throughout the export.
+
+Support existing:
+
+- Camera presets.
+- Multiple camera angles.
+- Split-screen layouts.
+- Dance choreography.
+- Music synchronization.
+- Video export settings.
+
+Allow Admin to preview the complete music video composition.
+
+Do not expose environment switching to normal players.
+
+---
+
+# PHASE 11 – ENVIRONMENT SETTINGS
+
+Add configurable settings for each environment.
+
+Examples:
+
+- Ambient light intensity.
+- Key light intensity.
+- Particle density.
+- Reflection quality.
+- Fog intensity.
+- Audio-reactive intensity.
+- Animation speed.
+- Graphics quality.
+
+Admin may configure these settings.
+
+Ensure default configurations are visually balanced.
+
+Avoid excessive particle effects and lighting that interfere with gameplay.
+
+---
+
+# PHASE 12 – PERFORMANCE AND RESOURCE MANAGEMENT
+
+Performance is critical because the game uses Three.js.
+
+Requirements:
+
+- Load environment assets on demand.
+- Do not load every environment simultaneously.
+- Reuse geometries and materials.
+- Use object pooling for particles where appropriate.
+- Dispose unused textures and materials correctly.
+- Prevent memory leaks when switching environments.
+- Avoid unnecessary scene recreation.
+- Use appropriate shadow settings.
+- Support mobile quality presets.
+- Support low, medium and high quality modes.
+
+Environment switching must not cause continuous memory growth.
+
+Keep gameplay smooth on supported desktop and mobile devices.
+
+---
+
+# PHASE 13 – PERSISTENCE AND BACKWARD COMPATIBILITY
+
+Store environment assignments using stable environment IDs in the existing song configuration system.
+
+Do not rely on environment display names as identifiers.
+
+Requirements:
+
+- Persist song-to-environment assignments.
+- Persist the Admin default environment.
+- Preserve existing song metadata.
+- Preserve existing Song Maps.
+- Support songs created before this feature.
+- Handle missing or invalid environment IDs gracefully.
+- Implement migration only if necessary.
+- Do not break existing save/load behavior.
+
+---
+
+# PHASE 14 – TESTING
+
+Create automated tests covering:
+
+ADMIN:
+
+- Assign an environment to a song.
+- Change an assignment.
+- Save and reload assignments.
+- Change the default environment.
+- Reject unauthorized modifications.
+
+PLAYER:
+
+- Selecting Song A loads its assigned environment.
+- Selecting Song B loads a different assigned environment.
+- Player cannot change environments.
+- Missing assignments use the configured fallback.
+
+ENVIRONMENT:
+
+- Every environment loads successfully.
+- Environment switching works.
+- Preview does not interfere with gameplay.
+- Resources are disposed correctly.
+- No blank scene appears during loading.
+
+GAMEPLAY:
+
+- TAP remains functional.
+- HOLD remains functional.
+- CROUCH remains functional.
+- JUMP remains functional.
+- Judgement and scoring remain unchanged.
+- Song Progress Bar remains functional.
+
+VIDEO:
+
+- Video Creator loads the assigned environment.
+- Choreography remains synchronized.
+- Camera presets remain functional.
+- Export uses the correct environment.
+
+PERFORMANCE:
+
+- No significant memory accumulation.
+- No unnecessary repeated asset loading.
+- No critical frame-rate regression.
+
+Run all existing QA suites and production build.
+
+---
+
+# PHASE 15 – FINAL REPORT
+
+After implementation, provide:
+
+1. Files modified.
+2. New modules created.
+3. Number of environments implemented.
+4. EnvironmentManager architecture.
+5. Admin assignment implementation.
+6. Player song-selection behavior.
+7. Persistence implementation.
+8. Auto Play integration.
+9. Real Player integration.
+10. Video Creator integration.
+11. Performance results.
+12. Automated QA results.
+13. Production build results.
+14. Known limitations.
+
+Do not report functionality as completed unless it has actually been implemented and verified.
+
+---
+
+# CRITICAL RULES
+
+- Preserve the existing NEON PULSE architecture.
+- Do not rebuild the entire application.
+- Do not remove the original Neon environment.
+- Do not expose environment selection to players.
+- Admin alone controls song-to-environment assignments.
+- Every song should have one assigned environment or use the Admin default.
+- Do not modify the existing audio engine.
+- Do not introduce a second game clock.
+- Do not break CROUCH and JUMP mechanics.
+- Do not sacrifice note visibility for visual effects.
+- Do not load every environment at once.
+- Do not introduce unnecessary dependencies.
+- Run regression tests after integration.
+
+# FINAL PRODUCT VISION
+
+NEON PULSE becomes a multi-stage 3D dance game.
+
+Admin acts as the stage director and decides which environment belongs to each song.
+
+Players simply select their favorite music and start dancing.
+
+Every song can have its own unique visual world, lighting, atmosphere and music-reactive effects.
+
+The result should feel like every song has its own professionally designed music video stage.
+
+Lưu ý quan trọng: Prompt này giữ nguyên nguyên tắc bạn muốn: Admin là người đạo diễn sân khấu, người chơi chỉ chọn bài hát. Mỗi bài có thể mang một thế giới 3D hoàn toàn khác nhau.
+
+
+I’m auditing the world, theme, song-map, studio and persistence layers first, then I’ll extend the existing systems rather than build parallel managers. The biggest constraint is that this project currently has no separate Admin authentication system, so I’ll verify what actually exists before choosing where assignments live.
+
+The audit found one central limitation: the app has no separate authenticated Admin system, song-management backend, or per-song metadata store. I’m therefore extending the existing Settings/Admin surface and localStorage persistence model, while keeping environment assignment data keyed by stable song IDs and leaving Song Maps untouched. I’ll implement the stage catalog, lifecycle manager, player-side automatic loading, admin assignment/preview, studio integration, and QA in that order.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The stage catalog, assignment store, lifecycle manager, player auto-loading and the admin director screen are now wired and the production build passes. I’m running the app now to catch scene/runtime issues before moving on to Studio and the automated suites.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+No changes to existing files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Implemented
+
+### Multi-environment stage system
+
+Nine original, data-driven 3D stages are now available:
+
+| ID | Stage | Environment theme |
+|---|---|---|
+| `golden-palace` | Golden Palace | Fire |
+| `deep-ocean` | Deep Ocean | Digital Space |
+| `mystic-forest` | Mystic Forest | Matrix |
+| `white-future` | White Future | Electric Storm |
+| `desert-sunset` | Desert Sunset | Laser |
+| `cosmic-dream` | Cosmic Dream | Cosmic |
+| `bloom-garden` | Bloom Garden | Pink Cyberpunk |
+| `retro-arcade` | Retro Arcade | Rainbow |
+| `neon-legacy` | Neon Legacy | Cyan Neon |
+
+Every stage is procedural, uses existing lighting/material/post-FX systems and has its own geometry, palette, particles, fog and audio-reactive behavior. The original neon tunnel is preserved as `neon-legacy`.
+
+### Architecture
+
+- **`stageCatalog.js`** — complete per-stage configuration: thumbnails, preview camera, scene, lighting, materials, particles, audio reactivity, quality and dependencies.
+- **`StageEnvironment.js`** — builds one stage, exposes `preload/create/activate/update/deactivate/dispose`, and responds to bass, mid, treble and energy from the existing analyzer.
+- **`EnvironmentManager.js`** — owns exactly one active stage. New stages build before the old one is removed, so a failed build never leaves a blank scene. Also handles fallback to the admin default, then `neon-legacy`.
+- **`EnvironmentAssignments.js`** — persisted song assignments, default stage and per-stage settings under `neon-pulse:stage-assignments:v1`, schema 1. Uses stable environment IDs and ignores invalid or removed IDs.
+- **`StagePreview.js`** — isolated Three.js preview with dancer, driven by the existing Game render loop. No second animation loop and no gameplay engine initialization.
+
+### Admin Stage Director
+
+Added under **Settings → Admin → Open Stage Director**:
+
+- All nine stages with thumbnails.
+- Real 3D preview with dancer, lighting, particles and floor.
+- Per-song environment assignment and change.
+- Admin default environment.
+- Assigned-stage display in the song list.
+- Filtering by stage and an **Unassigned / Default** filter.
+- Per-stage sliders for lighting, particles, fog, audio reactivity and animation speed.
+- Assignment/default/settings persistence across reloads.
+
+### Player behavior
+
+- Players only select songs.
+- Song start resolves the admin assignment automatically.
+- Missing assignment uses the admin default.
+- Invalid/missing default falls back to `neon-legacy`.
+- No environment selector is visible during gameplay.
+- Verified these paths in the browser:
+  - Assigned `deep-ocean` → loaded Deep Ocean.
+  - Assigned `golden-palace` → loaded Golden Palace.
+  - No assignment + default `cosmic-dream` → loaded Cosmic Dream.
+  - No assignment + default `neon-legacy` → restored the original tunnel.
+- Restart/replay keeps the same assigned stage.
+- Verified **zero visible environment controls** during gameplay.
+
+### Studio / Video Creator
+
+- `StudioStage` now owns its own `EnvironmentManager`.
+- The selected song’s assigned environment is loaded before rendering.
+- Legacy tunnel, road, sky, particles, generated scenery and gates are hidden for assigned stages while the note track and pads remain.
+- The Studio “World” controls no longer expose environment switching; they show the admin-assigned stage instead.
+- Export uses the same assigned stage and existing camera presets/split-screen/choreography path.
+
+### Persistence and compatibility
+
+- Song maps and existing metadata are untouched.
+- Assignment storage is separate from Song Maps.
+- Existing settings and map save/load behavior remain unchanged.
+- Invalid stored assignments are ignored individually without discarding valid neighbours.
+
+## Files
+
+**New**
+- `src/world/environments/stageCatalog.js`
+- `src/world/environments/StageEnvironment.js`
+- `src/world/environments/EnvironmentManager.js`
+- `src/world/environments/EnvironmentAssignments.js`
+- `src/ui/StagePreview.js`
+- `qa/stage101-multi-environment-check.mjs`
+
+**Modified**
+- `src/core/Game.js`
+- `src/core/EventBus.js`
+- `src/main.js`
+- `src/studio/Studio.js`
+- `src/studio/StudioStage.js`
+- `src/ui/UIManager.js`
+- `src/ui/templates.js`
+- `src/ui/settingsMarkup.js`
+- `src/ui/studioMarkup.js`
+- `src/styles/main.css`
+- `src/styles/studio.css`
+- `src/world/NeonWorld.js`
+- `src/world/World.js`
+
+## Verification
+
+- **Multi-environment QA:** `91/91` checks passed.
+- **All existing `qa/stage*.mjs` suites:** `38/38` suites passed, `QA_FAILED:0`.
+- **Production build:** passed, exit `0`.
+  - 157 modules transformed.
+  - Main bundle: `1,513.01 kB` (`426.23 kB` gzip).
+- **Browser smoke tests:** admin preview rendered all 9 stages; repeated preview open/close recreated a fresh WebGL canvas; memory probe held stable at 21 geometries / 1 texture across repeated switches.
+- **Gameplay performance:** observed `60 FPS` during a live demo run.
+- **Admin checks:** assignment persistence, default change, filters, per-stage settings and assignment fallback verified.
+- **Gameplay checks:** TAP/HOLD/CROUCH/JUMP, scoring, judgement and progress-bar suites all remained green.
+- The dev server is still running at `http://127.0.0.1:5177/`.
+
+## Known limitations
+
+- **No existing admin authentication system was present in the project.** The Stage Director is therefore a local admin UI surface, not real role-based access control. Any player who can open Settings can open it. True “only authorized Admin users may modify assignments” requires adding an authentication/authorization system, which this project does not currently have.
+- Video export itself was not run end-to-end in this pass; the export path was verified to use the assigned `StudioStage`, and existing camera/choreography code was left intact.
+- Visual comfort was checked through scene geometry/corridor tests and browser rendering, but not through a manual full visual review on physical desktop/mobile devices.
+- Changes are uncommitted.
+
+ of all nine environments at desktop and mobile sizes and tune lighting, particles, and note contrast."}]
+</suggest_prompts>
+
+
+
+111111111111111111111111
+Được nhé\! Mình nghĩ nên giải quyết theo hướng khôi phục thư viện nhạc cũ trước, đồng thời xây dựng hệ thống Music Library + Music Provider độc lập.
+
+Có thể trước đây các bài nhạc nằm trong danh sách demo hoặc nguồn nhạc tích hợp, nhưng sau những lần nâng cấp, danh sách đó bị mất khỏi giao diện hoặc không còn được nạp.
+
+Mình muốn OpenCode kiểm tra và khôi phục nhạc cũ trước, không tự ý xóa hay thay thế các bài nhạc hiện có.
+
+Sau đó xây dựng thư viện nhạc để Admin quản lý danh sách bài hát, còn người chơi chỉ việc chọn bài và nhảy.
+
+## Full prompt cho OpenCode
+
+Writing
+
+# NEON PULSE – RESTORE MUSIC LIBRARY + MODULAR MUSIC PROVIDER SYSTEM
+
+Upgrade the existing NEON PULSE project to restore its previous music collection and introduce a proper Music Library system.
+
+IMPORTANT: The previous version had a music list with songs that the user liked. That music list is now missing or no longer displayed.
+
+The FIRST priority is to investigate and restore the previous music collection.
+
+Do not immediately replace it with Jamendo or another external provider.
+
+## PHASE 1 – AUDIT AND RESTORE PREVIOUS MUSIC
+
+Inspect the entire project for previously available music:
+
+- Existing audio files.
+- MP3, WAV, OGG and other supported formats.
+- Public and assets directories.
+- Previous music manifests.
+- Song catalog files.
+- Demo music collections.
+- Existing song metadata.
+- Old music-loading modules.
+- LocalStorage and IndexedDB music references.
+- Git history, if available.
+- Previously configured music URLs.
+
+Determine why the previous music list disappeared.
+
+Try to restore the original music collection without breaking existing functionality.
+
+IMPORTANT:
+
+- Do not delete existing music files.
+- Do not overwrite existing song metadata.
+- Do not replace working music with empty placeholder entries.
+- Preserve existing Song Maps and song IDs.
+- If old audio files are unavailable, report which files are missing instead of pretending they were restored.
+
+## PHASE 2 – CREATE A PROPER MUSIC LIBRARY
+
+Create a dedicated Music Library.
+
+The library should display songs in an attractive, modern interface.
+
+Each song should have:
+
+- Cover artwork.
+- Song title.
+- Artist.
+- Duration.
+- Genre.
+- BPM, when available.
+- Music source.
+- Playback availability.
+- Environment assigned by Admin.
+
+Support:
+
+- Search songs.
+- Filter by genre.
+- Sort by title.
+- Sort by artist.
+- Sort by duration.
+- Recently added.
+- Recently played.
+- Favorites.
+
+Add a music preview button so users can listen before selecting a song.
+
+Create a clean music player with:
+
+- Play/Pause.
+- Progress bar.
+- Current time.
+- Total duration.
+- Volume control.
+
+## PHASE 3 – ADMIN MUSIC MANAGEMENT
+
+Extend the existing Admin interface.
+
+Admin must be able to:
+
+- View the complete music library.
+- Add new songs.
+- Edit song metadata.
+- Remove songs from the library without deleting source files.
+- Upload local audio files, if supported by the existing application architecture.
+- Add music from an external provider.
+- Edit cover artwork.
+- Assign genres.
+- Set BPM.
+- Enable or disable individual songs.
+- Set featured songs.
+- Preview songs.
+- Assign a 3D dance environment to each song.
+
+Each song must retain a stable unique ID.
+
+When removing or disabling a song, preserve its existing Song Map and metadata unless Admin explicitly requests deletion.
+
+## PHASE 4 – MODULAR MUSIC PROVIDER ARCHITECTURE
+
+Create an independent Music Provider architecture.
+
+The gameplay engine must not depend directly on Jamendo or any specific music service.
+
+Suggested interface:
+
+MusicProvider:
+
+- search()
+- getTrack()
+- getTrackDetails()
+- getStreamUrl()
+- getArtwork()
+- getAttribution()
+- getLicenseInfo()
+
+Implement separate provider adapters.
+
+Initial providers:
+
+1. LocalMusicProvider
+   - Plays locally available audio assets.
+   - Supports existing project music files.
+   - Works without an internet connection.
+2. JamendoMusicProvider
+   - Optional external music source.
+   - Uses official API access where required.
+   - Supports search and track metadata.
+   - Retrieves playback URLs according to provider permissions.
+3. Future providers
+   - Architecture must allow additional providers without changing the gameplay engine.
+
+Use the existing audio playback system.
+
+Do not introduce a second audio engine.
+
+## PHASE 5 – MUSIC LICENSING AND COMMERCIAL USAGE
+
+IMPORTANT:
+
+Do not assume every Jamendo track is automatically permitted for commercial gameplay.
+
+For each externally sourced track, store:
+
+- Provider ID.
+- Track ID.
+- Artist.
+- Track title.
+- License type.
+- License URL.
+- Commercial usage permission.
+- Attribution requirements.
+- Source URL.
+- Verification status.
+
+Do not mark a track as commercially approved unless its specific license has been verified.
+
+If licensing information is unavailable:
+
+- Mark the track as UNVERIFIED.
+- Do not automatically include it in commercial releases.
+- Allow Admin to review its licensing information.
+
+Keep licensing metadata separate from gameplay data.
+
+## PHASE 6 – MUSIC PLAYBACK INTEGRATION
+
+Integrate the library with existing gameplay.
+
+All music sources must use the same audio playback pipeline.
+
+Preserve:
+
+- Audio synchronization.
+- Beat detection.
+- BPM analysis.
+- Song Map timing.
+- TAP notes.
+- HOLD notes.
+- CROUCH notes.
+- JUMP notes.
+- Score and combo.
+- Song Progress Bar.
+- Auto Play.
+- Real Player.
+- Dance Studio.
+- Video Creator.
+
+Ensure the selected song loads its corresponding Song Map and Admin-assigned environment.
+
+Do not introduce a second game clock.
+
+Do not break existing music playback.
+
+## PHASE 7 – PLAYER EXPERIENCE
+
+Players should see a clear Music Library.
+
+Expected flow:
+
+1. Open Music Library.
+2. Browse available songs.
+3. Search or filter songs.
+4. Preview a song.
+5. Select a song.
+6. Start dancing.
+
+Players must NOT be able to modify Admin music metadata or environment assignments.
+
+Do not expose Admin-only controls in the player interface.
+
+## PHASE 8 – DATA STORAGE
+
+Use the existing persistence architecture.
+
+Preserve:
+
+- Existing song IDs.
+- Song Maps.
+- Environment assignments.
+- Music metadata.
+- Provider references.
+- Favorite songs.
+- Recently played songs.
+
+Support backward compatibility with the previous music catalog.
+
+Avoid storing large audio files directly in LocalStorage.
+
+Use suitable file storage or IndexedDB where appropriate for locally uploaded audio.
+
+## PHASE 9 – MUSIC LIBRARY VISUAL DESIGN
+
+Create a polished music browsing interface consistent with NEON PULSE.
+
+Suggested layout:
+
+- Featured music section.
+- Recently played.
+- All songs.
+- Genre filters.
+- Search bar.
+- Song cards with artwork.
+- Compact playback controls.
+
+Make it visually attractive without overwhelming the player.
+
+Support desktop and mobile layouts.
+
+## PHASE 10 – TESTING
+
+Test:
+
+1. Previous music collection restoration.
+2. Local audio playback.
+3. External provider playback.
+4. Music search.
+5. Music preview.
+6. Song metadata editing.
+7. Music upload, if supported.
+8. Song deletion and disabling.
+9. Favorites.
+10. Recently played.
+11. Licensing metadata.
+12. Song Map compatibility.
+13. Environment assignment compatibility.
+14. Auto Play.
+15. Real Player.
+16. Video Creator.
+17. Audio synchronization.
+18. Backward compatibility.
+
+Run all existing QA suites and production build.
+
+## PHASE 11 – FINAL REPORT
+
+Report:
+
+- Why the previous music list disappeared.
+- Which original tracks were successfully restored.
+- Which tracks are missing.
+- Total number of available songs.
+- Music Provider architecture.
+- Jamendo integration status.
+- Licensing verification status.
+- Admin management features.
+- Player Music Library features.
+- Audio playback test results.
+- QA results.
+- Production build results.
+- Remaining limitations.
+
+Do not fabricate music files, track metadata, licensing permissions or test results.
+
+# CRITICAL RULES
+
+- Restore existing music before adding new music sources.
+- Do not remove working audio functionality.
+- Do not assume Jamendo tracks are commercially licensed.
+- Do not couple gameplay directly to any music provider.
+- Preserve all existing Song Maps.
+- Preserve Admin environment assignments.
+- Preserve CROUCH and JUMP.
+- Reuse the existing audio engine.
+- Keep music data and licensing data maintainable.
+- Do not replace missing music with fake tracks.
+
+# FINAL GOAL
+
+NEON PULSE should have a complete Music Library.
+
+Admin manages the music collection and music sources.
+
+Players browse songs, preview music, select their favorite track and start dancing.
+
+The music system must be modular so new providers can be added in the future without modifying the core rhythm game.
+
+## Một lưu ý quan trọng
+
+Mình muốn OpenCode ưu tiên theo thứ tự:
+
+1. Khôi phục danh sách nhạc cũ.
+2. Kiểm tra những file nhạc thực sự còn tồn tại.
+3. Tạo Music Library.
+4. Làm hệ thống Admin thêm và quản lý nhạc.
+5. Sau đó mới tích hợp Jamendo.
+
+Như vậy bạn sẽ không bị tình trạng nâng cấp xong mà những bài nhạc hay trước đây lại biến mất lần nữa. 😄
+
+
+
+I’ll start by auditing the music pipeline, local assets, catalog code and Git history before changing anything. The key question is whether the old catalog was removed, never loaded, or only exists as local files or history.
+
+The current build still has the demo track and the provider code, but the library only shows one song because the visible collection is assembled from the demo plus successfully loaded local/remote providers. I’m checking the repository’s audio files and earlier commits now to recover the actual previous collection rather than inventing replacements.
+
+The audit found no tracked music files in Git history. The only actual local recordings in the project are five public-domain/CC0 OGGs under `qa-audio/source`; the app never loads them and uploads are session-only, while Jamendo is unconfigured. I’ll restore those five as a persistent built-in local catalog, keep the synthesized demo, and then layer the provider/admin/library work on top without touching maps or stage assignments.
+
+The evidence is conclusive: there are no deleted music files in Git, no persisted library entries, and no IndexedDB audio. The five QA recordings are the only real local music available, so I’ll copy them into servable local assets (not delete/move the originals) and register them with their existing stable IDs and documented licenses.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The offline catalogue and persistence layers are in place. Next I’m wiring the aggregate library so it always exposes the restored local songs first, applies admin overrides without touching Song Maps, and keeps Jamendo optional and unverified by default.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The library UI, preview transport, admin manager and provider adapters are now connected. I’m at the first compile check; from here I’ll fix any integration errors, then run the existing QA suites and the production build.
+
+
+
+
+
+
+
+Runtime checks are passing: all six restored songs render, local preview plays through the shared transport, seek/volume/pause work, uploads survive a reload in IndexedDB, and admin edits/assignments persist. I’m now re-running the full QA set and production build after the final UI changes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The final build is green. I’m doing one last integration check that the existing Studio/Video Creator track picker sees the restored local songs, then I’ll hand over the report; live Jamendo and full local chart runs remain the two things that cannot be verified without a key and generated Song Maps.
+
+Implemented the music-library restoration and provider system.
+
+## Why the previous list disappeared
+
+The audit found that the library only ever aggregated:
+
+- the built-in demo,
+- session-only uploaded files,
+- live Jamendo search results.
+
+There was no persisted Jamendo catalog, no cached remote metadata, no `.env` containing `VITE_JAMENDO_CLIENT_ID`, and uploaded audio used object URLs that disappeared on reload. There were no non-voice music files in Git history. So when Jamendo was unconfigured, only the demo survived.
+
+The exact previous Jamendo collection cannot be recovered without its credentials or a cached catalog. I did not replace it with invented tracks or fake URLs.
+
+## Music restored
+
+I copied the five genuine local recordings into `public/assets/music` while preserving the originals in `qa-audio/source`.
+
+| ID | Track | Duration | BPM | License |
+|---|---|---:|---:|---|
+| `qa-real-clementi` | Clementi — Sonatina Op. 36 No. 1 | 1:47 | 172.5 | Public domain |
+| `qa-real-brahms` | Brahms — Hungarian Dance No. 5 | 2:54 | 103.5 | Public domain |
+| `qa-real-mozart` | Mozart — Piano Sonata No. 14 | 4:14 | 123 | Public domain |
+| `qa-real-beethoven` | Beethoven — Moonlight Sonata, Presto | 8:14 | 143.5 | Public domain |
+| `qa-real-chopin` | Chopin — Nocturne Op. 9 No. 2 | 3:59 | 123 | CC0 1.0 |
+
+The stable IDs and content fingerprints are preserved, so existing Song Map identity rules remain compatible. The built-in `NEON PULSE (Demo Mix)` remains.
+
+**Current total: 6 library entries — 5 restored recordings plus the demo.** No Jamendo tracks are present because Jamendo is not configured.
+
+The five restored recordings currently have **no approved Song Maps**. That is existing behavior, not a restoration failure: Start Session correctly opens the Song Map gate until an admin generates and approves charts. I did not fabricate maps.
+
+## What was added
+
+- Full player library with featured cards, search, genre filters, title/artist/duration/recent sorting, favorites, recents, artwork, source, BPM, duration, playback availability and admin-assigned stage.
+- Preview player using the existing `MusicPlayer`/`AudioManager` pipeline: play/pause, seek, current time, duration and volume.
+- Admin **Music Manager** accessible from Settings:
+  - complete catalogue including disabled/removed entries,
+  - local audio upload,
+  - Jamendo import when configured,
+  - metadata, artwork, genre and BPM editing,
+  - featured/enabled toggles,
+  - licensing and commercial-use review,
+  - stage assignment,
+  - preview,
+  - remove/restore without deleting the source file, Song Map, score or stage assignment.
+- Provider architecture in `src/music/`:
+  - `MusicProvider` contract: `search`, `getTrack`, `getTrackDetails`, `getStreamUrl`, `getArtwork`, `getAttribution`, `getLicenseInfo`,
+  - `LocalMusicProvider` for bundled offline recordings,
+  - `LocalProvider` for device uploads,
+  - `JamendoProvider` (also exported as `JamendoMusicProvider`),
+  - `MusicDiscovery` and `MusicLibrary` as the aggregation boundary. Gameplay does not import Jamendo or any provider.
+- Persistent catalog overrides and external metadata in `neon-pulse:music-catalog:v1`.
+- Uploaded audio stored in IndexedDB under `neon-pulse-music`, never localStorage.
+- Licensing kept in a separate `track.licensing` block with provider ID, track ID, license, license URL, commercial-use flag, attribution requirement, source URL and verification status.
+- Jamendo tracks are always **UNVERIFIED** on import. Admin cannot save commercial approval without setting verification to verified. Local Wikimedia recordings are verified from their documented public-domain/CC0 sources. Uploaded user audio is unverified by default.
+
+## Verification
+
+- **All 38 existing QA suites passed**, including library, Song Map, stage, HOLD/CROUCH/JUMP, Auto Dance, and gameplay suites.
+- **Production build passed**: 163 modules transformed, `index-ELBNnlLG.js` 1,562.08 kB / 438.41 kB gzip.
+- All five restored OGG files responded with HTTP 200 and their expected byte sizes.
+- Browser checks confirmed:
+  - all 6 entries render,
+  - search/filter/sort/favorites work,
+  - local preview played with a real 107.46 s duration, advanced time, paused, seeked and changed volume,
+  - admin preview played,
+  - admin metadata and stage edits persisted,
+  - remove/disable did not change Song Map or stage storage,
+  - a generated WAV uploaded through the app survived a reload in IndexedDB; the test asset was removed afterward,
+  - desktop and 390×844 mobile layouts had no horizontal overflow,
+  - Video Creator’s track picker listed all restored tracks,
+  - no runtime console errors after a clean reload.
+
+## Remaining limitations
+
+- The original Jamendo list is unrecoverable without the user’s API credentials or a previous cache.
+- Jamendo search, import and stream playback were **not tested** because `VITE_JAMENDO_CLIENT_ID` is absent.
+- The five restored tracks need approved Song Maps before full gameplay starts.
+- The project has no authentication or role system, so the Admin music screen is not actually authorization-protected. It is separated from the player UI, but a user can still reach Settings.
+- This was a structural/render check, not a pixel-level visual review or a full local-track Auto Dance/Video Creator render.
+
+The highest-value next step is generating and approving maps for the five restored recordings so they can go directly into gameplay.
+
+
+
+111111111111
