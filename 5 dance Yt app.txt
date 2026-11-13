@@ -24907,4 +24907,1413 @@ The highest-value next step is generating and approving maps for the five restor
 
 
 
-111111111111
+111111111111 review chart editor and upgrade chart editor
+Được. Theo mình, đây mới là cách làm đúng với NEON PULSE ở giai đoạn hiện tại: không xây lại Chart Editor, không tạo module trùng lặp, mà audit toàn bộ chức năng hiện có, xác định phần thiếu và nâng cấp trực tiếp trên nền tảng cũ.
+
+Mình sẽ giúp bạn làm theo quy trình 2 bước:
+
+1. OpenCode/FreeCode đọc mã nguồn và báo cáo toàn bộ tình trạng Chart Editor.
+2. Bạn gửi báo cáo lại cho mình. Mình phân tích và viết prompt nâng cấp chính xác dựa trên code thực tế.
+
+## Bước 1. Prompt yêu cầu OpenCode audit Chart Editor
+
+Bạn copy toàn bộ nội dung dưới đây và gửi cho OpenCode hoặc FreeCode.
+
+Writing
+
+# NEON PULSE – CHART EDITOR TECHNICAL AUDIT
+
+## READ-ONLY INVESTIGATION – DO NOT MODIFY SOURCE CODE
+
+### 1\. OBJECTIVE
+
+Perform a comprehensive technical audit of the existing Chart Editor / Beat Map Editor in the NEON PULSE project.
+
+IMPORTANT:
+
+- The Chart Editor already exists.
+- Do NOT create a new Chart Editor.
+- Do NOT rebuild existing functionality.
+- Do NOT modify, delete, rename, or refactor any source files.
+- Do NOT change existing application behavior.
+- Do NOT implement fixes during this audit.
+- Only inspect the existing code, run safe tests if available, and produce a detailed technical report.
+
+The goal is to understand exactly what has already been implemented, what works, what is incomplete, and what should be upgraded next.
+
+### 2\. INVESTIGATE THE ENTIRE EXISTING SYSTEM
+
+Find and inspect all files related to:
+
+- Chart Editor UI
+- Beat Map Editor
+- Waveform rendering
+- Audio loading and playback
+- BPM detection
+- Beat grid
+- Timeline rendering
+- Note editing
+- Note selection
+- Note movement
+- Note creation and deletion
+- Note properties
+- Snap / Quantize
+- Zoom and scrolling
+- Playhead
+- Audio synchronization
+- Preview mode
+- Live 3D gameplay preview
+- Undo / Redo
+- Keyboard shortcuts
+- Chart validation
+- Chart JSON import/export
+- Song Map storage
+- IndexedDB / localStorage
+- Chart versioning
+- Difficulty management
+- Admin approval
+- Integration with the main Game Engine
+
+Also inspect related shared services and data models.
+
+### 3\. FEATURE-BY-FEATURE AUDIT
+
+For every feature, report one of these statuses:
+
+- COMPLETE: Fully implemented and verified.
+- PARTIAL: Implemented but missing important functionality.
+- UI ONLY: Interface exists but functionality is not implemented.
+- BROKEN: Exists but does not work correctly.
+- MISSING: Not implemented.
+- UNKNOWN: Cannot verify.
+
+Audit these areas:
+
+A. AUDIO AND WAVEFORM
+
+- Audio file loading
+- Waveform generation
+- Waveform accuracy
+- Waveform caching
+- Zoom
+- Horizontal scrolling
+- Region selection
+- Playhead synchronization
+- Large audio file performance
+
+B. BPM AND BEAT GRID
+
+- Automatic BPM detection
+- Manual BPM adjustment
+- Beat offset
+- Tempo changes
+- Time signature
+- Beat markers
+- Bar / measure calculation
+- 1/4, 1/8, 1/16, 1/32 subdivisions
+- Tap Tempo
+- Quantization
+
+C. NOTE EDITOR
+
+- TAP
+- HOLD
+- CROUCH
+- JUMP
+- BOMB / HAZARD
+- Note creation
+- Note deletion
+- Note movement
+- Lane changes
+- Duration editing
+- Multi-selection
+- Copy / Paste
+- Duplicate
+- Batch editing
+- Collision detection
+- Snap to grid
+
+D. TIMELINE
+
+- Accurate time-to-pixel conversion
+- Accurate pixel-to-time conversion
+- Zoom around cursor
+- Scroll
+- Playhead movement
+- Timeline ruler
+- Beat grid alignment
+- Selection preservation after zoom
+- High-resolution timing
+
+E. AUDIO PREVIEW
+
+- Play / Pause
+- Seek
+- Loop region
+- Playback speed
+- Audio offset
+- Latency handling
+- Synchronization with notes
+- Synchronization with gameplay
+
+F. CHART DATA
+
+- JSON schema
+- Schema version
+- Song ID
+- Audio fingerprint
+- Tempo map
+- Note data
+- Note IDs
+- Metadata
+- Difficulty
+- Import / Export
+- Backward compatibility
+- Data validation
+- Autosave
+- Recovery after refresh
+
+G. EDITOR WORKFLOW
+
+- Undo / Redo
+- Keyboard shortcuts
+- Dirty state
+- Save confirmation
+- Error handling
+- Version history
+- Draft / Approved states
+
+H. GAME ENGINE INTEGRATION
+
+- Whether the Editor and Game Engine use the same chart format
+- Whether they use the same timing calculation
+- Whether preview mode uses the actual gameplay engine
+- Whether chart changes are immediately reflected in preview
+- Whether approved charts are loaded correctly
+- Whether audio offset is applied consistently
+
+### 4\. CODE ARCHITECTURE INVESTIGATION
+
+Identify:
+
+1. Main Chart Editor entry point.
+2. All related components.
+3. Main hooks and state managers.
+4. Audio services.
+5. Timeline and rendering services.
+6. Chart data models.
+7. JSON serializers and deserializers.
+8. Storage services.
+9. Game Engine integration points.
+10. Existing tests.
+
+For each important file, provide:
+
+- File path
+- Main responsibility
+- Important functions/classes
+- Dependencies
+- Whether it is actively used
+- Potential technical problems
+
+Do not assume that a file is unused just because it is not imported directly. Trace dynamic imports and indirect dependencies.
+
+### 5\. PERFORMANCE AND RELIABILITY
+
+Investigate:
+
+- Unnecessary component re-rendering
+- Large waveform rendering bottlenecks
+- Memory leaks
+- AudioContext lifecycle
+- Event listener cleanup
+- Excessive canvas redraws
+- Large chart performance
+- IndexedDB transaction handling
+- Race conditions during save/load
+- Timing drift
+- Floating-point precision issues
+- Undo/Redo memory consumption
+
+Do not modify code.
+
+### 6\. TESTING
+
+Run only existing safe tests and build checks where possible.
+
+Report:
+
+- Test commands executed
+- Test results
+- Failed tests
+- Build results
+- Warnings
+- Untested functionality
+
+Do not install new dependencies or modify configuration.
+
+If a test requires unavailable external services, explain the limitation.
+
+### 7\. REQUIRED OUTPUT
+
+Produce a comprehensive report named:
+
+CHART\_EDITOR\_AUDIT\_REPORT.md
+
+The report must contain:
+
+PART 1 – EXECUTIVE SUMMARY Overall condition and readiness of the existing Chart Editor.
+
+PART 2 – FEATURE STATUS MATRIX A table showing every feature, its status, relevant file paths, and verification evidence.
+
+PART 3 – EXISTING ARCHITECTURE Explain how the current system works and how its modules interact.
+
+PART 4 – DATA FLOW Explain the complete flow:
+
+Audio → Analysis → Waveform → Beat Grid → Notes → Chart JSON → Preview → Game Engine.
+
+PART 5 – MISSING AND INCOMPLETE FEATURES Identify all gaps without proposing unnecessary rewrites.
+
+PART 6 – BUGS AND TECHNICAL RISKS List actual bugs separately from potential risks.
+
+PART 7 – PERFORMANCE ANALYSIS Identify measurable bottlenecks and areas requiring profiling.
+
+PART 8 – BACKWARD COMPATIBILITY Explain how upgrades can preserve existing charts and Song Map data.
+
+PART 9 – PRIORITIZED UPGRADE ROADMAP
+
+Classify proposed improvements into:
+
+P0 – Critical bugs or data integrity issues. P1 – Important missing functionality. P2 – UX and workflow improvements. P3 – Performance and advanced features.
+
+For every recommendation provide:
+
+- Problem
+- Evidence
+- Relevant files
+- Proposed minimal solution
+- Regression risks
+- Acceptance criteria
+
+PART 10 – RECOMMENDED IMPLEMENTATION ORDER
+
+Provide the safest sequence for upgrading the existing system incrementally.
+
+### 8\. FINAL RESTRICTIONS
+
+This is a READ-ONLY AUDIT.
+
+Do not implement anything. Do not create a second editor. Do not redesign the application. Do not replace working components. Do not change the existing Song Map format. Do not make assumptions about functionality without inspecting its implementation.
+
+The report must describe the ACTUAL CURRENT CODEBASE, not an idealized architecture.
+
+## Bước 2. Gửi báo cáo lại cho mình
+
+Sau khi OpenCode chạy xong, bạn gửi mình file:
+
+`CHART_EDITOR_AUDIT_REPORT.md`
+
+Nếu có thể, gửi thêm danh sách những file quan trọng mà OpenCode đã xác định.
+
+Mình sẽ thực hiện tiếp 4 việc:
+
+1. Đánh giá thực trạng: Phân biệt tính năng đã hoàn thiện, mới có giao diện và hoạt động chưa đúng.
+2. Tìm thiếu sót: Phát hiện những vấn đề về timing, BPM, waveform, note editing và đồng bộ gameplay.
+3. Lập kế hoạch nâng cấp: Chỉ sửa những gì thực sự cần thiết, ưu tiên giữ nguyên kiến trúc hiện tại.
+4. Viết prompt triển khai: Chia thành từng nhiệm vụ nhỏ để OpenCode thực hiện và kiểm thử.
+
+## Nguyên tắc mình muốn áp dụng cho NEON PULSE
+
+Preserve Existing Architecture
+
+- Không viết lại module đang hoạt động tốt.
+- Không tạo chức năng trùng lặp.
+- Không tự ý thay đổi JSON chart cũ.
+- Không làm ảnh hưởng Game Engine.
+- Mọi nâng cấp đều phải có regression tests.
+  Upgrade Only What Is Necessary
+- Sửa đúng module có vấn đề.
+- Tận dụng component và service hiện có.
+- Nâng cấp theo từng milestone.
+- Kiểm tra trước và sau mỗi lần sửa.
+
+Một lưu ý: Hãy yêu cầu OpenCode đọc cả mã nguồn thực tế lẫn các báo cáo triển khai trước đây. Không nên chỉ dựa vào README hoặc ghi chú dự án, vì có thể tài liệu nói đã hoàn thành nhưng code thực tế chưa hoàn thiện.
+
+Mình muốn làm việc với bạn theo cách này cho toàn bộ NEON PULSE: OpenCode khảo sát và thực thi, mình phân tích kiến trúc và thiết kế hướng nâng cấp, bạn kiểm soát kết quả. Như vậy sẽ giảm đáng kể nguy cơ AI lập trình tạo thêm module không cần thiết hoặc phá vỡ những gì đã làm tốt.
+
+
+
+
+I’ll trace the editor from its UI entry through audio analysis, map storage, preview and gameplay loading, then run the relevant existing QA/build checks. The only file I’ll create is `CHART_EDITOR_AUDIT_REPORT.md`; source code will stay untouched.
+
+The editor core is now mapped: controller/commands/history/drafts, canvas renderer, preview transport and the saved-map gate. I’m running the existing editor and map suites plus the production build next, then I’ll write the report against those results.
+
+The map/editor QA suites all pass (1,603 checks across 13 suites) and the production build succeeds. I also found concrete defects that the suites do not cover, including a dead lane-shortcut branch, stale approval/validation copy, legacy typed-note migration loss, and approval of valid-but-unplayable charts. I’m writing those into the report now with the upgrade sequence.
+
+
+
+
+The read-only audit is complete. `CHART_EDITOR_AUDIT_REPORT.md` has been created and is open in the right-side panel; no source, configuration, chart format, or dependency was changed.
+
+The report contains all ten requested parts across 1,072 lines:
+
+- executive summary and feature-status matrix;
+- actual architecture and module responsibilities;
+- complete audio → analysis → waveform → grid → notes → JSON → preview → gameplay data flow;
+- missing/incomplete features and separate bug/risk tables;
+- performance analysis with measured build and QA figures;
+- backward-compatibility rules and one migration defect;
+- P0–P3 roadmap with problem, evidence, files, minimal solution, regression risks and acceptance criteria for every item;
+- a safe incremental implementation order.
+
+**Key findings**
+
+- The editor is a real, substantial implementation with TAP, HOLD, two-lane HOLD, DOUBLE, SLIDE, BOMB, CROUCH and JUMP, plus undo/redo, autosave, import/export, approval and gameplay integration.
+- It is not a full production timing suite: manual BPM/offset, tap tempo, time signature, tempo maps, loop audition, preview latency/offset parity and live 3D gameplay preview are missing or partial.
+- Confirmed defects include unreachable numeric lane shortcuts, stale “holds unsupported” and “approved maps are locked” messages, legacy typed-note migration loss, approval of valid-but-unplayable charts, a map/index persistence inconsistency, and slide validation accepting an extra `lane2`.
+
+**Verification**
+
+- 13 existing suites passed: **1,603/1,603 checks**.
+- `npm run build` passed: 163 modules, exit 0, 791 ms; main bundle 1,562.08 kB (438.41 kB gzip).
+- No build warnings.
+
+**Limitation**
+
+The suites are Node/controller-level. I did not rerun browser canvas gestures, mobile layout, audio-device timing or the Three.js preview. The report distinguishes code/test evidence from behavior that remains browser-only and unverified.
+
+The first fix should be the P0 migration data-loss path, followed by approval gating and transactional map/index persistence.
+
+
+
+Rất tốt. Kết quả audit này cho thấy NEON PULSE đã có một Chart Editor khá hoàn chỉnh. Vì vậy, mình đề xuất chuyển sang giai đoạn nâng cấp và sửa lỗi có kiểm soát, tuyệt đối không xây dựng lại Chart Editor.
+
+Mình đã xác định được thứ tự ưu tiên từ báo cáo bạn vừa cung cấp.
+
+## 1. Đánh giá kết quả audit
+
+# 1,603/1,603
+
+QA checks passed
+
+# 13/13
+
+Test suites passed
+
+# PASS
+
+Production build
+
+# 1,072
+
+Report lines
+
+Audit completedKhông có source code, configuration hay chart format nào bị thay đổi.
+
+Điều quan trọng là 1.603 checks pass không có nghĩa mọi chức năng đều hoàn hảo. Những lỗi migration, approval và persistence được phát hiện chính là những vấn đề cần xử lý trước.
+
+## 2. Thứ tự nâng cấp đề xuất
+
+| Ưu tiên | Công việc | Lý do |
+| --- | --- | --- |
+| P0 | Legacy typed-note migration | Tránh mất dữ liệu chart |
+| P0 | Approval gating | Không duyệt chart không thể chơi |
+| P0 | Map/index persistence | Tránh sai lệch dữ liệu |
+| P1 | Slide validation | Tránh chart không hợp lệ |
+| P1 | Numeric lane shortcuts | Sửa thao tác biên tập |
+| P1 | Stale UI messages | Đồng bộ giao diện với chức năng |
+| P2 | BPM/offset/tap tempo | Nâng chất lượng biên tập |
+| P2 | Loop audition | Nghe thử thuận tiện |
+| P2 | Preview timing parity | Đồng bộ editor và gameplay |
+| P3 | Live 3D preview | Nâng cao trải nghiệm |
+
+## 3. Prompt triển khai đợt đầu cho OpenCode
+
+Mình muốn chia thành các đợt nhỏ. Đợt đầu chỉ sửa các lỗi P0 và những lỗi P1 đơn giản, không đưa thêm tính năng mới.
+
+Writing
+
+# NEON PULSE – CHART EDITOR STABILIZATION SPRINT 1
+
+## OBJECTIVE
+
+Implement targeted fixes based on CHART\_EDITOR\_AUDIT\_REPORT.md.
+
+This is an incremental maintenance task, NOT a rewrite.
+
+Read the complete audit report before modifying code.
+
+Preserve the existing Chart Editor architecture, UI, chart schema, Game Engine integration and existing user workflows.
+
+## PHASE 1 – DATA INTEGRITY (P0)
+
+### 1\. Fix legacy typed-note migration data loss
+
+Investigate the exact migration defect documented in the audit.
+
+Requirements:
+
+- Preserve every supported legacy note type.
+- Preserve lane assignments.
+- Preserve timing and duration.
+- Preserve note-specific properties.
+- Avoid silently dropping unknown or unsupported note data.
+- Make migration deterministic and safe.
+- Ensure repeated migration does not corrupt data.
+- Preserve backward compatibility with existing saved charts.
+
+Add regression tests using representative legacy chart fixtures.
+
+### 2\. Fix chart approval gating
+
+Investigate the approval path that allows valid-but-unplayable charts to be approved.
+
+Requirements:
+
+- Separate structural validation from gameplay readiness validation.
+- A structurally valid chart must not automatically be considered playable.
+- Approval must require all necessary gameplay conditions.
+- Report specific reasons when approval is rejected.
+- Do not silently modify chart content during approval.
+- Preserve existing valid approved charts.
+
+Add tests for:
+
+- Empty charts.
+- Missing required gameplay data.
+- Invalid note timing.
+- Invalid HOLD duration.
+- Invalid lane assignments.
+- Unsupported note types.
+- Valid and playable charts.
+- Previously approved chart compatibility.
+
+### 3\. Fix map/index persistence inconsistency
+
+Investigate the inconsistency between map storage and its index.
+
+Requirements:
+
+- Map data and index must remain consistent.
+- Handle interrupted save operations safely.
+- Handle failed transactions.
+- Avoid duplicate entries.
+- Avoid deleting a valid chart when an update fails.
+- Preserve existing storage format.
+- Implement recovery only where justified by the current storage architecture.
+
+Add tests for create, update, delete, reload and failed-save scenarios.
+
+## PHASE 2 – EDITOR CORRECTNESS (P1)
+
+### 4\. Fix numeric lane shortcuts
+
+Investigate the unreachable numeric lane shortcut branch.
+
+Requirements:
+
+- Make existing documented shortcuts functional.
+- Preserve existing keyboard shortcuts.
+- Prevent conflicts with text inputs and property editors.
+- Test each supported lane shortcut.
+
+### 5\. Fix stale UI messages
+
+Find and correct outdated messages:
+
+- "Holds unsupported"
+- "Approved maps are locked"
+
+The UI must accurately reflect actual editor capabilities and permission rules.
+
+Do not change the approval or editing policy unless the audit explicitly identifies it as incorrect.
+
+### 6\. Fix slide validation
+
+Investigate the validation issue accepting an extra lane2 field.
+
+Requirements:
+
+- Validate the exact expected slide data structure.
+- Reject unexpected or conflicting fields where appropriate.
+- Preserve existing valid slide charts.
+- Add positive and negative regression tests.
+
+## PHASE 3 – REGRESSION AND VERIFICATION
+
+After implementation:
+
+1. Run all existing Chart Editor and Song Map tests.
+2. Run all related migration tests.
+3. Run persistence tests.
+4. Run the complete existing QA suite.
+5. Run npm run build.
+6. Verify backward compatibility.
+7. Verify existing approved charts.
+8. Review the final source diff.
+
+## STRICT RESTRICTIONS
+
+- Do not create another Chart Editor.
+- Do not redesign the existing UI.
+- Do not replace the chart data model.
+- Do not change the JSON schema unnecessarily.
+- Do not change the Game Engine architecture.
+- Do not remove existing features.
+- Do not introduce new dependencies without justification.
+- Do not modify unrelated modules.
+- Do not weaken tests to make them pass.
+- Do not silently discard chart data.
+
+If a fix requires a schema migration or breaking change, STOP and report the issue before implementing it.
+
+## REQUIRED DELIVERABLE
+
+Create CHART\_EDITOR\_STABILIZATION\_SPRINT\_1\_REPORT.md containing:
+
+1. Root cause of each defect.
+2. Files modified.
+3. Exact behavior changes.
+4. Tests added.
+5. Test results.
+6. Build results.
+7. Backward compatibility verification.
+8. Remaining risks.
+9. Recommended next sprint.
+
+At the end, provide a concise summary of what changed and what remains incomplete.
+
+## 4. Sau đợt sửa đầu tiên
+
+Mình chưa muốn cho OpenCode làm ngay BPM Editor hoặc Live Preview. Cần xác nhận ba vấn đề dữ liệu đã được xử lý triệt để trước.
+
+Sau đó sẽ chuyển sang Sprint 2:
+
+- Manual BPM và Beat Offset.
+- Tap Tempo.
+- Tempo Map.
+- Time Signature.
+- Loop Audition.
+- Preview Audio Offset.
+- Đồng bộ timing giữa Chart Editor và Game Engine.
+
+Một điểm mình đặc biệt muốn giữ: Chart Editor và Game Engine phải dùng chung một quy tắc tính thời gian. Không nên tạo một bộ timing riêng cho Editor rồi tìm cách đồng bộ về sau.
+
+Bạn gửi lại mình file `CHART_EDITOR_STABILIZATION_SPRINT_1_REPORT.md` sau khi OpenCode hoàn thành. Mình sẽ dựa trên kết quả thực tế để quyết định Sprint 2 cần sửa những gì, tránh làm trùng những chức năng đã có.
+
+
+
+I’m starting with the three data-integrity defects, then the editor behavior fixes and a focused regression suite. I’ll preserve the v1 schema and storage keys; no migration version bump is needed for these changes.
+
+
+
+
+
+
+
+The core fixes are in place: migration now preserves typed fields and legacy unknowns, approval requires gameplay readiness, and map/index writes compensate on failure. I’ve added a focused regression suite covering all five defect areas; I’m running it before touching the full suite.
+
+The full QA sweep is 38/39 suites passing. One stage-8 assertion failed: a simulated storage failure expected a session-memory copy. I’m checking whether that test describes intended behavior or conflicts with the new persistence rule before deciding how to fix it.
+
+
+
+
+
+
+
+A final review found two gaps the first pass missed: the same stale “hold notes” sentence also lived in the Song Maps status text, and `createSongMap()` was re-deriving note IDs after migration. I’m fixing both and extending the regression suite so IDs and both UI surfaces are covered.
+
+The migration now preserves authored IDs (with collision-safe fallback), and the shortcut resolver handles the real browser values `!@#$` in addition to `Digit1–Digit4`. I’m running the complete QA suite again against these final source changes.
+
+All 39 QA suites and the production build pass. I’m doing the repository-required browser-console check against the dev server before writing the sprint report.
+
+
+
+
+## Chart Editor Stabilization Sprint 1 — complete
+
+Implemented all six requested fixes without replacing the editor, changing the chart schema, or modifying the Game Engine architecture.
+
+**What changed**
+
+- **Legacy migration:** preserves all supported note types, lanes, timing, duration, `lane2`, `endLane`, strength, metadata, unknown fields, and authored IDs. Unknown data is retained under `metadata.legacy`; repeated migration is stable; schema-v1 charts remain a no-op.
+- **Approval gating:** new `evaluateApprovalReadiness()` requires structural validity **and** gameplay readiness. Rejections return specific blockers (`structural-invalid`, `not-playable`, `empty-chart`, `audio-fingerprint`) without modifying the chart.
+- **Persistence:** map body is written before the index; failed map writes no longer create phantom in-memory maps or index entries; failed index writes roll the map back; delete failures restore the chart; the index cache is only updated after successful storage writes; `rebuildIndex()` can discover maps itself.
+- **Lane shortcuts:** `Shift+1`–`Shift+4` now move selected notes to lanes 0–3. Existing `1`–`7` type shortcuts still work. Inputs, textareas, selects, and contenteditable targets are ignored. Real browser `!@#$` key values are handled.
+- **Stale messages:** corrected the hold-unsupported text in both `MapEditor.js` and `mapStatusMarkup.js`, and the false “approval locks the chart” dialog.
+- **Slide validation:** slides with `lane2` now fail with `slide-lane2`; valid slides still pass.
+
+**Verification**
+
+- New focused suite: `qa/stage102-chart-editor-stabilization-check.mjs` — **100/100 passed**.
+- Updated `qa/stage8-song-map-check.mjs` quota expectation to the corrected data-integrity contract — **140/140 passed**.
+- Complete existing QA suite — **39/39 suites passed, 0 failures**.
+- `npm run build` — **exit 0**, Vite 8.3.8, 164 modules, 766 ms.
+- Fresh dev-server browser load — all modules returned 200, console had only Vite debug messages, no runtime errors. This was not an interactive editor walkthrough.
+
+**Deliverable:** `CHART_EDITOR_STABILIZATION_SPRINT_1_REPORT.md` contains root causes, modified files, exact behavior changes, tests, results, compatibility verification, risks, and next-sprint recommendations.
+
+**Still incomplete / remaining risks**
+
+- localStorage still has no cross-key transaction or cross-tab locking; compensation is best-effort. `rebuildIndex()` is available but not automatically invoked at startup.
+- No real-browser quota/eviction test, no physical keyboard gesture test through the open editor, and no visual review of the updated overlay.
+- Approval readiness is static; it cannot prove subjective playability without playtesting.
+- Manual BPM/offset controls, preview-clock parity, loop regions, and import fingerprint checks remain future work.
+
+The report is open in the right panel.
+
+
+
+
+Rất tốt. Sprint 1 đã hoàn thành đúng hướng: sửa lỗi trên hệ thống hiện tại, giữ nguyên schema v1 và không đụng vào kiến trúc Game Engine.
+
+Mình đánh giá đây là một bước nâng cấp có chất lượng. Đặc biệt, việc phát hiện thêm lỗi mất Note ID sau migration cho thấy quá trình kiểm tra chéo đã thực sự có giá trị.
+
+## 1. Đánh giá Sprint 1
+
+Sprint 1
+
+PASS
+
+# 39/39
+
+QA suites
+
+# 100/100
+
+Focused regression checks
+
+# 140/140
+
+Song Map checks
+
+# PASS
+
+Production build
+
+6 nhóm sửa lỗi đã hoàn thành
+
+- Legacy migration.
+- Approval readiness.
+- Map/index persistence.
+- Lane shortcuts.
+- Stale UI messages.
+- Slide validation.
+
+Có ba điểm mình muốn lưu ý:
+
+1. `localStorage` chưa có transaction thực sự giữa nhiều key. Cơ chế rollback hiện tại chỉ là best-effort.
+2. Approval readiness vẫn chưa thay thế được việc chơi thử thực tế.
+3. Browser load thành công chưa chứng minh thao tác kéo thả, waveform và audio timing hoạt động hoàn hảo.
+
+Vì vậy, mình xem Sprint 1 là hoàn thành về mặt sửa lỗi và regression, nhưng chưa phải nghiệm thu toàn bộ trải nghiệm Chart Editor.
+
+## 2. Tiếp theo: Sprint 2 – Timing & Audio Precision
+
+Đây là giai đoạn mình muốn đầu tư nhất.
+
+Mục tiêu là biến Chart Editor từ công cụ chỉnh sửa note thành một công cụ biên tập nhạc chính xác.
+
+Các chức năng cần kiểm tra trước khi bổ sung:
+
+| Chức năng | Hướng nâng cấp |
+| --- | --- |
+| Manual BPM | Nhập và điều chỉnh BPM |
+| Beat Offset | Căn chỉnh nhịp với nhạc |
+| Tap Tempo | Xác định BPM bằng thao tác nhấn |
+| Tempo Map | BPM thay đổi theo từng đoạn |
+| Time Signature | 3/4, 4/4, 6/8... |
+| Loop Audition | Nghe lặp một đoạn |
+| Audio Preview | Đồng bộ note với nhạc |
+| Timing Calibration | Hiệu chỉnh độ trễ |
+
+Một yêu cầu quan trọng: không được giả định những tính năng này hoàn toàn chưa có. OpenCode phải kiểm tra lại từng tính năng trước khi triển khai.
+
+## 3. Prompt cho OpenCode – Sprint 2
+
+Writing
+
+# NEON PULSE – CHART EDITOR SPRINT 2
+
+# TIMING & AUDIO PRECISION UPGRADE
+
+## OBJECTIVE
+
+Upgrade the existing Chart Editor's timing and audio synchronization capabilities.
+
+Sprint 1 is complete.
+
+Before implementation, inspect:
+
+- CHART\_EDITOR\_AUDIT\_REPORT.md
+- CHART\_EDITOR\_STABILIZATION\_SPRINT\_1\_REPORT.md
+- All existing audio, BPM, timeline, preview and chart timing modules.
+
+IMPORTANT: This is an incremental upgrade.
+
+Do not rebuild existing components. Do not duplicate existing features. Do not change the chart schema unnecessarily. Do not modify unrelated modules.
+
+## PHASE 0 – RE-AUDIT
+
+Create a feature matrix for:
+
+1. Manual BPM.
+2. Beat offset.
+3. Tap Tempo.
+4. Beat grid.
+5. Tempo changes.
+6. Time signatures.
+7. Subdivision settings.
+8. Loop playback.
+9. Audio preview synchronization.
+10. Gameplay timing synchronization.
+11. Audio latency calibration.
+
+For each feature classify:
+
+COMPLETE / PARTIAL / UI ONLY / BROKEN / MISSING.
+
+Identify exact files and functions.
+
+Only implement missing or defective functionality.
+
+## PHASE 1 – BPM AND BEAT OFFSET
+
+If not already implemented:
+
+- Add or complete manual BPM editing.
+- Add or complete beat offset editing.
+- Update beat grid immediately when values change.
+- Preserve existing notes and their intended absolute audio timestamps.
+- Provide undo/redo support.
+- Persist values using the existing chart data architecture.
+
+IMPORTANT: Clearly distinguish between moving the beat grid and moving the notes.
+
+Do not unexpectedly shift all notes when the user changes BPM or offset.
+
+Provide a clear operation for intentionally snapping or shifting selected notes.
+
+## PHASE 2 – TAP TEMPO
+
+If missing or incomplete:
+
+- Implement Tap Tempo using successive user taps.
+- Calculate BPM using stable intervals.
+- Reject accidental or excessively long intervals.
+- Provide reset functionality.
+- Display calculated BPM.
+- Allow the user to apply the result explicitly.
+
+Do not automatically overwrite the existing BPM without user confirmation.
+
+## PHASE 3 – TEMPO MAP
+
+Investigate whether variable BPM is supported.
+
+If missing, design the smallest backward-compatible extension.
+
+Requirements:
+
+- Support multiple tempo segments.
+- Each segment has a defined start position.
+- Correctly calculate beat-to-time and time-to-beat conversions.
+- Preserve existing constant-BPM charts.
+- Handle segment boundaries accurately.
+- Avoid cumulative floating-point drift.
+
+Do not introduce a schema-breaking change.
+
+If the current schema cannot safely support tempo maps, stop and report the required migration design before implementing it.
+
+## PHASE 4 – TIME SIGNATURE AND SUBDIVISIONS
+
+If incomplete:
+
+- Support time signature configuration.
+- Support appropriate beat and measure labels.
+- Support 1/4, 1/8, 1/16 and 1/32 grid subdivisions.
+- Make visual grid and quantization use the same calculation.
+- Preserve note timestamps when changing display subdivision.
+
+## PHASE 5 – LOOP AUDITION
+
+If missing:
+
+- Allow setting loop start and end.
+- Play the selected audio segment repeatedly.
+- Keep the playhead synchronized.
+- Handle loop boundaries without accumulating timing drift.
+- Allow clearing the loop.
+- Preserve normal play/pause/seek behavior.
+
+Use the existing AudioContext and audio transport architecture.
+
+Do not introduce a second independent audio clock.
+
+## PHASE 6 – TIMING SYNCHRONIZATION
+
+Investigate the timing relationship between:
+
+- Audio playback.
+- Chart Editor playhead.
+- Note preview.
+- 3D gameplay preview.
+- Main Game Engine.
+
+Requirements:
+
+- Identify the authoritative audio clock.
+- Use the existing shared timing service where possible.
+- Document all offsets and their meanings.
+- Prevent applying the same offset twice.
+- Keep editor preview and actual gameplay timing consistent.
+- Handle pause, resume and seek correctly.
+
+Do not invent latency compensation values.
+
+## PHASE 7 – REGRESSION TESTING
+
+Add tests for:
+
+- BPM changes.
+- Beat offset changes.
+- Tap Tempo calculations.
+- Tempo segment boundaries.
+- Time signature calculations.
+- Grid subdivisions.
+- Quantization.
+- Loop start/end.
+- Pause and resume.
+- Seeking.
+- Audio timing.
+- Chart backward compatibility.
+
+Run the complete QA suite and production build.
+
+## STRICT RESTRICTIONS
+
+- No new Chart Editor.
+- No duplicate audio engine.
+- No duplicate master clock.
+- No unnecessary schema changes.
+- No breaking changes to existing Song Maps.
+- No modification of unrelated environments, dancers or video systems.
+- Do not weaken existing tests.
+
+## REQUIRED DELIVERABLE
+
+Create:
+
+CHART\_EDITOR\_SPRINT\_2\_REPORT.md
+
+Include:
+
+1. Initial feature audit.
+2. Features already implemented.
+3. Features upgraded.
+4. Features still missing.
+5. Modified files.
+6. Timing architecture explanation.
+7. Audio offset behavior.
+8. Tests and results.
+9. Build results.
+10. Backward compatibility.
+11. Remaining browser-only verification.
+12. Recommended Sprint 3.
+
+Do not claim real audio-device synchronization is verified unless it has been tested in an actual browser environment.
+
+## 4. Hướng phát triển sau Sprint 2
+
+1. CompletedSprint 1 – Stabilization
+   Data integrity, migration, approval, persistence và editor bugs.
+2. NextSprint 2 – Timing & Audio Precision
+   BPM, offset, tempo map, loop và synchronization.
+3. Sprint 3 – Professional Chart Workflow
+   Multi-selection, batch editing, smart quantize, chart comparison và version history nếu còn thiếu.
+4. Sprint 4 – Live Gameplay Preview
+   Kiểm tra chart trực tiếp trong môi trường 3D, đồng bộ dancer và judgement.
+5. Sprint 5 – Browser Acceptance
+   Kiểm thử thao tác thực tế, audio latency, mobile, performance và khả năng phục hồi dữ liệu.
+
+Quan điểm của mình: Chưa cần thêm nhiều tính năng mới. Hãy tập trung làm cho Chart Editor chính xác về thời gian và âm thanh trước. Khi nền tảng timing vững chắc, các chức năng Auto Chart, Dance Choreography và Live Preview của NEON PULSE sẽ có chất lượng tốt hơn rất nhiều.
+
+Khi OpenCode hoàn thành Sprint 2, gửi mình báo cáo để mình tiếp tục review trước khi cho triển khai Sprint 3.
+
+
+
+I’ll start with the Phase 0 re-audit: I’m reading the two reports and the existing timing, transport, grid, preview, and persistence modules, then I’ll implement only the gaps in dependency order.
+
+The re-audit confirms the gaps: manual timing is missing, the grid is fixed 4/4, tap tempo and loop are absent, preview has no shared offset compensation, and the schema has only scalar BPM/offset. I’ll add the timing model as an optional, backward-compatible extension, then wire it through the existing controller and preview rather than creating a second clock.
+
+The timing model, optional tempo/meter fields, tap-tempo engine, loop transport, and shared-offset preview plumbing are in place. I’m running the existing editor/map suites now to catch integration errors before adding Sprint 2 regressions.
+
+
+
+
+The focused timing suite now covers tempo-map boundaries, 1/4–1/32 quantization, meter-aware grid labels, tap filtering, undo/redo, schema round-trips, preview offset, seek, pause/resume, and loop wrapping. I’m running every `qa/stage*.mjs` suite plus a fresh production build next.
+
+One existing stabilization assertion pins the original editor hint text, so I restored it rather than weakening the test. The only QA failure was that copy check; the production build passed. I’m rerunning the full suite quietly and will report per-suite failures if any remain.
+
+Browser verification found one real edge case: typing into the timing field while audio was still loading threw because the controller was not ready yet. I added a controller guard and re-tested in the live editor; BPM, offset, meter, loop, and tempo-segment controls now update correctly with no final console errors. I’m doing the final clean QA/build pass, then writing the report.
+
+**Sprint 2 is complete.** The cloud-runner restart did not lose the work; the final source, tests, and `CHART_EDITOR_SPRINT_2_REPORT.md` are in the project.
+
+## Implemented
+
+- **Manual BPM and beat offset** — immediate grid updates, note timestamps preserved, undo/redo, persisted in the existing map.
+- **Tap tempo** — stable-interval filtering, accidental/long-gap rejection, reset, explicit APPLY.
+- **Tempo maps** — optional beat-based segments, boundary-aware beat/time conversion, add/edit/remove/reset UI, one-segment maps omitted.
+- **Time signatures** — 2/4, 3/4, 4/4, used by grid, snapping, and bar labels.
+- **Subdivisions** — 1/4, 1/8, 1/16, 1/32; display and quantization share the same calculation; changing subdivision does not move notes.
+- **Loop audition** — IN/OUT/CLEAR, scheduled segment repeat, synchronized playhead, pause/resume/seek preserved, no second audio clock.
+- **Preview synchronization** — shared `AudioContext`, injected latency + `audioOffsetMs`; chart offset remains a separate grid anchor and is not double-applied.
+- **Backward compatibility** — schema remains v1; legacy constant-BPM maps retain their JSON shape.
+
+## Verification
+
+- Complete QA: **40/40 suites passed, 0 failures.**
+- New timing suite: `qa/stage103-chart-editor-timing-check.mjs` — **106/106 passed.**
+- Existing focused suites: stage83 **177/177**, stage8 **140/140**, stage102 **100/100**.
+- Production build: **exit 0**, Vite 8.3.8, **166 modules**, built in **781 ms**.
+- Live Chromium verification: BPM changes updated state while the first note stayed at `1.393 s`; offset `0.1`, meter `3/4`, loop IN/CLEAR, and a tempo segment at `4.0 s` (beat `9.75`) were exercised. Final browser pass produced **no console errors**.
+- A transient null-controller error found while typing during audio loading was fixed with a controller guard and re-tested.
+
+**Not verified:** actual audio-device synchronization, audible loop-boundary continuity, and physical tap timing. No claim of device-level sample alignment is made.
+
+The report documents the Phase 0 matrix, architecture, offset semantics, modified files, test results, browser limitations, and Sprint 3 recommendations.
+
+
+Sprint 2 có kết quả rất tốt. Đặc biệt, mình đánh giá cao việc OpenCode đã xử lý được vấn đề quan trọng nhất: BPM, Beat Grid, Note Timing và Audio Preview cùng sử dụng một hệ thống tính thời gian, thay vì tạo các cơ chế đồng bộ riêng biệt.
+
+Như vậy, NEON PULSE đã tiến thêm một bước lớn về chất lượng Chart Editor.
+
+## 1. Đánh giá Sprint 2
+
+Chart Editor – Sprint 2
+
+Completed
+
+# 40/40
+
+QA suites passed
+
+# 106/106
+
+Timing regression checks
+
+# 166
+
+Production modules
+
+# 0
+
+Final browser console errors
+
+Các chức năng đã hoàn thiện
+
+- Manual BPM và Beat Offset.
+- Tap Tempo.
+- Tempo Map.
+- Time Signature.
+- Subdivision 1/4–1/32.
+- Loop Audition.
+- Shared Audio Preview Offset.
+- Backward-compatible schema v1.
+
+### Ba điểm mình đặc biệt đánh giá cao
+
+1. Thay đổi BPM không làm dịch chuyển note ngoài ý muốn.
+
+Đây là nguyên tắc rất quan trọng khi biên tập chart.
+
+2. Tempo Map hỗ trợ thay đổi nhịp theo từng đoạn.
+
+Điều này mở rộng khả năng xử lý các bài nhạc có cấu trúc phức tạp.
+
+3. Phân biệt Chart Offset và Audio Offset.
+
+Không cộng offset hai lần là điều rất quan trọng để tránh lệch timing khi đưa chart vào gameplay.
+
+Tuy nhiên, vẫn còn ba việc chưa được xác minh thực tế:
+
+- Đồng bộ với thiết bị âm thanh thật.
+- Độ liên tục âm thanh tại ranh giới loop.
+- Độ chính xác khi người dùng Tap Tempo bằng thao tác vật lý.
+
+Vì thế, chưa nên tuyên bố timing đã đạt độ chính xác production hoàn toàn.
+
+# 2. Tiếp theo: Sprint 3 – Professional Chart Editing
+
+Mình đề xuất chưa chuyển ngay sang Live Preview.
+
+Trước tiên cần làm cho thao tác biên tập chart thực sự chuyên nghiệp, tương tự workflow của các phần mềm rhythm game editor.
+
+Usage Guide (MMW4CC) | PJSK Charting Guide
+
+So geht's: Multi-Clip Editing in Ableton Live 10
+
+Quaver on Steam
+
+Các tính năng mình muốn kiểm tra và nâng cấp:
+
+| Nhóm | Chức năng |
+| --- | --- |
+| Selection | Chọn nhiều note, vùng chọn |
+| Editing | Copy, paste, duplicate |
+| Timing | Shift hàng loạt note |
+| Quantize | Smart quantize, custom subdivision |
+| Transform | Đổi lane, đổi note type |
+| Workflow | Undo/Redo nhiều bước |
+| Analysis | Note density, chart statistics |
+| Validation | Overlap, HOLD, SLIDE, collision |
+| Versioning | Snapshot, restore, compare |
+| Navigation | Marker, section, bookmark |
+
+## 3. Một số chức năng nâng cao rất đáng làm
+
+### A. Multi-note editing
+
+Cho phép chọn 20–100 note rồi cùng lúc:
+
+- Dịch chuyển thời gian.
+- Chuyển lane.
+- Tăng/giảm khoảng cách.
+- Chuyển TAP thành loại note khác.
+- Copy nguyên đoạn choreography.
+
+### B. Smart Quantize
+
+Không chỉ snap từng note về beat gần nhất, mà phải có khả năng:
+
+- Quantize theo vùng được chọn.
+- Giữ nguyên tương quan thời gian khi cần.
+- Chọn mức 1/8, 1/16, 1/32.
+- Preview thay đổi trước khi áp dụng.
+- Undo toàn bộ thao tác.
+
+### C. Chart Statistics
+
+TexTage Chart Viewer
+
+[textage-chart-viewer.vercel.app](<https://textage-chart-viewer.vercel.app/?utm_source=chatgpt.com>)
+
+Hiển thị:
+
+- Tổng số note.
+- Note per minute.
+- Note density theo từng đoạn.
+- Tỷ lệ TAP/HOLD/JUMP/CROUCH.
+- Khoảng cách note trung bình.
+- Những đoạn có mật độ quá cao.
+- Phân bố độ khó.
+
+Điều này rất hữu ích khi tạo các mức Easy, Normal, Hard và Expert.
+
+### D. Chart Section Markers
+
+Cho phép đánh dấu:
+
+- Intro.
+- Verse.
+- Chorus.
+- Drop.
+- Bridge.
+- Outro.
+
+Đây là cơ sở tốt để sau này kết nối Chart Editor với Dance Choreography và Stage Director.
+
+# 4. Prompt OpenCode – Sprint 3
+
+Đợt này vẫn phải audit trước, chỉ bổ sung những phần thực sự thiếu.
+
+Writing
+
+# NEON PULSE – CHART EDITOR SPRINT 3
+
+# PROFESSIONAL CHART EDITING WORKFLOW
+
+## OBJECTIVE
+
+Upgrade the existing Chart Editor into a more efficient professional chart authoring environment.
+
+Sprint 1 and Sprint 2 are complete.
+
+Read:
+
+- CHART\_EDITOR\_AUDIT\_REPORT.md
+- CHART\_EDITOR\_STABILIZATION\_SPRINT\_1\_REPORT.md
+- CHART\_EDITOR\_SPRINT\_2\_REPORT.md
+
+This is an incremental upgrade of the existing implementation.
+
+DO NOT rebuild the Chart Editor. DO NOT replace the timeline renderer. DO NOT introduce a duplicate selection engine. DO NOT change existing chart formats unnecessarily.
+
+## PHASE 0 – RE-AUDIT
+
+Inspect existing functionality for:
+
+1. Multi-note selection.
+2. Rectangle selection.
+3. Copy/paste.
+4. Duplicate.
+5. Batch timing adjustment.
+6. Batch lane adjustment.
+7. Batch note-type conversion.
+8. Smart quantization.
+9. Undo/redo history.
+10. Chart statistics.
+11. Note density visualization.
+12. Chart section markers.
+13. Chart validation.
+14. Version history.
+15. Selection persistence during zoom and scrolling.
+
+Produce a status matrix and identify exact implementation files.
+
+Only upgrade missing or defective functionality.
+
+## PHASE 1 – MULTI-SELECTION AND BATCH EDITING
+
+If incomplete:
+
+- Support selecting multiple notes.
+- Support rectangle selection.
+- Support Shift/Ctrl selection.
+- Support select all.
+- Support deselect.
+- Support copy and paste.
+- Support duplicate.
+- Support batch time shifting.
+- Support batch lane changes.
+- Support batch note-type changes where compatible.
+
+Requirements:
+
+- Preserve note IDs correctly.
+- Generate unique IDs for copied notes.
+- Preserve HOLD durations.
+- Preserve SLIDE properties.
+- Preserve metadata.
+- Prevent accidental modification of unselected notes.
+- Support undo/redo for complete batch operations.
+
+## PHASE 2 – SMART QUANTIZE
+
+Inspect the existing quantization implementation.
+
+If improvements are needed:
+
+- Quantize selected notes only.
+- Support 1/4, 1/8, 1/16 and 1/32.
+- Support custom quantize strength.
+- Support preview before applying.
+- Preserve note ordering.
+- Preserve HOLD duration unless explicitly requested.
+- Respect tempo-map boundaries.
+- Respect beat offset.
+- Avoid unintended movement of notes outside the selection.
+
+Add detailed regression tests.
+
+## PHASE 3 – CHART STATISTICS
+
+If missing or incomplete, implement a statistics panel using the existing chart data.
+
+Display:
+
+- Total note count.
+- Notes per type.
+- Notes per minute.
+- Average note spacing.
+- Peak note density.
+- Density by time section.
+- HOLD duration statistics.
+- Difficulty indicators.
+
+Statistics must update when chart data changes.
+
+Do not invent a universal difficulty score.
+
+Clearly distinguish measurable statistics from heuristic difficulty estimates.
+
+## PHASE 4 – NOTE DENSITY VISUALIZATION
+
+Add an optional timeline density overlay if the existing renderer supports it safely.
+
+Requirements:
+
+- Show note concentration over time.
+- Use consistent time calculations.
+- Avoid excessive canvas redraws.
+- Allow enabling/disabling the overlay.
+- Do not interfere with note selection or editing.
+
+## PHASE 5 – SECTION MARKERS
+
+Investigate existing marker support.
+
+If needed, support:
+
+- Intro
+- Verse
+- Chorus
+- Drop
+- Bridge
+- Outro
+- Custom markers
+
+Requirements:
+
+- Marker creation and deletion.
+- Marker editing.
+- Marker navigation.
+- Marker display on the timeline.
+- Undo/redo.
+- Backward-compatible persistence.
+
+Do not confuse section markers with note events.
+
+## PHASE 6 – VALIDATION IMPROVEMENTS
+
+Inspect existing chart validation.
+
+Check:
+
+- Duplicate note IDs.
+- Invalid timing.
+- HOLD duration.
+- SLIDE lane relationships.
+- Impossible lane assignments.
+- Overlapping incompatible events.
+- Excessive note density.
+- Invalid tempo-map boundaries.
+
+Distinguish:
+
+- Hard errors.
+- Warnings.
+- Informational recommendations.
+
+Do not automatically reject a chart solely because it has high note density.
+
+## PHASE 7 – TESTING
+
+Add regression coverage for:
+
+- Multi-selection.
+- Copy/paste.
+- Unique IDs.
+- Batch editing.
+- Undo/redo.
+- Quantization across tempo changes.
+- HOLD preservation.
+- Chart statistics.
+- Section markers.
+- Validation.
+
+Run the complete QA suite and production build.
+
+## STRICT RESTRICTIONS
+
+- Preserve all existing functionality.
+- Preserve schema v1 compatibility.
+- Do not replace the chart model.
+- Do not modify the Game Engine unnecessarily.
+- Do not create a second timeline system.
+- Do not add unnecessary dependencies.
+- Do not weaken existing tests.
+- Do not modify unrelated application modules.
+
+## DELIVERABLE
+
+Create:
+
+CHART\_EDITOR\_SPRINT\_3\_REPORT.md
+
+Include:
+
+1. Initial feature audit.
+2. Existing features reused.
+3. New functionality implemented.
+4. Modified files.
+5. Architecture changes.
+6. Data compatibility.
+7. Performance measurements.
+8. Test results.
+9. Build results.
+10. Browser verification.
+11. Remaining gaps.
+12. Sprint 4 recommendations.
+
+# 5. Lộ trình tiếp theo của NEON PULSE
+
+1. Completed Sprint 1 – Stabilization
+   Sửa lỗi và bảo toàn dữ liệu.
+2. Completed Sprint 2 – Timing & Audio Precision
+   BPM, Tempo Map, Offset, Loop.
+3. Next Sprint 3 – Professional Editing
+   Multi-selection, batch editing, quantize, statistics.
+4. Sprint 4 – Live Gameplay Preview
+   Chạy thử chart trực tiếp trong môi trường 3D thật.
+5. Sprint 5 – Audio & Device Calibration
+   Kiểm tra latency, audio loop continuity và đồng bộ thiết bị thật.
+
+Một định hướng quan trọng: Mình muốn Chart Editor cuối cùng không chỉ giúp Admin đặt note đúng nhịp, mà còn giúp họ tạo ra một chart có chất lượng gameplay tốt, độ khó hợp lý và choreography đẹp.
+
+Sau Sprint 3, chúng ta sẽ có nền tảng rất tốt để kết nối Chart Editor với Dancer System và Stage Director của NEON PULSE.
+
+
+
+Sprint 3 builds on the existing editor rather than replacing it. I’ll first map which professional workflow features already exist in `MapEditorController`, the renderer, selection/history helpers and markup, then implement only the real gaps with tests.
+
+The re-audit shows a strong existing base: marquee/Shift/Ctrl selection, select-all/clear, copy/paste, batch move/lane/type, history, validation and section analysis already exist. The real gaps are duplicate, metadata-preserving clipboard/duplicate, one-shot selected-only quantization with preview, detailed statistics, density overlay, authored section markers, and density/duplicate-ID validation severity. I’ll add those behind the existing controller/state/history contracts.
+
+
+
+
+
+
+
+The new logic suite is at 119/119 and the full suite at 41/41 with a clean build. I’m doing the browser pass now against a local Vite server using headless Chromium’s DevTools protocol so I can exercise the actual DOM and controller, not just the unit modules.
+
+
+
+
+The browser pass caught one real bug: adding a marker without an explicit time treated `null` as `0` for a moment, so the marker landed at song start instead of the playhead. I fixed that, re-ran the browser flow successfully, and am finishing with the full regression run and report.
+
+
+
+
+Sprint 3 is complete. The deliverable is [CHART_EDITOR_SPRINT_3_REPORT.md](CHART_EDITOR_SPRINT_3_REPORT.md), now open in the side panel.
+
+**What changed**
+- Added duplicate with fresh IDs, HOLD/SLIDE/DOUBLE/metadata preservation, grid offset, and undo.
+- Fixed copy/paste losing metadata.
+- Added selected-only smart quantization with `1/4`–`1/32`, custom strength, timeline preview, tempo-map/offset support, collision protection, and HOLD/order preservation.
+- Added measured chart statistics, per-section density, HOLD statistics, and clearly labelled heuristic difficulty indicators.
+- Added an optional, cached density overlay that does not interfere with editing.
+- Added authored section markers with roles, labels, navigation, timeline display, undo, and optional `sectionMarkers` persistence.
+- Upgraded validation to separate hard errors, warnings, and informational recommendations; high density is never a hard rejection.
+- Added `qa/stage104-chart-editor-workflow-check.mjs`.
+
+**Verification**
+- Sprint 3 suite: **120/120 passed**.
+- Complete QA suite: **41/41 suites, 0 failures**.
+- Production build: **exit 0**, Vite 8.3.8, 169 modules, 752 ms. The existing >1,600 kB main-chunk warning remains.
+- Browser run: actual headless Chromium against the Vite app, **25/25 checks passed**, no console errors, editor opened with 42 notes, canvas 1080 × 609, duplicate/quantize/markers/density all exercised.
+- Browser verification caught a real defect: markers added without an explicit time landed at `0` because `Number(null) === 0`. Fixed to use the playhead, added regression coverage, and re-verified.
+
+**Limitations**
+- The browser check validated DOM/controller behavior and canvas presence, not pixel-level layout or real pointer marquee/drag gestures.
+- No audio-device timing or gameplay run was performed.
+- Version history remains the existing single-previous-revision rollback, not a multi-version history browser.
+- All Sprint 2 and Sprint 3 changes remain uncommitted, and temporary browser/server processes and artifacts were cleaned up.
+
+The natural next step is a proper multi-version history panel with diffs and restore.
+
+
+
+
+11111111111111
