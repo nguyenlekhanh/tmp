@@ -27131,5 +27131,119 @@ Both screenshots were captured and visually inspected in headless Chromium at 14
 
 
 11111111111111111111
+À, hiểu rồi! 😄 Bạn muốn luôn hiển thị số bước nhảy (Total Steps) và tạo hiệu ứng nổi bật trực tiếp trên màn hình gameplay giống phong cách hình này, chứ không phải thanh tiến trình bài hát.
+
+Mình đề xuất thiết kế như sau:
+
+[Twitch](https://images.openai.com/static-rsc-4/tmJAMQgEUbBZtg1WK9fxUQdEs0sApOoBdiznkpv036lCcBF7V7fVqlRGYxvnrBQDvRUvwpLTPyMYCaoKgC7ttx3KQdwmkf7BhCFZcJQrNChW04Fy4B6HFfBuewq843XdMUftykEwzAlCriUJjH2fktQSH34lNnjLPSzwbv_2bK8?purpose=inline)
+
+[clips.twitch.tv](https://clips.twitch.tv/FilthyPricklyRedpandaHotPokket-CzT6U1llEWIrMwi6?utm_source=chatgpt.com)
+
+### Hiệu ứng đếm bước nhảy cho NEON PULSE
+
+- Số bước nhảy lớn: Hiển thị nổi bật ở góc trên bên phải, theo phong cách số `248 COMBO` trong hình.
+- Mỗi bước được tính: Số Total Steps tăng lên ngay khi một nốt được chấm điểm, kể cả PERFECT, GREAT, GOOD và MISS.
+- Hiệu ứng tăng số: Khi số tăng, con số bật nhẹ (pop/bounce), phóng to rồi trở về kích thước bình thường.
+- Hiệu ứng theo kết quả:
+  - PERFECT: ánh sáng xanh neon, hiệu ứng mạnh.
+  - GREAT: ánh sáng cyan.
+  - GOOD: ánh sáng vàng.
+  - MISS: hiệu ứng đỏ, combo về 0 nhưng Total Steps vẫn giữ và tăng.
+- Mốc thành tích: Khi đạt 50, 100, 250, 500 bước… xuất hiện hiệu ứng EPIC hoặc FEVER.
+- Luôn hiển thị: Không biến mất khi không nhảy; cập nhật liên tục trong Play Mode và Auto Dance Mode.
+
+### Prompt giao cho AI coding
+
+# NEON PULSE – Sprint 7: Animated Total Steps HUD
+
+Implement a persistent, animated Total Steps counter directly into the gameplay HUD, inspired by the provided neon rhythm-game reference image.
+
+## 1. Visual design
+
+- Display a large, bold, highly visible Total Steps number in the upper-right area of the gameplay screen.
+- Use a futuristic neon arcade typography style.
+- Add a smaller label: TOTAL STEPS.
+- Give the number a subtle glow, depth, and shadow so it remains readable against different 3D environments.
+- Keep the existing Combo display separate from Total Steps. Never confuse or merge these two metrics.
+
+## 2. Counter behavior
+
+- Total Steps must increase exactly once for every judged dance object.
+- Count PERFECT, GREAT, GOOD, and MISS.
+- MISS still increases Total Steps but resets the current combo.
+- HOLD, SLIDE, and DOUBLE each count as one object-level step, following the existing GAME_JUDGE contract.
+- Bombs and obstacles must not count as dance steps.
+- Never increment the counter from render frames, animation loops, or raw input events.
+
+## 3. Animation effects
+
+Whenever Total Steps increases:
+
+- Animate the number with a quick scale-up and spring-back effect.
+- Add a brief neon flash around the number.
+- Use different accent colors for PERFECT, GREAT, GOOD, and MISS.
+- Avoid excessive particles or effects that obstruct gameplay.
+- Add special milestone animations at 50, 100, 250, 500, and 1000 steps.
+
+## 4. Architecture
+
+- Reuse the existing StepCounterService and canonical GAME_JUDGE events.
+- Keep eventId, runId, and deduplication protections.
+- Do not modify the scoring or judgement contracts.
+- Total Steps must remain independent of Combo and Accuracy.
+- Ensure Play Mode and Auto Dance Mode use the same event-driven counter.
+- Preserve the counter during pause/resume.
+- Reset it on restart and when starting a new run.
+- Handle seeking without counting historical notes again.
+
+## 5. Compatibility
+
+- Support gameplay HUD and Editor live preview.
+- Work across different screen sizes and aspect ratios.
+- Respect reduced-motion settings.
+- Keep all existing HUD elements visible and avoid overlapping the dancer, lanes, or judgement feedback.
+
+## 6. Verification
+
+- Test all four judgement types.
+- Test HOLD, SLIDE, and DOUBLE.
+- Verify exactly-once counting.
+- Verify MISS increments Total Steps while resetting Combo.
+- Test Play Mode, Auto Dance Mode, pause/resume, restart, and seek.
+- Run the complete regression suite and production build.
+- Capture desktop and mobile screenshots.
+
+Do not replace the existing StepCounterService. Extend the current HUD presentation layer and preserve all existing gameplay behavior.
+
+Điểm quan trọng: `Total Steps` là tổng số bước đã được chấm, còn `Combo` là số bước tốt liên tiếp chưa bị MISS. Hai số phải độc lập và cùng hiển thị trên màn hình như hình tham khảo.
+
+
+
+I’ll mirror the group to the Next Lane side and anchor it from the projected lane position rather than a fixed viewport edge, so the alignment holds on desktop and mobile. First I’m locating the exact lane-projection hook and any “Next Lane” naming already in the UI.
+
+The HUD now follows the projected rightmost Next Lane: centered on it on desktop, and placed above the right lane on mobile so it cannot overflow. The screenshots show the group clear of the dancer and track; one browser assertion about pause timing was flaky in the last run, so I’m rerunning that harness before the final regression/build.
+
+Moved the full Total Steps + celebration group to the right side, anchored to the projected Next Lane position.
+
+- Treated the rightmost Lane 4 pad as the Next Lane, since there is no separate “Next Lane” UI element.
+- Desktop centers the HUD group over that projected lane; mobile places it above the right lane area so it never overflows the viewport.
+- The celebration message remains directly below the number and persists indefinitely until replaced.
+- Existing typography, glow, entrance animation, hidden statistics, milestone/celebration triggers, and scoring behavior are unchanged.
+- The HUD group stays clear of the dancer, pads, notes, and controls.
+
+**Verification**
+- `qa/stage107-total-steps-hud-check.mjs`: **44/44 passed**
+- Chromium UI harness: **44/44 passed**
+- Full regression: **45/45 stage suites passed**
+- Production build: **179 modules, 976 ms** — the existing chunk-size warning remains.
+
+Updated screenshots:
+- `qa-artifacts/stage107-step-hud.png` — opened in the preview panel
+- `qa-artifacts/stage107-step-hud-mobile.png` — 390×844 emulation
+
+No commit or deployment was made.
+
+
+
 
 11111111111111
