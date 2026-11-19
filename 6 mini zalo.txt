@@ -8294,5 +8294,674 @@ Seven for the reviewer (hdrHash binding vs outer AEAD; 3-epoch retention; chain-
 
 
 
-
 1111111111
+Mình đã nắm được kết quả Phase 3.0. Có một điểm rất đáng chú ý: OpenCode đã hoàn thành bộ tài liệu thiết kế, nhưng chưa đủ điều kiện để bắt đầu triển khai E2EE production.
+
+Mình đồng ý với verdict này. Không nên vội chuyển sang viết code khi còn hai blocker về giấy phép và thư viện mật mã.
+
+## 1. Đánh giá Phase 3.0
+
+Phase 3.0
+
+Design complete
+
+# 9 tài liệu
+
+3.813 dòng tài liệu thiết kế
+
+- 14 quyết định kiến trúc PDR.
+- 18 mối đe dọa trong threat model.
+- 19 vấn đề chưa giải quyết.
+- Không thay đổi production code.
+- Không thay đổi database hoặc backup format.
+  Chưa implementation-readyCần giải quyết các blocker trước khi triển khai.
+
+## 2. Bốn vấn đề mình đặc biệt quan tâm
+
+### 1. License của libsignal – U-01
+
+Đây là vấn đề cần giải quyết đầu tiên.
+
+Nếu KONNEX dự kiến phát hành thương mại hoặc mã nguồn đóng, AGPL-3.0 có thể tạo ra nghĩa vụ pháp lý không phù hợp.
+
+Không nên tự ý sử dụng libsignal trước khi:
+
+- Xác định license của toàn bộ sản phẩm.
+- Đánh giá nghĩa vụ AGPL.
+- Xác định khả năng xin license thương mại hoặc lựa chọn implementation khác.
+
+### 2. OpenMLS – U-02
+
+OpenMLS là lựa chọn đáng xem xét cho group messaging.
+
+Nhưng cần xác minh:
+
+- Android FFI thực tế.
+- UniFFI integration.
+- Rust toolchain.
+- Khả năng build reproducible.
+- Dependency pinning.
+- Memory safety tại ranh giới Kotlin/Rust.
+
+Không được chỉ dựa vào việc thư viện hỗ trợ Rust để kết luận Android đã sẵn sàng.
+
+### 3. Device revocation – U-14b
+
+HIGH PRIORITYĐây là vấn đề kiến trúc rất quan trọng.
+
+Nếu tài khoản bị thu hồi một thiết bị nhưng bearer token của thiết bị đó vẫn hợp lệ, kẻ đang kiểm soát thiết bị có thể tiếp tục truy cập server.
+
+Cần xử lý device-bound authorization trước khi phát hành E2EE.
+
+### 4. Backup archive schema – U-11
+
+Phase 2.6 hiện từ chối các entry prefix không nhận diện.
+
+Nếu thêm E2EE metadata vào backup mà không xử lý compatibility, có thể phá vỡ khả năng khôi phục backup cũ.
+
+Phải giải quyết theo hướng tương thích ngược, không được làm hỏng KONNXBK2 hiện tại.
+
+## 3. Thứ tự triển khai mình đề xuất
+
+Không nên chuyển thẳng sang Phase 3.1. Nên có một phase chuẩn bị kỹ thuật:
+
+1. Phase 3.0 – Architecture Design
+   Hoàn thành9 tài liệu thiết kế E2EE.
+2. Phase 3.0.1 – Protocol & Dependency Qualification
+   Tiếp theoĐóng U-01, U-02 và đánh giá các vấn đề kiến trúc quan trọng.
+3. Phase 3.1 – Device Identity & Key Management
+   Tạo danh tính thiết bị, đăng ký khóa, xác minh và thu hồi thiết bị.
+4. Phase 3.2 – One-to-One E2EE
+   PQXDH, Double Ratchet, encrypted envelopes.
+5. Phase 3.3 – Multi-Device
+   Đồng bộ và quản lý session giữa các thiết bị.
+6. Phase 3.4 – Group E2EE
+   MLS, group membership và epoch management.
+7. Phase 3.5 – E2EE Attachments & Recovery
+   Mã hóa file đầu cuối và tích hợp backup.
+8. Phase 3.6 – E2EE Security Verification
+   Kiểm thử, interoperability và security review.
+
+## 4\. Khuyến nghị quan trọng
+
+Mình muốn giữ ba nguyên tắc cho KONNEX:
+
+- Không tự phát minh cryptographic protocol.
+- Không để server có quyền khôi phục hoặc thay thế private key của người dùng.
+- Không hy sinh khả năng tương thích đa nền tảng để triển khai nhanh Android trước mắt.
+
+Đặc biệt, cần phân biệt rõ hai việc: backup lịch sử tin nhắn và backup khóa E2EE. Hai thứ này không nên tự động gộp làm một.
+
+## 5\. Bước tiếp theo
+
+Mình đề xuất viết ngay prompt:
+
+Phase 3.0.1 – E2EE Protocol Qualification & Dependency Security Review
+
+Phase này sẽ yêu cầu OpenCode:
+
+1. Đánh giá phương án xử lý AGPL của libsignal.
+2. Đánh giá OpenMLS và UniFFI trên Android.
+3. Giải quyết U-11 và U-14b ở mức thiết kế/implementation tùy phạm vi được duyệt.
+4. Kiểm tra 7 câu hỏi bảo mật còn bỏ ngỏ.
+5. Xác định bộ thư viện và phiên bản chính xác trước khi viết E2EE.
+6. Chỉ bắt đầu Phase 3.1 khi các blocker bắt buộc đã được đóng.
+
+Mình không khuyên bỏ qua hai blocker U-01 và U-02. Đây là những quyết định có thể ảnh hưởng đến toàn bộ kiến trúc và khả năng thương mại hóa KONNEX sau này.
+
+
+
+Tiếp theo là Phase 3.0.1 – E2EE Protocol Qualification & Dependency Security Review.
+
+Đây là phase trung gian để giải quyết các blocker của Phase 3.0 trước khi xây dựng Device Identity và Key Management.
+
+Mình thiết kế prompt theo hướng: OpenCode phải nghiên cứu thư viện thực tế, kiểm tra license, khả năng tích hợp Android/Rust, đánh giá các quyết định mật mã và đưa ra lựa chọn có bằng chứng. Không được tự chọn thư viện chỉ vì nó dễ tích hợp.
+
+Nguyên tắc: Không triển khai E2EE production trong Phase này. Riêng U-14b có thể được sửa nếu audit xác nhận lỗi và việc sửa không gây breaking change.
+
+## Prompt Phase 3.0.1
+
+Writing
+
+# Phase 3.0.1 — E2EE Protocol Qualification & Dependency Security Review
+
+Perform a rigorous technical, legal, cryptographic, and platform-compatibility qualification of the E2EE architecture designed in Phase 3.0.
+
+This phase must resolve implementation blockers before Phase 3.1.
+
+**Phase 3.0.1 is primarily an audit and qualification phase. Do not implement the production E2EE protocol.**
+
+The goal is to select exact, maintainable, legally compatible cryptographic implementations and establish an evidence-based implementation baseline.
+
+Phase 2.7 remains skipped.
+
+---
+
+# 1\. Initial Repository Audit
+
+Inspect the actual current repository and working tree.
+
+Read:
+
+- All nine Phase 3.0 design documents.
+- `E2EE_PHASE3_0_REPORT.md`.
+- `E2EE_PROTOCOL_COMPARISON_PHASE3_0.md`.
+- `E2EE_PROTOCOL_SPEC_PHASE3_0.md`.
+- `E2EE_KEY_MANAGEMENT_PHASE3_0.md`.
+- `E2EE_MULTI_DEVICE_PHASE3_0.md`.
+- `E2EE_GROUP_MESSAGING_PHASE3_0.md`.
+- `E2EE_BACKUP_RECOVERY_INTEGRATION_PHASE3_0.md`.
+- `E2EE_THREAT_MODEL_PHASE3_0.md`.
+- Existing Gradle and version catalog configuration.
+- Existing server implementation.
+- Authentication and account session management.
+- Existing database entities and migrations.
+- Backup and restore implementation.
+- Android Keystore and Tink integration.
+
+Verify every unresolved item U-01 through U-19 against the actual source.
+
+Do not assume previous reports accurately describe the current working tree.
+
+Create a traceability matrix connecting:
+
+- Original finding.
+- Current implementation.
+- Required evidence.
+- Qualification decision.
+- Remaining blocker.
+
+# 2\. U-01 — libsignal License Qualification
+
+Investigate the actual licensing implications of integrating libsignal.
+
+Inspect:
+
+- Official repository license.
+- License files.
+- Vendored dependencies.
+- Build artifacts.
+- Android native integration.
+- Distribution requirements.
+- Commercial use implications.
+- Source disclosure obligations.
+- Application licensing constraints.
+
+KONNEX has not yet declared a definitive product license.
+
+Do not assume that merely using a library as a dependency automatically resolves all licensing obligations.
+
+Evaluate three options:
+
+A. Adopt AGPL-compatible product licensing.
+
+B. Obtain appropriate commercial licensing or written legal authorization.
+
+C. Select an alternative established implementation with compatible licensing.
+
+Provide a decision matrix covering:
+
+- Security maturity.
+- Protocol completeness.
+- Maintenance.
+- Android integration.
+- Multi-platform support.
+- Licensing.
+- Commercial distribution.
+- Long-term risk.
+
+Do not remove or modify licensing notices.
+
+Do not claim legal advice or legal approval.
+
+If the license cannot be resolved, mark U-01 BLOCKED.
+
+**Acceptance:** No libsignal production integration until the licensing decision is explicitly approved.
+
+# 3\. U-02 — OpenMLS Android Qualification
+
+Investigate OpenMLS using its actual source repository and official documentation.
+
+Verify:
+
+- Exact stable release.
+- License.
+- Rust toolchain requirements.
+- Android NDK compatibility.
+- `aarch64-linux-android`.
+- `armv7-linux-androideabi`, if required.
+- `x86_64-linux-android` for emulators.
+- JNI/UniFFI compatibility.
+- Memory ownership.
+- Error propagation.
+- Thread safety.
+- Storage provider requirements.
+- Serialization stability.
+- Group-state persistence.
+- Key storage.
+- R8 compatibility.
+- APK/AAB packaging.
+
+Do not assume an Android target compiling in CI means the complete Android integration works.
+
+Investigate whether the previously proposed minimum version of 0.9.2 is still appropriate.
+
+Verify actual releases and security fixes rather than blindly accepting an old version requirement.
+
+Evaluate at least:
+
+- Direct UniFFI integration.
+- A narrow custom JNI boundary.
+- A maintained alternative MLS implementation.
+
+Do not introduce a new binding framework without justification.
+
+Produce a platform compatibility matrix.
+
+If OpenMLS cannot be qualified, provide an alternative architecture.
+
+# 4\. U-03 Through U-19 — Full Unresolved Decision Review
+
+Review every unresolved item individually.
+
+For each U-ID provide:
+
+- Original question.
+- Actual current evidence.
+- Security implications.
+- Available alternatives.
+- Recommended decision.
+- Required implementation phase.
+- Acceptance criteria.
+- Whether the decision blocks Phase 3.1.
+
+Pay special attention to:
+
+- U-11: Backup archive schema compatibility.
+- U-14b: Device-bound authorization and revocation.
+- Header hash binding.
+- MLS epoch retention.
+- Transparency architecture.
+- Device signing key reuse.
+- Streaming attachment framing.
+- Historical message sharing.
+- Session rollback.
+- Device trust.
+- Recovery behavior.
+
+Do not silently close an unresolved item without evidence.
+
+# 5\. U-11 — Backup Archive Compatibility
+
+Audit the Phase 2.6 archive reader.
+
+Confirm the actual behavior when encountering unknown entry prefixes.
+
+Design a backward-compatible extension mechanism.
+
+Requirements:
+
+- Existing KONNXBK2 backups remain readable.
+- Unknown optional metadata can be handled safely.
+- Unknown mandatory security-critical entries must fail closed.
+- No unrecognized entry can bypass archive validation.
+- No private E2EE keys are added to existing backups during this phase.
+- Existing restore semantics remain intact.
+
+If an implementation fix is necessary, first establish whether it is safe and whether it changes existing archive behavior.
+
+Any modification must have dedicated regression tests for legacy backups.
+
+Do not modify the backup container format.
+
+# 6\. U-14b — Device-Bound Server Authorization
+
+This is a high-priority security issue.
+
+Audit the actual server authentication flow.
+
+Determine whether:
+
+- Account sessions are bound to a device UID.
+- Revoked devices can continue using bearer tokens.
+- Refresh tokens remain valid after device revocation.
+- Existing sockets remain authenticated after revocation.
+- Message delivery checks current device trust.
+- Device removal invalidates all related credentials.
+
+If the finding is confirmed, implement a narrowly scoped remediation.
+
+Required properties:
+
+1. Every authenticated device session has a server-verifiable device identity.
+2. Revocation prevents further authenticated operations.
+3. Refresh tokens cannot silently recreate revoked sessions.
+4. Existing WebSocket or equivalent connections are invalidated or rechecked.
+5. Device revocation is auditable.
+6. Normal sessions continue working.
+7. Existing authentication compatibility is preserved where safe.
+
+Add tests for:
+
+- Two devices on one account.
+- Revoke one device.
+- Continue using the other device.
+- Revoked bearer token.
+- Revoked refresh token.
+- Existing socket.
+- Concurrent revocation and request.
+- Re-registration of a revoked device.
+- Replay of old device credentials.
+
+Do not redesign the complete authentication system.
+
+Do not weaken authentication to simplify migration.
+
+If a safe fix requires a breaking change, document it and leave the implementation blocked pending an explicit decision.
+
+# 7\. Cryptographic Implementation Qualification
+
+Evaluate the proposed cryptographic stack.
+
+Direct messaging:
+
+- PQXDH.
+- Double Ratchet.
+- Sesame or an equivalent multi-device architecture.
+
+Group messaging:
+
+- MLS RFC 9420.
+- OpenMLS or a qualified alternative.
+
+Evaluate:
+
+- Cryptographic security.
+- Forward secrecy.
+- Post-compromise security.
+- Post-quantum security.
+- Device authentication.
+- Cross-platform interoperability.
+- Session persistence.
+- State rollback.
+- Library maintenance.
+- Independent security audits.
+
+Do not confuse post-quantum key establishment with post-quantum authentication.
+
+Document exactly which guarantees are provided by each selected protocol.
+
+Do not invent hybrid cryptographic compositions.
+
+# 8\. Seven Architectural Questions
+
+Resolve the seven questions identified in Phase 3.0:
+
+1. Header hash binding versus outer AEAD.
+2. MLS epoch retention.
+3. Chain-only transparency versus a global transparency log.
+4. Reuse of DIK\_sig as an MLS leaf signing key.
+5. STREAM framing versus Tink keyset on the wire.
+6. Whether HISTORY\_SHARE belongs in version 1.
+7. Whether U-14b must be closed before encrypted messaging ships.
+
+For each question provide:
+
+- Security analysis.
+- Recommended approach.
+- Alternatives.
+- Compatibility implications.
+- Decision record.
+
+Do not leave important cryptographic choices as implicit assumptions.
+
+# 9\. Cross-Platform Qualification
+
+Evaluate the eventual shared protocol layer for:
+
+- Android.
+- iOS.
+- Windows.
+- Linux.
+
+Identify:
+
+- Required native libraries.
+- Required toolchains.
+- Binary distribution requirements.
+- Canonical serialization.
+- Byte ordering.
+- Integer encoding.
+- Version negotiation.
+- Cryptographic test vectors.
+- Interoperability testing.
+
+Do not introduce platform-specific cryptographic message formats.
+
+Android-specific Keystore functionality must remain outside the shared wire protocol.
+
+# 10\. Dependency and Supply-Chain Security
+
+Evaluate the exact dependencies proposed for E2EE.
+
+Include:
+
+- License compatibility.
+- Known vulnerabilities.
+- Maintenance activity.
+- Release cadence.
+- Transitive dependencies.
+- Native build reproducibility.
+- Dependency pinning.
+- Integrity verification.
+- SBOM requirements.
+
+Do not silently upgrade existing dependencies.
+
+Do not add dependencies during this phase unless required for a narrowly scoped U-14b fix.
+
+Create a recommended dependency bill of materials with exact versions and evidence.
+
+# 11\. Controlled Implementation Scope
+
+This phase is primarily design and qualification.
+
+Allowed:
+
+- Documentation changes.
+- Architecture decision records.
+- Dependency qualification.
+- Tests for confirmed authentication defects.
+- A narrowly scoped U-14b server authorization fix.
+- A narrowly scoped U-11 compatibility fix, only if necessary and proven safe.
+
+Forbidden:
+
+- E2EE production messaging.
+- Device cryptographic identity implementation.
+- PQXDH implementation.
+- Double Ratchet implementation.
+- MLS implementation.
+- Group encryption.
+- E2EE attachment implementation.
+- E2EE key backup.
+- Changes to KONNXBK2 format.
+
+Do not modify unrelated modules.
+
+# 12\. Required Deliverables
+
+Create:
+
+1. `E2EE_QUALIFICATION_PHASE3_0_1_AUDIT.md`
+2. `E2EE_LIBRARY_LICENSE_REVIEW_PHASE3_0_1.md`
+3. `E2EE_OPENMLS_ANDROID_QUALIFICATION_PHASE3_0_1.md`
+4. `E2EE_UNRESOLVED_DECISIONS_PHASE3_0_1.md`
+5. `E2EE_DEPENDENCY_BOM_PHASE3_0_1.md`
+6. `E2EE_CROSS_PLATFORM_QUALIFICATION_PHASE3_0_1.md`
+7. `E2EE_PHASE3_0_1_REPORT.md`
+
+Update existing Phase 3.0 documents only when necessary.
+
+Preserve historical decisions and explain superseded decisions instead of silently rewriting history.
+
+# 13\. Testing Requirements
+
+If U-14b or U-11 implementation changes are made, run relevant tests.
+
+Run:
+
+- Full JVM tests.
+- Full server tests.
+- Android unit tests.
+- API 28 instrumentation.
+- API 35 instrumentation.
+- Existing backup compatibility tests.
+- Authentication regression tests.
+- Debug build.
+- Release build.
+- R8 release build.
+
+Do not claim tests passed unless actual results are available.
+
+Do not claim an Android native library is compatible based only on theoretical analysis.
+
+# 14\. Git and Safety Constraints
+
+- Do not commit.
+- Do not push.
+- Do not change branches.
+- Do not reset.
+- Do not clean the working tree.
+- Preserve all pre-existing uncommitted changes.
+- Do not modify existing backups.
+- Use disposable emulators.
+- Do not use physical phones.
+- Do not change dependency versions without approval.
+- Do not implement production E2EE.
+
+Report exact files changed.
+
+# 15\. Final Qualification Gate
+
+Produce an explicit status for every blocker:
+
+- RESOLVED
+- APPROVED
+- BLOCKED
+- DEFERRED
+- NOT VERIFIED
+
+Phase 3.0.1 may be marked complete as a qualification phase even if some decisions remain blocked, but it must not declare Phase 3.1 ready unless all mandatory blockers are resolved.
+
+Mandatory gates:
+
+1. License strategy for direct messaging is established.
+2. MLS implementation is technically qualified.
+3. U-11 compatibility strategy is established.
+4. U-14b is fixed or formally proven not applicable.
+5. Cryptographic composition is coherent.
+6. Cross-platform architecture is viable.
+7. No unresolved decision silently undermines the security model.
+
+If licensing or implementation feasibility remains unresolved, provide a revised protocol recommendation rather than forcing the original Phase 3.0 selection.
+
+End with one of:
+
+- APPROVED FOR PHASE 3.1
+- APPROVED WITH EXPLICIT CONDITIONS
+- NOT APPROVED FOR PHASE 3.1
+
+**Begin with repository audit. Establish evidence before making changes. Do not implement E2EE production functionality.**
+
+## Một số tài liệu tham chiếu cần đối chiếu
+
+Các nguồn chính thức để OpenCode kiểm tra, không chỉ dựa vào tài liệu Phase 3.0:
+
+- [Signal libsignal – GitHub](<https://github.com/signalapp/libsignal?utm_source=chatgpt.com>) — license AGPL-3.0.
+- [OpenMLS – README](<https://github.com/openmls/openmls/blob/main/README.md?utm_source=chatgpt.com>) — hỗ trợ Rust và các target Android.
+- [OpenMLS releases](<https://github.com/openmls/openmls/releases?utm_source=chatgpt.com>) — kiểm tra phiên bản thực tế.
+- [PQXDH specification](<https://signal.org/docs/specifications/pqxdh/?utm_source=chatgpt.com>) — giao thức thiết lập khóa.
+- [Double Ratchet specification](<https://signal.org/docs/specifications/doubleratchet/?utm_source=chatgpt.com>) — forward secrecy và post-compromise security.
+
+Lưu ý: Các thông tin trên là điểm xuất phát cho việc thẩm định; OpenCode vẫn phải kiểm tra trạng thái repository, release và license tại thời điểm thực hiện.
+
+GitHub
+
++4
+
+## Điều kiện chuyển sang Phase 3.1
+
+Mình muốn đặc biệt giữ ba điều kiện:
+
+1. Không sử dụng thư viện có license chưa được phê duyệt.
+2. Không triển khai MLS nếu chưa chứng minh được Android native integration hoạt động thực tế.
+3. Không triển khai E2EE messaging khi server vẫn cho phép thiết bị đã bị thu hồi tiếp tục sử dụng session.
+
+Khi OpenCode chạy xong, gửi mình `E2EE_PHASE3_0_1_REPORT.md`. Mình sẽ dựa vào kết quả thực tế để quyết định có thể bắt đầu Phase 3.1 hay cần thay đổi kiến trúc.
+
+
+
+* done
+I'll pick up where the host disconnected: restore the API 28 emulator state and fill in the report's remaining test rows.
+
+API 28 emulator isn't running (host disconnect killed it). Let me relaunch it and inspect the report's outstanding rows in parallel.
+
+Emulator is booting. Let me confirm the test APKs exist and poll for boot completion.
+
+Booted. Now installing and enumerating the instrumentation classes.
+
+Installing succeeded. Running the 12-class suite on API 28 in the background while I fix a cross-reference error I spotted in the report.
+
+Suite is progressing (52/105). Waiting for completion.
+
+API 28: **OK (105 tests)** in 287.7s. Now the two ProcessDeathRestoreTest invocations (kill-by-design, then recovery in a fresh process).
+
+The 9 `-4` codes are assumption skips (the scripted `DeviceSyncTest` tests that require `-e phone`), same as API 35. Waiting on the process-death runs.
+
+Both process-death runs match the API 35 behaviour. Now collecting per-class counts for the backup row and updating the report.
+
+All 12 classes executed on API 28 (105 tests total). Updating the report's three placeholder rows now.
+
+
+
+
+
+
+
+
+
+
+The last outstanding item is closed: the API 28 emulator was relaunched headless, both APKs reinstalled, and the full suite plus both process-death runs passed. The report's three placeholder rows now carry real numbers, and the emulator has been shut down cleanly.
+
+## Phase 3.0.1 — complete
+
+**Verdict: NOT APPROVED FOR PHASE 3.1.** Qualification itself passed; exactly one mandatory gate is unresolved and it is not an engineering decision:
+
+- **U-01 — BLOCKED.** libsignal is AGPL-3.0-only, the current Rust repo carries no §7 App-Store permission, and there is no commercial programme. Option A (accept AGPL) still does not clear the iOS App Store; Option C (permissive 1:1 ratchet such as vodozemac) clears licensing only by withdrawing every post-quantum claim. Answer §14 item 1 and this flips to *APPROVED* (A/B) or *APPROVED (Option C)*.
+
+## Test evidence (all actually run)
+
+| Check | Result |
+|---|---|
+| Server suite | BUILD SUCCESSFUL — 46 tests, 0 failures |
+| Root JVM suite | BUILD SUCCESSFUL — 406 tests, 0 failures (57 classes) |
+| Debug / Release / R8 | all BUILD SUCCESSFUL; `minifyReleaseWithR8`, `mapping.txt` produced |
+| API 35 (emulator-5554) | **OK (105 tests)**, 423.8 s; kill run → `Process crashed.` (by design); recovery → **OK (1 test)** |
+| API 28 (emulator-5556) | **OK (105 tests)**, 287.7 s; kill run → `Process crashed.` (by design); recovery → **OK (1 test)** |
+| Backup compatibility | green on both APIs (`EncryptedBackupTest` 13, `FreshInstallRecoveryTest` 19, `StreamingBackupInstrumentedTest` 3, `DatabaseMigrationTest` 20) |
+
+107 tests across 13 classes per API. The 9 non-passes per run are `DeviceSyncTest` assumption-skips that need `-e phone` — reported as skipped, not passed. `ProcessDeathRestoreTest` is necessarily run as separate invocations because it SIGKILLs its own process.
+
+## What changed in the tree
+
+- **Seven new documents**: audit, licence review, OpenMLS/Android qualification, unresolved decisions (U-01…U-19 + QDR-01…07 + U-11 rules), dependency BOM, cross-platform qualification, and the report.
+- **One code fix — U-14b only**: server schema v3 with a device registry, device-bound sessions, per-device revocation and legacy backfill (`KonnexStore.kt`, `Routes.kt`, `Validation.kt`, `Dtos.kt`, `ServerModule.kt`), the client device header and device endpoints (`KonnexApiClient.kt`, `ServerConnectionManager.kt`, `AppContainer.kt`), and a new 11-test `DeviceAuthorizationTest.kt`.
+- **Five docs updated**, with superseded decisions explained rather than rewritten: `API_SPEC.md`, `SECURITY.md`, and targeted notes in `E2EE_ARCHITECTURE_PHASE3_0.md`, `E2EE_MULTI_DEVICE_PHASE3_0.md`, `E2EE_GROUP_MESSAGING_PHASE3_0.md`.
+
+No E2EE messaging, identity, PQXDH, ratchet, MLS, group, attachment or key-backup code was written; no `KONNXBK2` byte changed; no dependency version moved; no commit, push, branch change, reset or clean (HEAD still `1d1b98d`, 96 uncommitted entries preserved). Only disposable emulators were used — the two attached physical phones were never touched.
+
+**Not verified, and said so in the report:** U-02 Android packaging (no Rust/NDK artifact exists, so no native-compatibility claim is made), U-15 API 26 Ed25519, cross-version archive compatibility (schema-3 `entryClass` mechanism and B3-1…B3-10 belong to Phase 3.4), dependency integrity/SBOM, and all non-Android platforms.
+
+
+
