@@ -7478,10 +7478,821 @@ Phase 2.6 is implemented, verified, and reported. Here is the evidence-based sum
 Verdict in the report: streaming, bounded memory, authenticate-before-parse, format compatibility and crash recovery are verified; **production readiness is not declared** until the large-dataset, native-memory and drive/SAF items above are closed.
 
 
+1111111111111 tiếp
+Mình đã nắm được tiến độ mới. Như vậy, KONNEX đã tiến xa hơn đáng kể so với nội dung ban đầu trong file GitHub.
+
+## 1. Cập nhật trạng thái KONNEX
+
+Backup & Storage Security
+
+Phase 2.6 hoàn thành theo báo cáo
+
+1. Phase 2.2 – Backup Encryption
+   Hoàn thành
+2. Phase 2.3 – Attachment Encryption
+   Hoàn thành
+3. Phase 2.4 – Integration Security Audit
+   Hoàn thành
+4. Phase 2.5 – Fresh-install Recovery
+   Hoàn thành
+5. Phase 2.6 – Streaming Backup & Restore
+   Hoàn thành theo báo cáo
+6. Phase 3 – E2EE
+   Chưa bắt đầu
+
+## 2. Đánh giá kết quả Phase 2.6
+
+Mình đánh giá đây là một bước tiến quan trọng vì đã giải quyết được nhiều vấn đề nền tảng:
+
+- Không còn phải nạp toàn bộ archive vào RAM.
+- Giữ nguyên định dạng backup KONNXBK2.
+- Xác thực container trước khi đưa dữ liệu vào archive parser.
+- Streaming attachment.
+- Có crash recovery bằng journal.
+- Có thử nghiệm SIGKILL thật và khôi phục bằng process mới.
+- Có kiểm thử API 28 và API 35.
+
+Đặc biệt, thử nghiệm SIGKILL là bằng chứng có giá trị hơn nhiều so với việc chỉ giả lập exception.
+
+Tuy nhiên, mình muốn lưu ý một chi tiết kỹ thuật: báo cáo ghi nhận `verifyBody()` xác thực toàn bộ container trước rồi mới mở luồng plaintext và đọc lại. Cách này tăng độ an toàn nhưng cần tiếp tục kiểm tra việc nguồn dữ liệu có bị thay đổi giữa hai lần đọc hay không. Nên xác thực fingerprint hoặc bảo đảm nguồn bất biến trong toàn bộ quá trình.
+
+## 3. Những vấn đề còn phải đóng
+
+| Vấn đề | Trạng thái |
+| --- | --- |
+| Backup 100 MB | Chưa kiểm thử |
+| Backup 500 MB | Chưa kiểm thử |
+| Backup 1 GB | Chưa kiểm thử |
+| Native memory | Chưa đo |
+| SAF streaming thực tế | Chưa đầy đủ |
+| Google Drive streaming | Chưa đầy đủ |
+| WebDAV server thật | Chưa kiểm thử |
+| Disk-full recovery | Chưa kiểm thử |
+| SIGKILL trong Room import | Chưa kiểm thử riêng |
+| R8 APK instrumentation | Chưa thực hiện |
+
+Vì vậy, chưa nên tuyên bố KONNEX đã production-ready.
+
+## 4. Mình đề xuất roadmap tiếp theo
+
+Không nên nhảy thẳng vào E2EE mà bỏ qua những rủi ro còn lại. Mình đề xuất:
+
+## KONNEX Roadmap
+
+1. Phase 2.7 – Storage Reliability & Fault Injection
+   Đóng các vấn đề còn lại của Phase 2.6:
+   - Dataset 100 MB, 500 MB, 1 GB.
+   - Native memory profiling.
+   - Disk-full.
+   - SAF và Drive.
+   - Crash tại các commit boundary.
+2. Phase 2.8 – Independent Security Review
+   - Audit mật mã.
+   - Audit key management.
+   - Audit backup recovery.
+   - Audit attachment storage.
+   - Threat-model review.
+3. Phase 3 – E2EE Protocol
+   - Device identity.
+   - Key exchange.
+   - Session establishment.
+   - Message encryption.
+   - Multi-device.
+   - Group encryption.
+   - Key rotation và revocation.
+4. Phase 4 – Messaging Infrastructure
+   - Account và authentication.
+   - Message delivery.
+   - Offline queue.
+   - Synchronization.
+   - Push notification.
+5. Phase 5 – Voice & Video
+   - Audio call.
+   - Video call.
+   - WebRTC.
+   - NAT traversal.
+
+## 5\. Một quyết định kiến trúc rất quan trọng
+
+Mình muốn KONNEX giữ vững triết lý:
+
+Local-first – Privacy-first – Storage Anywhere – User-owned Data.
+
+Điều đó có nghĩa:
+
+- Server không sở hữu dữ liệu của người dùng.
+- Người dùng kiểm soát nơi lưu dữ liệu.
+- Mất server không đồng nghĩa mất tin nhắn đã lưu.
+- Đổi điện thoại vẫn có thể phục hồi dữ liệu.
+- Không phụ thuộc duy nhất vào Google Drive hoặc một nhà cung cấp cloud.
+- Bảo mật không được đánh đổi để lấy sự tiện lợi.
+
+Đây nên là nguyên tắc xuyên suốt tất cả các Phase tiếp theo.
+
+## 6\. Bước tiếp theo
+
+Mình đề nghị bắt đầu bằng việc xây dựng Phase 2.7 – Storage Reliability & Fault Injection để đóng các khoảng trống của Phase 2.6 trước khi bước vào E2EE.
+
+Một điểm nữa: toàn bộ kết quả hiện tại là dựa trên báo cáo bạn cung cấp; mình chưa trực tiếp kiểm tra repository và mã nguồn mới.
+
+Nếu bạn gửi file `BACKUP_STREAMING_PHASE2_6_REPORT.md` và `BACKUP_STREAMING_PHASE2_6_AUDIT.md`, mình có thể phân tích sâu hơn để viết prompt Phase 2.7 chính xác, tránh yêu cầu OpenCode làm lại những phần đã hoàn thành.
 
 
-
-1111111111111
 
 111111111111
+Mình đã nắm được kết quả Phase 2.8. Đây là một cột mốc quan trọng: KONNEX đã có đánh giá bảo mật tương đối toàn diện trước khi bước vào E2EE.
+
+## 1. Kết quả Phase 2.8
+
+Security sign-off
+
+APPROVED WITH LIMITATIONS
+
+# 19 findings
+
+Theo báo cáo audit nội bộ
+
+- Không có lỗi CRITICAL.
+- Không có lỗi HIGH có thể khai thác trong crypto và backup/restore.
+- Một lỗi HIGH liên quan đến danh tính ký bản Release.
+- Hai vấn đề bảo mật Android đã được sửa và kiểm thử.
+- Chưa có đánh giá mật mã độc lập bên ngoài.
+
+### Những điểm đã làm tốt
+
+- `FLAG_SECURE` được bật để hạn chế chụp màn hình các nội dung nhạy cảm.
+- Android backup và device-to-device extraction được cấu hình rõ ràng.
+- Đã kiểm thử trên API 28 và API 35.
+- Không thay đổi thuật toán, tham số mật mã hoặc định dạng KONNXBK2.
+- Giữ nguyên các thay đổi chưa commit của những Phase trước.
+
+## 2. Ba vấn đề cần lưu ý trước khi phát hành
+
+| Vấn đề | Mức độ | Hướng xử lý |
+| --- | --- | --- |
+| Release dùng debug keystore | HIGH | Tạo signing identity chính thức |
+| Dependency verification/locking | MEDIUM | Bổ sung kiểm soát chuỗi cung ứng |
+| Immutable String chứa credentials | MEDIUM | Thiết kế giảm thời gian tồn tại secret |
+
+Đặc biệt, lỗi ký APK bằng debug keystore phải được giải quyết trước khi phát hành thương mại.
+
+## 3. Roadmap hiện tại
+
+1. Phase 2.2 – 2.6
+   Hoàn thành theo báo cáoBackup, encryption, recovery, streaming.
+2. Phase 2.8 – Security Review
+   Hoàn thành có giới hạn19 findings, 2 hardening fixes.
+3. Phase 3 – E2EE
+   Bắt đầu tiếp theoThiết kế và triển khai mã hóa đầu cuối.
+4. Phase 4 – Messaging Infrastructure
+   Server, message delivery, synchronization.
+5. Phase 5 – Voice & Video
+   Audio, video, WebRTC.
+6. Phase 6 – Cross-platform
+   iOS, Windows, Linux.
+7. Phase 7 – Production Readiness
+   Hoàn thiện bảo mật, ký ứng dụng, kiểm thử và phát hành.
+
+## 4\. Bước tiếp theo: Phase 3 – E2EE
+
+Mình khuyên không nên yêu cầu OpenCode viết ngay chức năng mã hóa tin nhắn.
+
+Nên chia Phase 3 thành các bước:
+
+| Phase | Nội dung |
+| --- | --- |
+| 3.0 | E2EE Architecture & Protocol Design |
+| 3.1 | Device Identity & Key Management |
+| 3.2 | One-to-One Encrypted Messaging |
+| 3.3 | Multi-Device Encryption |
+| 3.4 | Group Encryption |
+| 3.5 | Key Rotation & Device Revocation |
+| 3.6 | E2EE Security Testing |
+
+Điểm đặc biệt quan trọng: KONNEX cần hỗ trợ nhiều thiết bị nhưng vẫn giữ nguyên quyền kiểm soát khóa của người dùng. Backup recovery không được vô tình trở thành cơ chế khiến server có thể đọc tin nhắn.
+
+Mình đề xuất bắt đầu bằng Phase 3.0, chỉ thiết kế giao thức và threat model, chưa viết implementation. Sau khi thiết kế được kiểm tra, mới cho OpenCode triển khai từng phần.
+
+Như vậy, chúng ta sẽ tránh phải thay đổi toàn bộ hệ thống mã hóa khi đã có nhiều người dùng và dữ liệu thật.
+
+
+
+Tiếp theo là Phase 3.0 – E2EE Architecture & Protocol Design.
+
+Mục tiêu của Phase này là thiết kế hoàn chỉnh nền tảng mã hóa đầu cuối cho KONNEX trước khi viết code. Đặc biệt phải giải quyết bài toán nhiều thiết bị, chat nhóm, backup, phục hồi tài khoản và quản lý khóa.
+
+Mình chọn hướng sử dụng các giao thức mật mã đã được kiểm chứng, không tự sáng chế giao thức mới.
+
+Định hướng Phase 3.0
+
+- Chưa triển khai E2EE production code.
+- Chưa thay đổi database schema.
+- Chưa thay đổi backup format KONNXBK2.
+- Chưa thay đổi server authentication.
+- Thiết kế tương thích Android hiện tại và mở rộng đa nền tảng.
+- Có threat model và protocol specification trước khi triển khai.
+
+## Prompt dành cho OpenCode
+
+Writing
+
+# Phase 3.0 — KONNEX End-to-End Encryption Architecture & Protocol Design
+
+Design the complete End-to-End Encryption (E2EE) architecture and protocol specification for KONNEX.
+
+This phase establishes the cryptographic foundation for all future messaging features.
+
+**IMPORTANT: This is a DESIGN-ONLY phase. Do not implement the production E2EE protocol yet.**
+
+The existing KONNEX backup, encryption, storage, recovery, and Android architecture must remain intact.
+
+The objective is to produce a technically rigorous, implementation-ready E2EE specification that can be independently reviewed before Phase 3.1 begins.
+
+---
+
+# 1\. Initial Repository Audit
+
+Before designing anything, inspect the actual repository.
+
+Review:
+
+- Current Android application architecture.
+- Domain and data modules.
+- Account and authentication models.
+- Device identity and installation identity.
+- Existing database entities.
+- Message-related models and interfaces.
+- Attachment encryption.
+- Android Keystore integration.
+- Tink usage.
+- Backup and recovery architecture.
+- Multi-device assumptions.
+- Server communication architecture.
+- Existing networking and API contracts.
+- Dependency catalog and cryptographic libraries.
+
+Inspect all existing security documentation.
+
+Do not assume previous phase reports accurately describe the current implementation.
+
+Create an architecture inventory describing:
+
+- Existing functionality.
+- Missing functionality.
+- Reusable components.
+- Components that must remain isolated.
+- Compatibility constraints.
+
+Do not modify existing production code during the initial audit.
+
+# 2\. E2EE Design Principles
+
+KONNEX E2EE must follow these principles:
+
+1. Privacy-first.
+2. Zero plaintext message access for the server.
+3. User-controlled cryptographic identities.
+4. Independent device identities.
+5. Multi-device support.
+6. Secure group messaging.
+7. Forward secrecy.
+8. Post-compromise security where supported by the selected protocol.
+9. Secure device revocation.
+10. Safe key rotation.
+11. Offline message delivery.
+12. Cross-platform interoperability.
+13. No dependence on Google Drive or any single cloud provider.
+14. No custom cryptographic primitives.
+
+The server must operate as an untrusted message relay.
+
+The server may store encrypted message envelopes and routing metadata, but must not possess the keys required to decrypt message content.
+
+Document unavoidable metadata leakage explicitly.
+
+# 3\. Cryptographic Protocol Selection
+
+Evaluate established protocols and implementations.
+
+At minimum, investigate:
+
+- Signal Protocol.
+- X3DH and PQXDH.
+- Double Ratchet.
+- Sesame multi-device session management.
+- MLS (Messaging Layer Security, RFC 9420).
+- Established group encryption approaches.
+
+Evaluate the suitability of:
+
+- One-to-one conversations.
+- Multi-device conversations.
+- Group messaging.
+- Offline delivery.
+- Device revocation.
+- Key rotation.
+- Forward secrecy.
+- Post-compromise security.
+- Cross-platform support.
+- Long-term maintenance.
+- Licensing.
+- Available audited implementations.
+
+Do not assume every protocol is interchangeable.
+
+Do not combine Signal and MLS primitives arbitrarily.
+
+Select a coherent architecture with clearly defined protocol boundaries.
+
+Provide a comparison matrix and justify the final recommendation.
+
+Prefer maintained, established implementations over custom cryptographic code.
+
+If a selected library has platform, licensing, or maintenance limitations, document them.
+
+# 4\. Identity and Device Architecture
+
+Design the complete identity model.
+
+Distinguish:
+
+- User account identity.
+- User cryptographic identity.
+- Device identity.
+- Device installation identity.
+- Device signing key.
+- Device encryption key.
+- Session keys.
+- Message encryption keys.
+- Group epoch keys.
+
+Each device must have an independently verifiable cryptographic identity.
+
+Design:
+
+- Device registration.
+- Device linking.
+- Device verification.
+- Device removal.
+- Lost-device recovery.
+- Key rotation.
+- Device replacement.
+- Device migration.
+
+Define how users verify that a newly linked device actually belongs to the intended account.
+
+The server must not be able to silently substitute device public keys.
+
+Evaluate key transparency or equivalent mechanisms for detecting malicious key substitution.
+
+Do not silently regenerate an existing identity after key loss.
+
+# 5\. One-to-One Messaging Protocol
+
+Design the full lifecycle:
+
+1. User identity creation.
+2. Device identity creation.
+3. Public-key publication.
+4. Prekey management.
+5. Initial session establishment.
+6. Message encryption.
+7. Server relay.
+8. Offline message storage.
+9. Recipient decryption.
+10. Message acknowledgement.
+11. Session advancement.
+12. Key rotation.
+13. Device removal.
+
+Specify:
+
+- Message envelope structure.
+- Cryptographic associated data.
+- Nonce requirements.
+- Message identifiers.
+- Replay protection.
+- Duplicate detection.
+- Out-of-order delivery.
+- Missing-message recovery.
+- Session reset behavior.
+- Authentication failure behavior.
+
+The server must never receive plaintext messages or plaintext attachment content.
+
+# 6\. Multi-Device Architecture
+
+A user may own:
+
+- Android phone.
+- Android tablet.
+- iPhone.
+- Windows computer.
+- Linux computer.
+
+Each device must have its own cryptographic identity and sessions.
+
+Design:
+
+- Device directory.
+- Device trust state.
+- Device-to-device synchronization.
+- New-device linking.
+- Encrypted message fan-out.
+- Device revocation.
+- Offline devices.
+- Removed devices receiving delayed messages.
+- Device key replacement.
+
+Do not use one shared private key copied across all devices.
+
+Explain how historical messages become available on a newly linked device without weakening the security of existing sessions.
+
+Distinguish:
+
+- Message synchronization.
+- Cryptographic session synchronization.
+- Historical message transfer.
+- Backup restoration.
+
+# 7\. Group Messaging
+
+Evaluate a suitable group encryption architecture.
+
+Prefer MLS if its implementation and integration are appropriate.
+
+Specify:
+
+- Group creation.
+- Member addition.
+- Member removal.
+- Membership changes.
+- Epoch transitions.
+- Group key management.
+- Message ordering.
+- Out-of-order delivery.
+- Offline members.
+- Group state recovery.
+- Group administrator roles.
+- Malicious member behavior.
+
+Explain how a removed member loses access to future group messages.
+
+Specify how the architecture prevents a newly added member from automatically gaining access to historical messages unless explicitly authorized.
+
+Do not implement group encryption in this phase.
+
+# 8\. Attachment Encryption
+
+Design how E2EE integrates with existing attachment encryption.
+
+Preserve the existing local attachment storage architecture.
+
+Define:
+
+- Per-attachment encryption keys.
+- Attachment key distribution.
+- Content authentication.
+- Chunked media encryption.
+- Attachment integrity verification.
+- Thumbnail encryption.
+- Attachment sharing in groups.
+- Expiration and deletion.
+- Key rotation.
+
+Do not expose plaintext attachments to the server.
+
+Do not assume the existing backup attachment encryption automatically provides E2EE.
+
+Clearly distinguish:
+
+- Local-at-rest encryption.
+- Backup encryption.
+- End-to-end attachment encryption.
+
+# 9\. Backup and Recovery Integration
+
+This is a critical requirement.
+
+Design how E2EE identities and sessions interact with the existing KONNEX backup system.
+
+Preserve:
+
+- KONNXBK2 compatibility.
+- Existing backup passphrase.
+- Existing recovery key.
+- Fresh-install restore.
+- Streaming backup and restore.
+- Android Keystore protections.
+
+Evaluate:
+
+- Whether identity private keys should be included in encrypted backups.
+- How device-bound keys are restored on a new device.
+- How to distinguish device identity recovery from account identity recovery.
+- Whether historical session state should be restored.
+- How to prevent backup rollback attacks.
+- How to prevent stolen backups from enabling impersonation.
+- How to handle lost recovery credentials.
+
+Never allow the server to decrypt backups or recover E2EE private keys.
+
+Do not automatically restore an old device identity onto a different device.
+
+A restored device must undergo an explicit identity and trust procedure.
+
+Do not modify the existing backup format in this phase.
+
+# 10\. Server Architecture and Trust Boundaries
+
+Design the minimum server responsibilities.
+
+Evaluate:
+
+- Account authentication.
+- Device directory.
+- Public-key distribution.
+- Prekey publication.
+- Prekey consumption.
+- Encrypted message queues.
+- Message acknowledgement.
+- Device synchronization.
+- Group membership coordination.
+- Rate limiting.
+- Abuse prevention.
+
+Define what the server can and cannot see.
+
+Explicitly document:
+
+- Sender metadata.
+- Recipient metadata.
+- Timestamps.
+- Message sizes.
+- Device relationships.
+- Group membership.
+- Delivery status.
+- IP addresses.
+
+Do not promise perfect metadata privacy unless the architecture actually provides it.
+
+Design defenses against:
+
+- Public-key substitution.
+- Replay.
+- Duplicate prekey consumption.
+- Malicious message ordering.
+- Message injection.
+- Device impersonation.
+- Server rollback.
+- Malicious server responses.
+
+# 11\. Cross-Platform Compatibility
+
+The protocol must be platform-independent.
+
+Design a shared protocol layer that can eventually support:
+
+- Android.
+- iOS.
+- Windows.
+- Linux.
+
+Specify:
+
+- Canonical serialization.
+- Integer and byte ordering.
+- Message versioning.
+- Cryptographic algorithm identifiers.
+- Protocol version negotiation.
+- Compatibility rules.
+- Unknown-field behavior.
+- Cross-platform test vectors.
+
+Avoid platform-specific serialization of cryptographic messages.
+
+Android Keystore may protect Android-specific private keys, but protocol messages must remain interoperable.
+
+# 12\. Security and Threat Model
+
+Create a detailed E2EE threat model.
+
+Consider:
+
+- Compromised server.
+- Malicious server operator.
+- Stolen device.
+- Rooted Android device.
+- Malware on a device.
+- Malicious linked device.
+- Compromised backup.
+- Lost recovery key.
+- Public-key substitution.
+- Replay attacks.
+- Session rollback.
+- Malicious group member.
+- Removed group member.
+- Compromised cryptographic dependency.
+- Malicious application update.
+
+For each threat, document:
+
+- Attacker capability.
+- Security objective.
+- Attack scenario.
+- Mitigation.
+- Residual risk.
+- Verification strategy.
+
+Distinguish threats that can be mitigated from those that remain outside the E2EE security boundary.
+
+# 13\. Protocol State Machines
+
+Provide formal state-machine specifications for:
+
+- User identity.
+- Device identity.
+- Device trust.
+- One-to-one sessions.
+- Multi-device sessions.
+- Group membership.
+- Group epochs.
+- Prekey lifecycle.
+- Device revocation.
+- Recovery.
+
+Document valid transitions and forbidden transitions.
+
+Include failure and recovery paths.
+
+# 14\. Required Deliverables
+
+Create:
+
+1. `E2EE_ARCHITECTURE_PHASE3_0.md`
+2. `E2EE_PROTOCOL_SPEC_PHASE3_0.md`
+3. `E2EE_THREAT_MODEL_PHASE3_0.md`
+4. `E2EE_PROTOCOL_COMPARISON_PHASE3_0.md`
+5. `E2EE_KEY_MANAGEMENT_PHASE3_0.md`
+6. `E2EE_MULTI_DEVICE_PHASE3_0.md`
+7. `E2EE_GROUP_MESSAGING_PHASE3_0.md`
+8. `E2EE_BACKUP_RECOVERY_INTEGRATION_PHASE3_0.md`
+9. `E2EE_PHASE3_0_REPORT.md`
+
+Include architecture diagrams, message flow diagrams, key lifecycle diagrams, state machines, and protocol decision records.
+
+# 15\. Implementation Readiness Review
+
+Before declaring Phase 3.0 complete, verify that the documentation answers:
+
+- Which exact protocol will be used?
+- Which maintained implementation will be used?
+- How are user and device identities separated?
+- How are multiple devices trusted?
+- How are one-to-one sessions established?
+- How are group sessions managed?
+- How are attachments encrypted?
+- How does backup interact with private keys?
+- How does device revocation work?
+- What metadata remains visible to the server?
+- How will Android and future platforms interoperate?
+- What happens when a device loses its keys?
+
+Every important design decision must have a documented justification.
+
+List unresolved decisions explicitly.
+
+# 16\. Strict Execution Constraints
+
+This is a design-only phase.
+
+- Do not implement E2EE production code.
+- Do not modify existing cryptographic code.
+- Do not modify database schemas.
+- Do not modify backup format.
+- Do not modify server authentication.
+- Do not change dependencies.
+- Do not introduce new cryptographic libraries.
+- Do not modify unrelated application features.
+- Do not commit.
+- Do not push.
+- Do not change branches.
+- Do not reset or clean the working tree.
+- Preserve all existing uncommitted work.
+
+You may create documentation and diagrams only.
+
+If a design decision cannot be established confidently, document the alternatives and the evidence needed to resolve it.
+
+Do not invent test results or claim an external protocol review has occurred.
+
+# 17\. Final Report
+
+At completion, provide:
+
+- Selected protocol architecture.
+- Protocol comparison.
+- Key hierarchy.
+- Device identity model.
+- Multi-device design.
+- Group messaging design.
+- Backup integration design.
+- Server trust boundaries.
+- Remaining security questions.
+- Exact files created.
+- Final Git status.
+- Explicit confirmation that no production implementation was modified.
+
+Phase 3.0 is complete only when the design is coherent, implementation-ready, internally consistent, and suitable for independent security review.
+
+**Begin with the repository audit. Design first. Implement only in subsequent phases.**
+
+## Tiêu chí mình sẽ dùng để đánh giá kết quả
+
+Khi OpenCode hoàn thành, bạn gửi lại báo cáo cho mình. Mình sẽ kiểm tra kỹ 5 vấn đề quan trọng nhất:
+
+1. Có chọn giao thức E2EE thực sự phù hợp hay không.
+2. Một tài khoản có nhiều thiết bị mà không chia sẻ private key nguy hiểm.
+3. Server không thể giả mạo danh tính thiết bị.
+4. Backup và khôi phục không làm mất tính bảo mật E2EE.
+5. Android hiện tại có thể mở rộng sang iOS, Windows và Linux mà không phải viết lại giao thức.
+
+Lưu ý: Phase 3.0 chỉ thiết kế. Chưa cho OpenCode viết code E2EE. Đây là bước giúp tránh sai kiến trúc ngay từ đầu.
+
+
+
+* done:
+I'll start with the repository audit — reading the actual current implementation before writing any design.
+
+Now reading the existing models, contracts, server API, and the pre-existing E2EE documents.
+
+Audit complete: 34 Gradle modules, Room v1/SQLCipher, server schema v2 with plaintext `messages.body`, no device/prekey/envelope tables anywhere, and the existing E2EE docs are a pre-Phase-3 sketch. Writing the nine design documents now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Phase 3.0 is complete: nine design documents, no code touched, `HEAD` unchanged at `1d1b98d`.
+
+## Verdict: design complete — ready for independent review, **not yet implementation-ready**
+
+Two non-documentation blockers remain: **U-01** (libsignal is AGPL-3.0-only and KONNEX declares no licence) and **U-02** (OpenMLS must ship as a pinned, patched ≥ 0.9.2 through UniFFI on Android). Neither can be closed by writing more specs.
+
+## Selected architecture
+
+| Conversation | Cryptosystem | Implementation | Guarantees |
+|---|---|---|---|
+| Direct | PQXDH (X25519 + Kyber1024) → Double Ratchet, one session per **recipient device** | libsignal (AGPL gate) | per-message forward secrecy, DH-ratchet PCS, PQ handshake |
+| Group | MLS RFC 9420, ciphersuite `0x0001`, one leaf per device | OpenMLS (MIT) via UniFFI | 1 ciphertext/message, epoch FS/PCS, **cryptographic** removal, no PQ |
+
+One `KONNXEE1` envelope (116-byte big-endian header + opaque library ciphertext), deterministic CBOR payload with CDDL, header bound *inside* the authenticated payload because libsignal has no caller AAD. Boundary rule: one suite per conversation (`bindingId`); MLS Welcome/Commit travel in envelopes but no key or ratchet output ever crosses between protocols.
+
+## Key findings from the audit
+
+- 34 modules, `minSdk 26`, server schema v2 — and **no** device table, prekey table, envelope table, device key, or user cryptographic identity anywhere. Sync is account-scoped, so every device sees the same plaintext. Device identity today is only a local `dev-<uuid>` used for attachment owner AAD.
+- The pre-existing `E2EE_ARCHITECTURE.md` is a sketch (single device, groups deferred); it is now superseded by the Phase 3.0 set while staying untouched so it keeps describing history honestly.
+- Concrete compatibility trap found: Phase 2.6's archive reader **rejects unknown entry prefixes**, so backup archive schema 3 needs a tolerance change *before* any build writes E2EE metadata (U-11).
+- Concrete gap found: account sessions aren't bound to `deviceUid`, so a revoked device keeps a valid bearer token (U-14b).
+
+## Key design decisions (14 records, PDR-001…014)
+
+No user-level private key exists — identity is an append-only signed **UIR hash chain** with pinned `(seq, entryHash)`; a lower seq is `E_ROLLBACK`, an equal seq with a different hash is `E_FORK`. Device linking transfers an **authorisation, never a private key** (QR + SAS). Own-device copies are mandatory. Backups contain **history only** — no keys, no sessions, no trust pins, so restore is always a new device. Metadata is documented, never promised away (no sealed sender/padding in v1).
+
+## Remaining security questions
+
+Seven for the reviewer (hdrHash binding vs outer AEAD; 3-epoch retention; chain-only transparency vs global log; `DIK_sig` reuse as MLS leaf key; STREAM framing vs Tink keyset on the wire; whether `HISTORY_SHARE` should exist in v1; whether U-14b must close before any encrypted message ships), plus a 19-item unresolved register `U-01…U-19` with the evidence each needs.
+
+## Files created (9, all new documentation, 3 813 lines)
+
+`E2EE_ARCHITECTURE_PHASE3_0.md` · `E2EE_PROTOCOL_SPEC_PHASE3_0.md` · `E2EE_THREAT_MODEL_PHASE3_0.md` (18 threats) · `E2EE_PROTOCOL_COMPARISON_PHASE3_0.md` · `E2EE_KEY_MANAGEMENT_PHASE3_0.md` · `E2EE_MULTI_DEVICE_PHASE3_0.md` · `E2EE_GROUP_MESSAGING_PHASE3_0.md` · `E2EE_BACKUP_RECOVERY_INTEGRATION_PHASE3_0.md` · `E2EE_PHASE3_0_REPORT.md`
+
+## Verification actually run
+
+`git rev-parse` → `1d1b98d` unchanged; `git status --short` → 79 entries (70 pre-existing Phase 2.2–2.8 entries, byte-identical set, + these 9 docs); every new file exists and is non-empty; the unresolved-ID register and all cross-document references resolve. **No production file was modified** — no Kotlin, Gradle, manifest, schema, `KONNXBK2`, or dependency change; nothing committed, pushed, branched, reset or cleaned.
+
+**Not done, not claimed:** no implementation, no test vectors, no interop run, no benchmark, no external review (the SRLabs/OpenMLS audit I cite is an audit of that library, not of KONNEX). Every mitigation in the threat model is a requirement, not an observed property, and the product statement stays: *"Messages are not end-to-end encrypted yet."*
+
+
+
+
 1111111111
