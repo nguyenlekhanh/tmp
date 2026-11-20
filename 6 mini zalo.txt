@@ -14463,4 +14463,3445 @@ Six documents written: `E2EE_DEVICE_VERIFICATION_INTEGRATION_PHASE3_1_5B.md`, `E
 
 
 
+1111111111
+Tôi đã đọc kỹ báo cáo mới. Theo tôi, lần này OpenCode có một bước tiến quan trọng về chất lượng đánh giá kỹ thuật, dù tiến độ triển khai chưa đạt mục tiêu Phase 3.1.5B.
+
+Tôi đồng ý với verdict:
+
+NOT APPROVED FOR PHASE 3.2Nhưng tôi muốn điều chỉnh thứ tự ưu tiên một chút. Có một rủi ro cần xử lý ngay, trước cả việc hoàn thiện UI.
+
+# 1. Đánh giá thực tế Phase 3.1.5B
+
+| Hạng mục | Kết quả | Đánh giá |
+| --- | --- | --- |
+| U1 – Navigation | BLOCKED | Chưa tích hợp |
+| U2 – QR | BLOCKED | Chưa có encoder/scanner |
+| U3 – State machine | PASS | Đã có 12 tests |
+| R1a – Server delivery | BLOCKED | Chưa cung cấp previous key |
+| R1b – Retention cleanup | BLOCKED | Chưa có cleanup hoàn chỉnh |
+| R1c – Rotation tests | NOT VERIFIED | Chưa chứng minh được |
+
+Điểm tích cực: U3 được triển khai tương đối đúng kiến trúc. Việc tách `VerificationStateDeriver` thành pure Kotlin là quyết định tốt.
+
+Đặc biệt, tôi đánh giá cao ba bảo đảm:
+
+- Revoked không thể trở thành Verified.
+- Fingerprint thay đổi sẽ vô hiệu hóa trust cũ.
+- Quét QR không tự động xác nhận thiết bị.
+
+Đây là những nguyên tắc nên giữ nguyên.
+
+# 2. Vấn đề nguy hiểm nhất: Envelope v3
+
+Ưu tiên xử lý số 1OpenCode đã tự phát hiện một rủi ro từ Phase 3.1.5A:
+
+- v3 bổ sung `writeNullable`.
+- v3 bổ sung `writeLong`.
+- Chưa có regression test chứng minh v1/v2 vẫn đọc được.
+
+Tôi muốn nhấn mạnh: đây không phải lỗi giao diện hay lỗi build thông thường.
+
+Nếu dữ liệu key material cũ không còn đọc được, hậu quả có thể là mất khả năng phục hồi danh tính thiết bị hoặc thiết lập phiên bảo mật.
+
+Tuyệt đối chưa được sửa format theo kiểu thử nghiệm trực tiếp trên dữ liệu thật.
+
+Cần:
+
+1. Tạo fixture v1 và v2 từ đúng implementation lịch sử.
+2. Kiểm thử đọc fixture bằng code hiện tại.
+3. Kiểm thử round-trip v3.
+4. Kiểm thử dữ liệu hỏng và dữ liệu thiếu trường.
+5. Chứng minh việc ghi v3 không phá hủy dữ liệu cũ.
+6. Chỉ thực hiện migration sau khi có bằng chứng.
+
+Không được dùng fixture v1/v2 được tạo bằng chính serializer v3 rồi gọi đó là backward compatibility.
+
+# 3. Tôi đề xuất thay đổi thứ tự thực hiện
+
+Thứ tự cũ của Phase 3.1.5B chưa tối ưu vì có thể phát triển UI trong khi nền tảng lưu trữ khóa chưa được xác nhận.
+
+Tôi đề xuất chia phần công việc còn lại thành bốn nhóm:
+
+1. 3.1.5B.1 – Envelope Compatibility
+   Kiểm chứng v1/v2/v3 và bảo toàn key material.
+   Đây là điều kiện bắt buộc trước các thay đổi liên quan đến lưu trữ khóa.
+2. 3.1.5B.2 – Signed Prekey Lifecycle
+   Hoàn thiện server delivery, previous key retention, cleanup và rotation regression.
+3. 3.1.5B.3 – Device Verification Integration
+   Navigation, QR encoder, QR scanner, camera permission và state machine.
+4. 3.1.5B.4 – Full Integration Testing
+   Kiểm thử client-server, Android runtime, migration, build và security regression.
+
+# 4. Một điểm cần thay đổi trong thiết kế Signed Prekey
+
+Tôi đồng ý với việc OpenCode chưa tự ý thêm `retired_at` và thay đổi API khi chưa có consumer.
+
+Tuy nhiên, không nên vì vậy mà bỏ qua thiết kế lifecycle.
+
+Cần phân biệt rõ:
+
+- Current: khóa đang được phân phối cho peer mới.
+- Previous: khóa cũ vẫn được giữ để xử lý các tham chiếu hợp lệ.
+- Retired: không còn được phân phối cho phiên mới.
+- Deleted: đã đủ điều kiện xóa an toàn.
+
+Đặc biệt, việc giữ khóa 30 ngày không tự chứng minh rằng tất cả session đã an toàn.
+
+Cần thiết kế khả năng tham chiếu `signed_prekey_id` khi session được triển khai thực tế. Hiện chưa có session references thì phải ghi nhận đây là giới hạn, không được giả định chúng đã tồn tại.
+
+# 5. Prompt tiếp theo tôi đề xuất cho OpenCode
+
+Tôi khuyên chưa yêu cầu OpenCode hoàn thành toàn bộ phần còn lại trong một lượt. Hãy giao nhiệm vụ đầu tiên thật cụ thể, tập trung bảo vệ dữ liệu.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.1
+
+# Envelope Backward Compatibility & Key Material Safety Audit
+
+Continue from the existing Phase 3.1.5B working tree.
+
+## Objective
+
+Resolve the highest-priority data integrity risk introduced by Envelope v3.
+
+Prove that existing v1/v2 key material remains readable and that v3 serialization does not corrupt or destroy existing data.
+
+This is a security and data preservation task.
+
+Do not implement Phase 3.2.
+
+## 1\. Repository Safety
+
+Before editing:
+
+- Inspect current Git status.
+- Preserve all 193 existing working-tree entries.
+- Do not commit or push.
+- Do not reset, clean, stash or switch branches.
+- Do not modify KONNXBK2.
+- Do not touch physical phones.
+- Do not overwrite existing key material.
+
+Do not assume the repository state is unchanged. Inspect it first.
+
+## 2\. Audit Historical Envelope Formats
+
+Inspect:
+
+- DeviceKeyMaterialStore.
+- Envelope v1 implementation.
+- Envelope v2 implementation.
+- Envelope v3 implementation.
+- Serialization and deserialization code.
+- All migration paths.
+- Existing encryption and authentication boundaries.
+- Existing tests and Phase 3.1.5A reports.
+
+Document the exact binary layout of each version.
+
+Identify every field, its type, serialization order, nullability and compatibility requirement.
+
+## 3\. Historical Compatibility Tests
+
+Create genuine v1 and v2 test fixtures using the historical serialization implementations or independently verified historical test vectors.
+
+Do not generate v1/v2 fixtures using the current v3 serializer.
+
+Tests must demonstrate:
+
+- v1 can be decoded by current code.
+- v2 can be decoded by current code.
+- v3 can be decoded by current code.
+- v1/v2 data is preserved during migration.
+- Nullable fields are handled correctly.
+- Long-valued fields are handled correctly.
+- Unknown versions fail safely.
+- Truncated envelopes fail safely.
+- Corrupted envelopes fail safely.
+
+Do not weaken authentication or integrity checks to make compatibility tests pass.
+
+## 4\. Round-trip and Migration Safety
+
+Verify:
+
+- Decode → encode preserves semantic values.
+- Existing v1/v2 data is not silently discarded.
+- Migration is atomic.
+- A crash cannot leave partially migrated key material.
+- Repeated migration is safe.
+- Existing backup data remains recoverable.
+
+Do not modify production data to perform experiments.
+
+Use isolated test fixtures.
+
+## 5\. Key Material Protection
+
+Verify that:
+
+- Private key bytes never appear in logs.
+- Error messages do not expose secrets.
+- Temporary buffers are handled consistently with the existing security architecture.
+- Failed migrations preserve the original recoverable data.
+- No migration silently replaces valid key material with empty defaults.
+
+## 6\. Testing
+
+Run the relevant JVM tests.
+
+Add regression tests for every discovered compatibility issue.
+
+Report exact commands and results.
+
+Do not claim device-level validation if only JVM tests were run.
+
+## 7\. Documentation
+
+Create:
+
+E2EE\_ENVELOPE\_V1\_V2\_V3\_COMPATIBILITY\_AUDIT.md
+
+E2EE\_ENVELOPE\_MIGRATION\_SAFETY\_TESTS.md
+
+E2EE\_KEY\_MATERIAL\_BACKWARD\_COMPATIBILITY\_REPORT.md
+
+Include:
+
+- Historical format specifications.
+- Fixture provenance.
+- Test coverage.
+- Failures discovered.
+- Changes made.
+- Remaining risks.
+
+## 8\. Final Gate
+
+Report:
+
+- V1 compatibility.
+- V2 compatibility.
+- V3 round-trip.
+- Migration atomicity.
+- Corruption handling.
+- Backup compatibility.
+- Key material preservation.
+
+Use only:
+
+- PASS
+- PASS WITH CONDITIONS
+- BLOCKED
+- NOT VERIFIED
+
+Do not proceed to UI integration or Phase 3.2 in this task.
+
+Do not commit or push.
+
+Begin with repository audit.
+
+# 6. Roadmap KONNEX sau khi điều chỉnh
+
+## Lộ trình đề xuất
+
+1. 3.1.5B.1 – Envelope Safety
+   Next
+2. 3.1.5B.2 – Signed Prekey Lifecycle
+   Server delivery, retention, cleanup.
+3. 3.1.5B.3 – Device Verification
+   UI, Navigation, QR, TrustStore.
+4. 3.1.5B.4 – Integration Regression
+   Client-server và thiết bị thực tế.
+5. 3.1.6 – Kyber Bundle Delivery & Consumption
+6. 3.1.7 – Full Security Regression
+7. 3.2 – PQXDH + Double Ratchet
+   Chưa được phép bắt đầu
+
+## Kết luận
+
+Tôi có một nhận xét về cách OpenCode đang làm việc: báo cáo lần này tốt hơn vì nó phân biệt được implementation, integration và verification.
+
+Đó là điều rất quan trọng với KONNEX.
+
+Tôi không muốn dự án chạy nhanh hơn bằng cách tạo ra nhiều module và nhiều báo cáo PASS. Tôi muốn mỗi giai đoạn thực sự làm cho hệ thống an toàn và hoàn chỉnh hơn.
+
+Quyết định của tôi: tiếp tục Phase 3.1.5B, nhưng khóa ưu tiên đầu tiên là Envelope v1/v2/v3 compatibility. Chưa mở Phase 3.2.
+
+
+
+* done
+Format is clear. Now I'll build historical v1/v2 fixtures from an independent serializer (not the production `encode()`) and test them.
+
+
+
+
+The AAD test surfaced a real finding: the store will happily return an envelope sealed for a *different* device key — the header binds it, but nothing enforced the binding. Hardening the manager.
+
+
+
+
+## Verdict: **PASS WITH CONDITIONS**
+
+The v3 compatibility risk is closed, and the audit found a genuine defect that no one had flagged.
+
+### Gate
+
+| Item | Status |
+| --- | --- |
+| V1 envelope compatibility | **PASS** |
+| V2 envelope compatibility | **PASS** |
+| V3 round-trip | **PASS** |
+| Migration atomicity | **PASS** |
+| Corruption handling | **PASS** |
+| Backup compatibility | **NOT VERIFIED** |
+| Key material preservation | **PASS** |
+
+**Executed:** `:core:security:testDebugUnitTest` → BUILD SUCCESSFUL, **48 tests, 0 failures** (18 new). The 11:1 prekey concern that 3.1.5A introduced is now tested rather than hoped for.
+
+### The defect found
+
+My first AAD test failed, and the failure was informative rather than a bad assertion. `DeviceKeyMaterialStore.load()` derives the AAD from **the file's own header**, so an envelope sealed for device A decrypts cleanly inside device B's directory — the header binds the blob, but nothing checked that binding against the caller's identity.
+
+Fixed at the right layer: `DeviceIdentityManager.state()` now returns `Lost` when `stored.deviceKey != deviceKey`, and `activate()` already refuses to act on `Lost`. So a copied envelope can never be adopted as this installation's identity, and the app can't silently re-register over a device the server still trusts. A test pins the store's actual behaviour so that guard can't be deleted silently.
+
+### Fixture methodology
+
+`HistoricalEnvelope` is a standalone `DataOutputStream` writer for the documented v1/v2/v3 layouts. It never calls production `encode()`, and the AAD string is a literal in the test rather than an import — so changing the serializer or the AAD boundary **breaks the test** instead of dragging the fixture along with it. That was the whole point of the exercise, and it is why the compatibility claims mean something.
+
+### Findings worth knowing
+
+- **Atomicity is structural, not procedural.** There is no background migrator: old envelopes are *read* by the new decoder and only rewritten on the next `save()`. Since reads never migrate, no partially migrated identity can exist. Writes are temp-file + rename, so a crash leaves the old file or the new one. `a failed load leaves the original bytes untouched` asserts this at byte level.
+- **v1 `registrationId = 0` is ambiguous** — indistinguishable from a genuine v2 zero. It is never used in signing, so I documented it rather than adding a sentinel that would ripple through every call site.
+- **`save()` refuses empty private keys**, so a zeroed v1 envelope cannot be re-saved. That is fail-closed, and a test confirms the existing identity survives the refusal.
+
+### Conditions, stated honestly
+
+1. **The F1 guard has no unit test.** Instantiating `DeviceIdentityManager` pulls libsignal natives, which this JVM suite doesn't exercise — it is compile-verified only.
+2. **`KeystoreAesGcm` is untested here.** JVM tests use a double; real Keystore invalidation behaviour is device-level and unverified this phase.
+3. **Backup compatibility is not verified.** Key material lives in `noBackupFilesDir` and is never written to KONNXBK2, but I did not re-prove the archive excludes it.
+
+No instrumentation, release/R8/AAB build, or device run — so nothing here claims device-level validation.
+
+### State
+
+`HEAD` still `1d1b98d`; 196 working-tree entries (193 + 3 new docs); nothing committed, pushed, reset, cleaned, stashed or branched; KONNXBK2 untouched; no physical phone. Source changed: `DeviceIdentityManager.kt` (the F1 guard). Tests added: `EnvelopeCompatibilityTest.kt` (18).
+
+Documents: `E2EE_ENVELOPE_V1_V2_V3_COMPATIBILITY_AUDIT.md` (with full binary layouts for all three versions), `E2EE_ENVELOPE_MIGRATION_SAFETY_TESTS.md` (fixture provenance + coverage table), `E2EE_KEY_MATERIAL_BACKWARD_COMPATIBILITY_REPORT.md`.
+
+Next, in priority order: unit-test the F1 guard through an instrumented run, then the envelope's v1→v3 upgrade path on a real device, then back to U1 navigation.
+
+
+
 11111111
+Lần này tôi đánh giá KONNEX đã có một bước tiến thực chất. Đặc biệt, cuộc audit không chỉ xác nhận tương thích dữ liệu mà còn phát hiện được một lỗi bảo mật nằm ở ranh giới giữa thiết bị và key material.
+
+Tôi đồng ý với verdict `PASS WITH CONDITIONS`, nhưng chưa cho phép chuyển sang Phase 3.1.5B.2 hoặc Phase 3.2 ngay.
+
+## 1. Đánh giá kết quả mới
+
+Envelope Compatibility Audit
+
+PASS WITH CONDITIONS
+
+# 48 / 48
+
+JVM security tests passed · 0 failures
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| V1 compatibility | PASS |
+| V2 compatibility | PASS |
+| V3 round-trip | PASS |
+| Migration atomicity | PASS |
+| Corruption handling | PASS |
+| Backup compatibility | NOT VERIFIED |
+| Key preservation | PASS |
+
+Tôi đánh giá cao phương pháp tạo fixture bằng `DataOutputStream` độc lập. Đây là cách kiểm thử compatibility có giá trị hơn việc dùng chính serializer hiện tại để tạo dữ liệu kiểm thử.
+
+## 2. Phát hiện quan trọng nhất: F1 – Device Binding
+
+Đây mới là phát hiện đáng chú ý.
+
+Trước khi sửa:
+
+- Envelope của thiết bị A được copy sang thư mục thiết bị B.
+- Store lấy AAD từ header của chính envelope.
+- Việc giải mã vẫn thành công.
+- Không có bước đối chiếu device key với danh tính thiết bị đang yêu cầu.
+
+Điều đó có nghĩa là header tự khai báo danh tính nhưng chưa được xác thực với ngữ cảnh sử dụng.
+
+Sau khi sửa:
+
+`DeviceIdentityManager.state()` kiểm tra:
+
+`stored.deviceKey != deviceKey`
+
+Nếu khác nhau, trả về `Lost`.
+
+Đây là thay đổi đúng tầng kiến trúc.
+
+Tuy nhiên, có một điều tôi muốn kiểm tra thêm: trạng thái `Lost` không được dẫn đến quy trình tự động đăng ký danh tính mới trong khi server vẫn còn tin cậy thiết bị cũ.
+
+Cần xác nhận luồng recovery và re-registration không vô tình ghi đè identity.
+
+## 3. Ba điều kiện còn tồn tại
+
+| Điều kiện | Mức ưu tiên |
+| --- | --- |
+| F1 guard chưa có unit/instrumented test | Cao |
+| Android Keystore chưa kiểm chứng thực tế | Cao |
+| KONNXBK2 chưa được audit độc lập | Trung bình |
+
+Đặc biệt, việc key material nằm trong `noBackupFilesDir` là tín hiệu tốt, nhưng chưa đủ để kết luận backup archive không chứa dữ liệu nhạy cảm.
+
+Cần kiểm tra trực tiếp backup implementation và danh sách file thực sự được đóng gói.
+
+## 4. Tôi điều chỉnh thứ tự công việc tiếp theo
+
+Không nên quay lại U1 Navigation ngay như đề xuất cuối báo cáo.
+
+Tôi đề xuất thứ tự sau:
+
+1. F1 – Device Binding Verification
+   Viết kiểm thử cho `DeviceIdentityManager.state()` và `activate()`.
+   Xác nhận envelope thiết bị A không thể được sử dụng như identity của thiết bị B.
+2. Keystore Instrumentation
+   Kiểm tra Android Keystore thực tế, bao gồm key invalidation và lỗi giải mã.
+3. Backup Exclusion Audit
+   Kiểm tra KONNXBK2 không chứa private key hoặc key material cần được giữ ngoài backup.
+4. Envelope Migration Runtime
+   Kiểm tra đường nâng cấp v1/v2 lên v3 trên môi trường Android thử nghiệm cô lập.
+5. Quay lại U1 – Navigation Integration
+   Sau khi các điều kiện bảo vệ danh tính được xác nhận.
+
+## 5. Prompt tiếp theo cho OpenCode
+
+Tôi muốn giao một nhiệm vụ hẹp, không để OpenCode vừa sửa bảo mật vừa phát triển thêm tính năng.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.1.1
+
+# Device Binding, Keystore & Backup Safety Verification
+
+Continue from the current Phase 3.1.5B working tree.
+
+## Primary Objective
+
+Independently verify the F1 Device Binding fix introduced in DeviceIdentityManager.kt.
+
+Also verify Android Keystore behaviour and backup exclusion of sensitive key material.
+
+Do not begin U1 navigation integration or Phase 3.2.
+
+## 1\. Repository Safety
+
+- Inspect current Git status.
+- Preserve all 196 existing working-tree entries.
+- Do not commit or push.
+- Do not reset, clean, stash or change branches.
+- Do not modify KONNXBK2.
+- Do not touch physical phones.
+- Do not overwrite existing identity material.
+
+Use isolated test fixtures and an emulator where available.
+
+## 2\. F1 Device Binding Tests
+
+Inspect:
+
+- DeviceIdentityManager.state()
+- DeviceIdentityManager.activate()
+- DeviceKeyMaterialStore.load()
+- DeviceKeyMaterialStore.save()
+- Identity registration and recovery paths.
+
+Add tests proving:
+
+1. Device A envelope loaded as Device A remains valid.
+2. Device A envelope presented as Device B returns Lost.
+3. A mismatched envelope cannot be activated.
+4. A mismatched envelope cannot trigger silent re-registration.
+5. Existing server-trusted identity is not overwritten.
+6. Corrupted envelope fails safely.
+7. Missing identity material is handled distinctly from mismatched identity.
+8. Valid identity recovery remains possible through an explicit recovery path.
+
+Do not weaken device binding checks to make tests pass.
+
+If native libsignal dependencies prevent JVM testing, use an appropriate instrumentation test.
+
+## 3\. Android Keystore Verification
+
+Inspect KeystoreAesGcm.
+
+Verify on an emulator:
+
+- Key creation.
+- Encryption and decryption.
+- Authentication failure.
+- Invalidated key handling.
+- Missing key handling.
+- Process restart behaviour.
+- Existing encrypted key material remains recoverable.
+
+Clearly distinguish JVM mock tests from Android Keystore tests.
+
+Do not claim device-level verification from mocked tests.
+
+## 4\. KONNXBK2 Backup Exclusion Audit
+
+Read the actual backup implementation.
+
+Determine:
+
+- Which files are included.
+- Which directories are excluded.
+- Whether noBackupFilesDir is accessed.
+- Whether private key material can enter the archive indirectly.
+- Whether temporary export files can leak key material.
+
+Use isolated test data.
+
+Do not modify the backup format or existing user archives.
+
+Do not claim exclusion solely from the directory name.
+
+## 5\. Envelope Runtime Migration
+
+On an isolated emulator environment, verify:
+
+- Historical v1 loading.
+- Historical v2 loading.
+- v3 loading.
+- Read-only access does not rewrite existing envelopes.
+- Save performs the expected v3 write.
+- Failed save preserves the original file.
+- Process interruption does not leave partially written identity material.
+
+Never use production user identity material.
+
+## 6\. Testing and Evidence
+
+Run applicable:
+
+- JVM unit tests.
+- Android instrumentation tests.
+- Keystore tests.
+- Backup exclusion tests.
+- Migration tests.
+
+Record exact commands, environment and results.
+
+Capture test evidence without exposing private keys, tokens, fingerprints or other sensitive values.
+
+## 7\. Documentation
+
+Create:
+
+E2EE\_DEVICE\_BINDING\_F1\_VERIFICATION.md
+
+E2EE\_ANDROID\_KEYSTORE\_RUNTIME\_AUDIT.md
+
+E2EE\_KONNXBK2\_KEY\_MATERIAL\_EXCLUSION\_AUDIT.md
+
+E2EE\_ENVELOPE\_RUNTIME\_MIGRATION\_TESTS.md
+
+E2EE\_PHASE3\_1\_5B\_1\_1\_FINAL\_REPORT.md
+
+## 8\. Final Gate
+
+Report each independently:
+
+- F1 Device Binding.
+- Identity Recovery Safety.
+- Keystore Encryption.
+- Keystore Invalidation.
+- Backup Key Exclusion.
+- v1/v2/v3 Runtime Compatibility.
+- Crash-safe Persistence.
+
+Use only:
+
+- PASS
+- PASS WITH CONDITIONS
+- BLOCKED
+- NOT VERIFIED
+
+Do not proceed to navigation integration or Phase 3.2.
+
+Do not commit or push.
+
+Begin with repository audit.
+
+## 6. Nhận định về trạng thái dự án
+
+Tôi muốn nhấn mạnh một thay đổi tích cực: KONNEX hiện đang tiến gần hơn đến một dự án bảo mật có quy trình kiểm chứng thực sự.
+
+Trước đây, các báo cáo tập trung nhiều vào việc đã xây dựng những module nào. Bây giờ, OpenCode đã bắt đầu tìm được lỗi mà test thông thường không phát hiện.
+
+Đó là tiến bộ đáng giá hơn việc tăng số lượng tính năng.
+
+Quyết định hiện tại:
+
+- Envelope compatibility: đã đạt.
+- Device binding: đã có bản sửa, chờ kiểm chứng.
+- Keystore và backup: chưa xác nhận.
+- Device Verification: chưa tích hợp.
+- Phase 3.2: tiếp tục khóa.
+
+Tôi muốn KONNEX giải quyết xong vấn đề bảo toàn danh tính và khóa trước khi bắt đầu xây dựng lớp mã hóa tin nhắn.
+
+
+
+* done
+I'll start with the repository audit and locate all the relevant source and backup implementation files in one pass.
+
+Repository audit confirms 196 entries, HEAD `1d1b98d`, branch `main`, nothing committed. Now reading the F1 binding code, Keystore wrapper, existing instrumentation tests, and the backup implementation.
+
+F1 has no callers yet (`DeviceIdentityManager` is only referenced in its own module), which matters for the "no silent re-registration" claim. I'll read the existing test doubles and backup engine next, then write instrumentation coverage.
+
+A physical phone (LG G710, API 28) is attached — I will not use it. Starting the disposable API 35 emulator explicitly and inspecting how tests build a database for the backup-exclusion proof.
+
+Emulator is still booting. I'll write the production hardening plus five instrumentation suites now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Repairing the fixture header and starting the emulator with the correct AVD home, then compiling the new instrumentation sources.
+
+
+
+
+The compile exceeded the synchronous window. I'll run it to a log in the background and poll.
+
+Reconnecting after the drop — checking what survived (emulator, previous partial Gradle run, log directory) before continuing.
+
+Both attached devices are physical phones (I won't touch them), and the emulator process died with the disconnect. Restarting the emulator and the Gradle compile as background jobs with logs.
+
+Emulator is booted. Compile is still running; polling to completion.
+
+Compile found four real issues (suspend DAO calls, `ContactDao.upsert` missing, and `State.Active` used as a value). Fixing them now.
+
+
+
+
+Compilation passes. Now running the JVM suite (forced) and building both APKs for on-device execution.
+
+APKs built. Installing only on `emulator-5554` (never the phones) and checking the JVM test counts.
+
+JVM suite: 48/48, 0 failures. Running the four on-device suites now.
+
+The backup suite failed at identity activation — need the full log and the underlying exception before changing anything.
+
+Found the root cause candidate: a Kyber-1024 record is far larger than the store's 4096-byte record cap, so `load()` returns null and every `activate()` fails. Checking the other suites before fixing.
+
+Runner restarted. Checking what survived, then adding a temporary diagnostic suite to pinpoint why a real identity fails to reload.
+
+
+
+
+Emulator and worktree are intact (201 entries). Rebuilding only the test APK and running the diagnostic.
+
+`println` went to logcat, not the runner output — pulling it.
+
+Confirmed F2: a real Kyber-1024 record serializes to **4821 bytes**, over the store's 4096-byte record cap, so every activated identity fails to reload. Fixing the cap and extending the diagnostic for the v2-fixture case.
+
+
+
+
+Diagnosis complete: the store and libsignal round-trip fine — my v2 fixture used a bogus 9-byte one-time prekey, which `decode()` correctly rejects. Fixing the fixture and adding an explicit F2 regression test.
+
+
+
+
+Rebuilding and running every on-device suite plus the two-phase restart test.
+
+Two test-side issues (not product bugs): a second install has a different Keystore key, and ZIP deflate hides plaintext from a raw byte scan. Correcting both tests.
+
+
+
+
+All on-device suites are green. Confirming the JVM result after the record-cap change and checking the doc sections I must update.
+
+All suites green (JVM 48; device 32). Checking the backup engine's staging lifecycle so the exclusion audit is accurate, then writing the report set.
+
+All results are in. Writing the five phase documents and updating the two living docs that this change touches.
+
+
+
+
+
+
+
+
+
+
+
+
+
+All checks are complete and the temporary diagnostic is gone. Shutting down the emulator I started so nothing is left running.
+
+Phase 3.1.5B.1.1 is complete. No commit, no push, no navigation work, no Phase 3.2.
+
+## Gate
+
+| Item | Verdict |
+|---|---|
+| F1 Device Binding | **PASS** |
+| Identity Recovery Safety | **PASS WITH CONDITIONS** |
+| Keystore Encryption | **PASS** |
+| Keystore Invalidation | **NOT VERIFIED** |
+| Backup Key Exclusion | **PASS WITH CONDITIONS** |
+| v1/v2/v3 Runtime Compatibility | **PASS** |
+| Crash-safe Persistence | **PASS WITH CONDITIONS** |
+
+Overall: **PASS WITH CONDITIONS — not approved for Phase 3.2.**
+
+## The blocking defect this phase found
+
+**F2 (fixed).** A Kyber-1024 `KyberPreKeyRecord` serializes to **4821 bytes**, but `DeviceKeyMaterialStore` capped records at 4096. Every `load()` therefore returned `null` for an activated identity, `state()` became `Lost`, and `activate()` threw `"Identity could not be persisted"` — **no on-device activation could ever be read back**, and the F1 guard was unreachable for a live identity. Measured on the emulator: `identity=69`, `signed=146`, `kyber=4821`. The cap is now 16 KiB with a KDoc explaining why, plus regression test `a_kyber_prekey_round_trips_through_the_envelope`.
+
+**F3 (fixed).** `state()` used to propagate decoder exceptions for readable-but-unusable material (legacy v1 envelopes, corrupt records). It now returns `Lost`, and `previousSignedPreKey()` applies the same device-key binding so a predecessor from another device key is never returned.
+
+## Evidence
+
+- JVM `:core:security:testDebugUnitTest` → **48 tests, 0 failures** (re-run after the cap change).
+- Emulator API 35 (`konnex_api35`, x86_64), JDK 17, Gradle 8.9:
+  - `DeviceBindingF1InstrumentedTest` — **OK (10 tests)**
+  - `KeystoreRuntimeAuditInstrumentedTest` — **OK (8)**
+  - `EnvelopeRuntimeMigrationInstrumentedTest` — **OK (8)**
+  - `BackupKeyMaterialExclusionInstrumentedTest` — **OK (4)**
+  - `KeystoreProcessRestartInstrumentedTest` — **OK (1)** then **OK (1)** in a second `am instrument` invocation (genuinely separate processes)
+  - **32 on-device tests, 0 failures.**
+- F1 specifics: mismatched envelope → `Lost`; `activate`/`rotate`/`replenish` each refused three times with byte-identical file and no `.tmp`; a second install can't even unwrap the copy (no shared Keystore key); `clear()` + `activate()` is the only recovery path and yields a different identity.
+- Backup: archive entries are exactly `manifest.json` + `payload.json` (plus only attachment paths when attachments exist); decompressed content carries the seeded message but **no** identity key bytes raw/Base64/hex and not the sealed vault; the `KONNXBK2` container hides plaintext and key material entirely.
+
+Two failures during the run were my own test defects, corrected rather than papered over: a v2 fixture used nine arbitrary bytes as a one-time prekey (the decoder correctly rejected it), and a raw byte scan couldn't see deflated ZIP content.
+
+## Files added
+`E2EE_DEVICE_BINDING_F1_VERIFICATION.md`, `E2EE_ANDROID_KEYSTORE_RUNTIME_AUDIT.md`, `E2EE_KONNXBK2_KEY_MATERIAL_EXCLUSION_AUDIT.md`, `E2EE_ENVELOPE_RUNTIME_MIGRATION_TESTS.md`, `E2EE_PHASE3_1_5B_1_1_FINAL_REPORT.md`, plus the five instrumentation suites. Living docs updated: `KEY_MANAGEMENT.md` §3 rule 7, `SECURITY.md` §14. Working tree: **206 entries** (196 preserved + 10), `HEAD 1d1b98d`, `main`.
+
+## Not verified
+Real Keystore invalidation (needs a secured lock screen — alias deletion was tested instead), a real OS cloud/D2D backup transfer (extraction rules are inspected, not exercised), an OS kill injected mid-`save()` (crash states simulated at file level), API 28/36 and release/R8/AAB, ARM64, and the server-side half of recovery safety — `DeviceIdentityManager` still has **no production call site**, so nothing can yet re-register over a device the server trusts. The two attached physical phones were never addressed; every adb call used `-s emulator-5554`.
+
+
+
+
+111111111111
+Lần này KONNEX có một bước tiến rất đáng kể. Tôi đặc biệt chú ý đến việc OpenCode phát hiện thêm F2 và F3, tức là trong quá trình kiểm chứng, dự án tiếp tục tìm ra lỗi thực tế mà các vòng kiểm thử trước chưa phát hiện.
+
+Tôi đồng ý với kết quả tổng thể:
+
+Phase 3.1.5B.1.1
+
+PASS WITH CONDITIONS
+
+# 80 tests passed
+
+# 48
+
+JVM tests
+
+# 32
+
+Instrumentation tests
+
+Chưa được phê duyệt Phase 3.2.
+
+## 1. Phát hiện F2 quan trọng hơn cả F1
+
+Đây là lỗi nghiêm trọng nhất được phát hiện trong lần này.
+
+| Thành phần | Kích thước |
+| --- | --- |
+| Identity record | 69 bytes |
+| Signed prekey | 146 bytes |
+| Kyber-1024 record | 4.821 bytes |
+| Giới hạn cũ | 4.096 bytes |
+| Giới hạn mới | 16.384 bytes |
+
+Hệ quả của F2:
+
+- Kyber record không thể được đọc lại.
+- `load()` trả về null.
+- Identity chuyển thành `Lost`.
+- `activate()` thất bại.
+
+Điều đáng ngại là lỗi này có thể khiến một identity được tạo thành công nhưng không thể sử dụng lại sau đó.
+
+Việc nâng giới hạn lên 16 KiB và bổ sung regression test là hợp lý.
+
+Tôi có thêm một yêu cầu: cần xác nhận giới hạn 16 KiB được áp dụng có kiểm soát ở cả tầng đọc và ghi, tránh trường hợp dữ liệu đầu vào quá lớn làm tiêu tốn bộ nhớ hoặc gây lỗi giải mã.
+
+## 2. F3 cũng đã được xử lý đúng hướng
+
+`state()` trước đây có thể ném exception khi gặp dữ liệu đọc được nhưng không hợp lệ về cấu trúc.
+
+Bây giờ chuyển sang `Lost`.
+
+Đặc biệt, `previousSignedPreKey()` cũng được bổ sung device-key binding.
+
+Tôi đồng ý với cách xử lý này vì trạng thái lỗi bảo mật nên được biểu diễn rõ ràng thay vì để exception lan truyền tùy tiện.
+
+## 3. Đánh giá các kiểm thử thực tế
+
+Tôi đánh giá cao việc đã có kiểm thử trên Android API 35 thay vì chỉ dựa vào JVM.
+
+| Kiểm thử | Kết quả |
+| --- | --- |
+| Device binding F1 | PASS |
+| Keystore encryption | PASS |
+| Envelope migration | PASS |
+| Backup exclusion | PASS |
+| Process restart | PASS |
+| Keystore invalidation | NOT VERIFIED |
+
+Một điểm tôi muốn giữ nguyên: không được tuyên bố Keystore invalidation đã hoàn thành chỉ vì alias deletion hoạt động.
+
+## 4. Có một vấn đề vận hành cần lưu ý
+
+Bạn đã cho biết AVD khiến máy tính treo, và chúng ta đã đặt chính sách không tự động mở emulator.
+
+Tuy nhiên, lần này OpenCode đã chủ động khởi chạy API 35 emulator.
+
+Kết quả là emulator chạy được và đã được tắt sau khi hoàn thành. Đây là tín hiệu tích cực, nhưng không nên mặc định rằng những lần sau đều an toàn.
+
+Với máy có RAM 32 GB trở lên, có thể chạy Android Emulator, nhưng vẫn phải kiểm soát CPU, GPU, virtualization và Gradle workers.
+
+Tôi đề nghị giữ nguyên chính sách: chỉ mở AVD khi bạn chủ động cho phép.
+
+## 5. Điều kiện còn thiếu trước khi hoàn thành 3.1.5B
+
+Có một điểm kiến trúc tôi quan tâm hơn các test vừa chạy:
+
+`DeviceIdentityManager` hiện vẫn chưa có production call site.
+
+Điều này có nghĩa là chúng ta đã kiểm chứng được nhiều hành vi của manager, nhưng chưa chứng minh được toàn bộ ứng dụng thực sự sử dụng manager đúng cách.
+
+Đây chính là lý do chưa thể tuyên bố Device Verification hoàn chỉnh.
+
+## 6. Bước tiếp theo: quay lại Phase 3.1.5B
+
+Tôi đề xuất không mở Phase mới mà tiếp tục xử lý các hạng mục còn thiếu:
+
+## Remaining work – Phase 3.1.5B
+
+1. U1 – Navigation Integration
+   - Tích hợp DeviceVerificationScreen.
+   - Settings entry.
+   - Navigation destination.
+   - Kiểm tra production call sites.
+2. U2 – QR Integration
+   - QR encoder.
+   - QR scanner.
+   - Camera permission.
+   - Payload validation.
+3. R1a – Previous Signed Prekey Delivery
+   Server phải cung cấp previous key hợp lệ.
+4. R1b – Retention and Cleanup
+   Hoàn thiện lifecycle và cleanup an toàn.
+5. R1c – Rotation Regression
+   Kiểm chứng rotation bằng libsignal key material thực tế.
+
+## 7. Trạng thái roadmap hiện tại
+
+| Giai đoạn | Trạng thái |
+| --- | --- |
+| 3.1.5A | Đã thực hiện, còn điều kiện |
+| 3.1.5B.1 – Envelope compatibility | PASS |
+| 3.1.5B.1.1 – F1/F2/F3 audit | PASS WITH CONDITIONS |
+| 3.1.5B – U1/U2/R1 | Đang thực hiện |
+| 3.1.6 – Kyber Bundle | Chưa bắt đầu |
+| 3.1.7 – Security Regression | Chưa bắt đầu |
+| 3.2 – PQXDH + Double Ratchet | Chưa được phép |
+
+## Kết luận của tôi
+
+Có ba điều đáng mừng trong báo cáo lần này:
+
+1. OpenCode không chỉ sửa lỗi đã biết mà còn tìm ra F2 – một lỗi có thể làm hỏng khả năng sử dụng identity sau khi tạo.
+2. Các kiểm thử đã chuyển từ JVM sang Android runtime với kết quả thực tế.
+3. Các điều kiện chưa kiểm chứng vẫn được ghi nhận trung thực.
+
+Tôi chấp thuận đóng công việc 3.1.5B.1.1 với verdict PASS WITH CONDITIONS.
+
+Bây giờ nên tập trung hoàn thiện U1, U2, R1a, R1b và R1c. Chưa cần mở Kyber Bundle Delivery hay PQXDH.
+
+Mục tiêu của KONNEX lúc này không phải có thêm nhiều tính năng, mà là biến những thành phần bảo mật đã xây dựng thành một hệ thống thực sự được ứng dụng sử dụng và kiểm chứng xuyên suốt.
+
+
+
+Tôi đề xuất prompt tiếp theo là KONNEX Phase 3.1.5B.2 – Device Verification Runtime Integration.
+
+Lần này ưu tiên hoàn thiện U1 và U2 trước: đưa Device Verification vào ứng dụng thực tế, tích hợp Navigation và QR. Đồng thời chuẩn bị nền tảng kiểm thử R1, nhưng chưa mở Phase 3.2.
+
+Một điểm quan trọng: vì OpenCode từng làm máy bạn treo khi mở AVD, prompt này mặc định không được tự khởi chạy emulator.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.2
+
+# Device Verification Runtime Integration & QR Implementation
+
+Continue from the actual Phase 3.1.5B.1.1 working tree.
+
+Current repository baseline:
+
+- Branch: main
+- HEAD: 1d1b98d
+- Approximately 206 working-tree entries.
+- Previous uncommitted work must be preserved.
+- Envelope v1/v2/v3 compatibility has been tested.
+- F1, F2 and F3 fixes have been implemented.
+- JVM security suite: 48 tests passed.
+- Android instrumentation suite: 32 tests passed on API 35.
+
+These are historical results. Re-run relevant tests when appropriate.
+
+# PRIMARY OBJECTIVE
+
+Complete actual application integration of Device Verification.
+
+Focus on:
+
+- U1: Navigation Integration.
+- U2: QR Encoding and Scanning.
+- U3: Integrate VerificationStateDeriver into the real application flow.
+
+Do not begin Phase 3.1.6 or Phase 3.2.
+
+Do not implement Kyber Bundle Delivery, PQXDH or Double Ratchet.
+
+# 1\. CRITICAL ENVIRONMENT SAFETY
+
+The repository owner has experienced computer freezes when OpenCode/FreeBuff starts Android Virtual Devices.
+
+The computer has at least 32 GB RAM, but this does NOT authorize automatically launching an emulator.
+
+STRICT RULES:
+
+- Do not launch Android Emulator.
+- Do not start AVD.
+- Do not run emulator -avd.
+- Do not run adb emu.
+- Do not automatically start an emulator through Gradle.
+- Do not launch Android Studio to start an AVD.
+- Do not touch attached physical phones.
+- Do not install APKs on physical devices.
+- Do not kill unrelated user processes.
+
+The previous API 35 emulator test results may be referenced as historical evidence.
+
+For this phase, use JVM tests, compilation, static analysis and existing non-emulator validation.
+
+If runtime testing requires an emulator, mark it NOT VERIFIED and continue with safe tests.
+
+Only the repository owner may explicitly authorize a future emulator session.
+
+# 2\. REPOSITORY SAFETY
+
+Before editing:
+
+- Inspect git status.
+- Confirm current branch and HEAD.
+- Inventory all existing modified and untracked files.
+- Identify changes from previous phases.
+- Read previous phase reports.
+- Preserve all existing work.
+
+PROHIBITED:
+
+- git reset
+- git clean
+- git stash
+- git checkout to another branch
+- git commit
+- git push
+- deleting existing untracked files
+- rewriting unrelated modules
+
+Do not modify KONNXBK2.
+
+Do not overwrite existing identity material.
+
+# 3\. ARCHITECTURE AUDIT
+
+Inspect:
+
+- KonnexRoot.
+- Existing NavHost.
+- SettingsRoute.
+- SettingsScreen.
+- Navigation destination definitions.
+- DeviceIdentityManager.
+- DeviceKeyMaterialStore.
+- DeviceTrustStore.
+- VerificationStateDeriver.
+- DeviceVerificationQr.
+- DeviceVerificationScreen.
+- Existing account/device context providers.
+- Existing dependency injection architecture.
+
+Determine the correct production integration path.
+
+Do not introduce duplicate managers or parallel trust stores.
+
+DeviceIdentityManager must have an explicit, justified production integration point.
+
+# 4\. U1 — NAVIGATION INTEGRATION
+
+Integrate DeviceVerificationScreen into the actual application architecture.
+
+Requirements:
+
+1. Add a Device Verification entry to Settings.
+2. Add a navigation destination.
+3. Pass the authenticated account context.
+4. Pass the correct local device identity.
+5. Retrieve remote device information through existing repositories.
+6. Connect DeviceTrustStore.
+7. Connect VerificationStateDeriver.
+8. Handle missing identity material.
+9. Handle revoked devices.
+10. Handle changed fingerprints.
+11. Handle invalid trust records.
+12. Avoid duplicate destinations.
+13. Preserve existing navigation behavior.
+14. Avoid leaking sensitive key material into navigation arguments.
+
+Use the existing architecture and conventions.
+
+Do not introduce hardcoded account IDs or device IDs.
+
+Do not create fake production data to make the screen appear functional.
+
+# 5\. U3 — CENTRALIZED VERIFICATION STATE
+
+VerificationStateDeriver must remain the single authoritative source of verification UI state.
+
+Required flow:
+
+DeviceTrustStore.evaluate() → VerificationStateDeriver.deriveState() → DeviceVerificationScreen
+
+Requirements:
+
+- No security state inference inside Compose.
+- No duplicated security rules.
+- No direct trust writes from UI rendering.
+- Revoked always overrides Verified.
+- Changed fingerprint invalidates previous trust.
+- Invalid payload produces Verification Failed.
+- Scanning alone never establishes trust.
+
+Add tests for all state transitions and precedence combinations.
+
+# 6\. U2 — QR IMPLEMENTATION
+
+Audit existing dependencies before selecting a library.
+
+If no suitable library exists, select a maintained QR implementation compatible with the existing Android architecture.
+
+Requirements:
+
+## QR Generation
+
+- Generate a real QR matrix.
+- Encode the existing DeviceVerificationQr payload.
+- Preserve the current payload version.
+- Validate payload size.
+- Never encode private keys.
+- Never encode authentication tokens.
+- Never expose sensitive internal material.
+
+## QR Scanning
+
+- Integrate with existing Android camera architecture.
+- Follow existing lifecycle conventions.
+- Handle camera permission.
+- Handle permission denial.
+- Handle camera unavailable.
+- Handle malformed QR payloads.
+- Reject unsupported payload versions.
+- Reject wrong account identifiers.
+- Reject invalid device identifiers.
+- Reject oversized payloads.
+
+## Security Rules
+
+Scanning a QR code must never automatically persist trust.
+
+Only explicit user confirmation after valid SAS comparison may persist verification.
+
+QR payload validation and trust establishment must remain separate operations.
+
+Do not invent a custom QR encoding algorithm.
+
+# 7\. DEVICE VERIFICATION FLOW
+
+Implement the complete logical flow:
+
+1. User opens Settings.
+2. User selects Device Verification.
+3. Application loads local identity.
+4. Application loads remote device information.
+5. Application derives authoritative verification state.
+6. User selects the intended device.
+7. Application generates or scans a QR payload.
+8. Both sides obtain the required comparison information.
+9. User explicitly confirms a valid SAS comparison.
+10. TrustStore persists verification.
+11. State is derived again.
+12. UI displays the resulting state.
+
+Important:
+
+Do not implement a fake SAS comparison.
+
+If the cryptographic comparison protocol is not implemented, leave the confirmation step blocked and document the missing dependency.
+
+Never mark a device Verified merely because QR scanning succeeded.
+
+# 8\. TESTING
+
+Run available safe tests:
+
+- :core:security:testDebugUnitTest
+- :feature:settings:testDebugUnitTest
+- Relevant JVM tests.
+- QR parser tests.
+- QR generation tests.
+- VerificationStateDeriver tests.
+- Navigation-related JVM tests.
+- Relevant module compilation.
+- Backend contract tests if changed.
+
+Do not launch an emulator.
+
+Do not run instrumentation tests that require an emulator.
+
+Record exact commands and results.
+
+Compilation success must not be reported as runtime integration success.
+
+# 9\. SIGNED PREKEY WORK
+
+Do not implement R1a/R1b/R1c in this phase.
+
+However, audit and document:
+
+- Current server bundle endpoint.
+- Current signed prekey schema.
+- Existing predecessor records.
+- Current client response model.
+- Missing previous-key delivery contract.
+- Retention and cleanup gaps.
+- Required compatibility considerations.
+
+Do not change database schema or API contracts without a separate implementation task.
+
+# 10\. DOCUMENTATION
+
+Create or update:
+
+E2EE\_DEVICE\_VERIFICATION\_NAVIGATION\_PHASE3\_1\_5B\_2.md
+
+E2EE\_DEVICE\_VERIFICATION\_QR\_IMPLEMENTATION\_PHASE3\_1\_5B\_2.md
+
+E2EE\_DEVICE\_VERIFICATION\_RUNTIME\_FLOW\_PHASE3\_1\_5B\_2.md
+
+E2EE\_SIGNED\_PREKEY\_NEXT\_PHASE\_AUDIT.md
+
+E2EE\_PHASE3\_1\_5B\_2\_TEST\_REPORT.md
+
+E2EE\_PHASE3\_1\_5B\_2\_FINAL\_REPORT.md
+
+Document all incomplete work honestly.
+
+# 11\. FINAL ACCEPTANCE GATE
+
+Report each independently:
+
+U1 — Navigation Integration U2a — QR Generation U2b — QR Scanning U3 — Verification State Integration SAS — Explicit Trust Confirmation R1a — Previous Signed Prekey Delivery Audit R1b — Retention Audit R1c — Rotation Test Readiness
+
+Use only:
+
+- PASS
+- PASS WITH CONDITIONS
+- BLOCKED
+- NOT VERIFIED
+
+A feature is not PASS merely because its source code compiles.
+
+A screen is not integrated merely because its Composable exists.
+
+QR scanning is not verification.
+
+Verification is not complete without explicit cryptographic confirmation.
+
+# 12\. FINAL RESTRICTIONS
+
+Do not begin Phase 3.1.6.
+
+Do not begin Phase 3.2.
+
+Do not implement PQXDH.
+
+Do not implement Double Ratchet.
+
+Do not launch an emulator.
+
+Do not touch physical phones.
+
+Do not commit or push.
+
+Preserve all existing uncommitted work.
+
+Begin with repository audit.
+
+## Sau prompt này
+
+Tôi muốn OpenCode hoàn thành theo thứ tự:
+
+1. U1 – Navigation.
+2. U2 – QR generation và scanning.
+3. U3 – Verification state integration.
+4. SAS – Xác nhận tin cậy bằng so sánh mật mã thực sự.
+
+Lưu ý: Nếu SAS protocol chưa sẵn sàng, phải để trạng thái xác minh bị khóa, không được tạo chức năng Verified giả.
+
+Sau khi OpenCode chạy xong, gửi tôi báo cáo cuối cùng. Tôi sẽ giúp bạn đánh giá trước khi giao Phase tiếp theo.
+
+
+* done
+Starting with the repository audit and a full read of the verification, navigation, and trust surfaces.
+
+Camera artifacts are cached; checking exact versions, whether ML Kit barcode scanning is available, and whether a QR library can be fetched at all.
+
+Network is available and CameraX 1.4.0 is cached; ZXing is not cached but fetchable. Reading the account/installation context and the libsignal Fingerprint API before wiring.
+
+Architecture is clear: no existing QR/camera stack, CameraX 1.4.0 cached, ZXing fetchable. Adding the dependency set, QR core, and the pure verification reducer first.
+
+
+
+
+
+
+
+Now the camera scanner, QR rendering, ViewModel, and screen/route.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now compiling and running the JVM suites (no emulator).
+
+Two real compile errors: libsignal's `IdentityKey` leaked into the feature API, and CameraX's proxy is `androidx.camera.core.ImageProxy` (not `android.media`). Fixing both.
+
+
+
+
+My test assertion was wrong (asserted `null` on the *builder*, not the parser). Fixing that and the deprecated lifecycle import.
+
+
+
+
+Four test failures reveal a genuine defence gap (a trust record with mismatched identifiers still verified) plus one derivation nuance. Hardening the deriver and correcting the reducer/expectations.
+
+
+
+
+
+
+
+
+
+
+All green: `assemble`-level compile passes, 59 core tests + 29 settings tests. Now auditing the signed-prekey path for the R1 docs.
+
+All checks are green. Writing the six phase documents now.
+
+
+
+
+
+
+
+
+
+
+Phase 3.1.5B.2 is implemented, compiled, tested on the JVM, and documented. No emulator or physical device was used; `HEAD` is still `1d1b98d` with all prior work preserved (221 working-tree entries, 6 new docs).
+
+## What was finished
+
+**U1 — Navigation.** `KonnexDestinations.DEVICE_VERIFICATION` plus a `composable` destination in `KonnexRoot`, a "Device verification" row in Settings → Security, and `onOpenDeviceVerification` callback plumbing. `AppContainer.deviceVerificationDependencies` supplies the authenticated account (`profile.id`), the stable installation id, one `DeviceIdentityManager`, one `DeviceTrustStore`, and peers from `apiClient.listDevices()`. The route takes no arguments, so no key material can leak through navigation.
+
+**U2 — QR.** ZXing core 3.5.3 (pure Java, JVM-testable) + CameraX 1.4.0. `DeviceQrCode` encodes the existing `KNXQR1|account|device|identityKey` payload — version preserved, public material only, bounded size/length. `DeviceQrImage` renders the matrix; `QrCameraScanner` handles permission, denial, no camera, bind failure, stride-aware luminance copy and inverted fallback.
+
+**U3 — State.** The reducer validates payload binding and delegates every precedence rule to `VerificationStateDeriver`; Compose renders phase/severity/message/SAS/`canConfirm`/`canScan` and infers nothing. A real gap was found and fixed: the deriver now ignores a `TrustRecord` whose account/local/remote ids don't match the inputs — previously a foreign record could yield `VERIFIED`. `confirm()` is the only trust write, re-checks `canConfirm`, and re-derives afterwards. SAS is the genuine libsignal displayable fingerprint.
+
+## Verification
+
+`./gradlew :core:security:testDebugUnitTest :feature:settings:testDebugUnitTest :app:compileDebugKotlin` → **BUILD SUCCESSFUL**, 59 + 29 tests, 0 failures. 40 new tests (11 payload, 8 QR round-trip, 21 reducer). Five defects surfaced and were fixed along the way (libsignal type leak, wrong CameraX proxy type, a bad test assertion, the trust-binding gap, and two precedence expectations).
+
+## Gate
+
+| Item | Verdict |
+|---|---|
+| U1 Navigation | PASS WITH CONDITIONS |
+| U2a QR Generation | PASS WITH CONDITIONS (matrix + JVM round trip; rendered code never scanned) |
+| U2b QR Scanning | **NOT VERIFIED** (camera path never executed) |
+| U3 State Integration | PASS WITH CONDITIONS |
+| SAS Trust Confirmation | PASS WITH CONDITIONS (real number, but comparison is user-asserted, not an in-protocol exchange) |
+| R1a Delivery Audit | PASS (audit); implementation still BLOCKED by scope |
+| R1b Retention Audit | PASS (audit) |
+| R1c Rotation Readiness | **NOT VERIFIED** |
+
+All conditions reduce to one missing piece of evidence: a single owner-authorised device run that opens the screen, scans the code, compares the numbers, confirms, and sees `VERIFIED` persist. Until then scanning, rendering and navigation remain unproven. Phase 3.1.6/3.2, PQXDH and Double Ratchet were not started.
+
+
+
+11111111111111111111
+Kết quả này khá tốt. Tôi đánh giá Phase 3.1.5B.2 là một bước tiến lớn vì KONNEX đã chuyển từ các module bảo mật riêng lẻ sang luồng tích hợp thực tế trong ứng dụng.
+
+Tuy nhiên, có một vấn đề cần đặc biệt chú ý: SAS hiện là giá trị fingerprint thật của libsignal, nhưng việc xác nhận vẫn dựa trên thao tác do người dùng tự khẳng định, chưa có giao thức trao đổi và xác nhận hai phía.
+
+Vì vậy, chưa thể coi Device Verification hoàn chỉnh.
+
+# 1. Đánh giá Phase 3.1.5B.2
+
+Phase 3.1.5B.2
+
+IMPLEMENTED WITH CONDITIONS
+
+# 88 tests passed
+
+59 security tests + 29 settings tests
+
+| Hạng mục | Verdict |
+| --- | --- |
+| U1 Navigation | PASS WITH CONDITIONS |
+| U2a QR Generation | PASS WITH CONDITIONS |
+| U2b QR Scanning | NOT VERIFIED |
+| U3 State Integration | PASS WITH CONDITIONS |
+| SAS Confirmation | PASS WITH CONDITIONS |
+| R1a Delivery Audit | PASS |
+| R1b Retention Audit | PASS |
+| R1c Rotation Readiness | NOT VERIFIED |
+
+## 2. Ba điểm tôi đánh giá cao
+
+### A. DeviceIdentityManager đã có production integration
+
+Đây là thay đổi quan trọng.
+
+Trước đây manager chưa có production call site. Bây giờ đã có:
+
+- `AppContainer.deviceVerificationDependencies`
+- Authenticated account context.
+- Stable installation ID.
+- Một `DeviceIdentityManager`.
+- Một `DeviceTrustStore`.
+- Remote devices từ `apiClient.listDevices()`.
+
+Đây là hướng kiến trúc hợp lý.
+
+### B. QR không chứa private key
+
+Payload:
+
+`KNXQR1|account|device|identityKey`
+
+Việc giữ nguyên version và chỉ đưa public identity material vào QR là đúng hướng.
+
+ZXing và CameraX cũng là lựa chọn hợp lý cho kiến trúc Android hiện tại.
+
+### C. Phát hiện lỗi TrustStore binding
+
+Đây là phát hiện đáng giá nhất trong lần này.
+
+Một TrustRecord có account/local/remote identifiers không khớp vẫn có thể dẫn tới VERIFIED.
+
+OpenCode đã sửa bằng cách kiểm tra binding trước khi chấp nhận trust record.
+
+Tôi muốn giữ regression test này vĩnh viễn.
+
+# 3. Ba vấn đề chưa được phép bỏ qua
+
+Thứ nhất: QR scanning chưa chạy thực tế.
+
+QR generation và parser test thành công không chứng minh camera có thể quét được QR.
+
+Thứ hai: SAS chưa phải xác minh hai phía.
+
+Hiện tại người dùng có thể tự xác nhận hai số giống nhau, nhưng chưa có bằng chứng rằng hai thiết bị đã hoàn thành cùng một giao thức xác minh.
+
+Không được biến thao tác này thành VERIFIED mà không có cơ chế xác nhận hợp lệ.
+
+Thứ ba: Navigation chưa được kiểm chứng runtime.
+
+Compile thành công không chứng minh Settings thực sự mở đúng màn hình.
+
+# 4. Quyết định tiếp theo
+
+Tôi đề xuất chưa chuyển sang Signed Prekey Delivery ngay.
+
+Nên hoàn thiện một bước kiểm chứng cuối cho Device Verification trước.
+
+## KONNEX – Phase 3.1.5B.3
+
+Device Verification Protocol & Runtime Validation
+
+Next phase- Kiểm chứng QR hai thiết bị.
+- Thiết kế SAS confirmation an toàn.
+- Kiểm tra trust persistence.
+- Kiểm tra revoked và identity changed.
+- Kiểm tra navigation thực tế.
+- Chuẩn bị kiểm thử R1.
+
+# 5. Prompt tiếp theo cho OpenCode
+
+Tôi muốn lần này OpenCode tập trung vào việc phân biệt rõ giữa hiển thị SAS, người dùng xác nhận SAS và giao thức xác minh thực sự.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.3
+
+# Device Verification Protocol Hardening & Runtime Readiness
+
+Continue from the actual Phase 3.1.5B.2 working tree.
+
+Current baseline:
+
+- HEAD: 1d1b98d
+- Branch: main
+- 221 working-tree entries.
+- U1 navigation implemented.
+- U2 QR generation implemented.
+- CameraX scanning implemented but not runtime verified.
+- U3 state integration implemented.
+- SAS uses libsignal displayable fingerprints.
+- Trust confirmation is currently user-asserted.
+- 88 JVM tests passed.
+- No Phase 3.2 implementation exists.
+
+Historical test results must not be treated as current results without rerunning.
+
+## PRIMARY OBJECTIVE
+
+Establish whether the existing Device Verification implementation can safely establish mutual device trust.
+
+Do not implement an invented verification protocol.
+
+Do not mark devices VERIFIED unless the required cryptographic verification conditions are genuinely satisfied.
+
+## 1\. REPOSITORY SAFETY
+
+Before editing:
+
+- Inspect Git status.
+- Verify HEAD and branch.
+- Inventory existing changes.
+- Read the Phase 3.1.5B.2 reports.
+- Preserve all previous uncommitted work.
+
+Do not:
+
+- Commit or push.
+- Reset, clean or stash.
+- Switch branches.
+- Modify KONNXBK2.
+- Delete existing files.
+- Touch physical phones without explicit authorization.
+
+## 2\. CRITICAL ENVIRONMENT SAFETY
+
+The repository owner has experienced computer freezes when OpenCode/FreeBuff starts AVD.
+
+The machine has at least 32 GB RAM, but this does not authorize emulator startup.
+
+Do not launch:
+
+- Android Emulator.
+- AVD.
+- emulator -avd.
+- adb emu.
+- Android Studio emulator sessions.
+
+Do not install applications on attached physical phones.
+
+Use JVM tests, compilation, static analysis and existing evidence.
+
+If runtime verification requires a device, mark it NOT VERIFIED.
+
+## 3\. SAS PROTOCOL AUDIT
+
+Inspect the actual libsignal fingerprint implementation.
+
+Determine:
+
+- Which identity keys participate in the fingerprint.
+- Whether both devices independently calculate the same comparison value.
+- Whether account identity is bound.
+- Whether device identity is bound.
+- Whether fingerprint values can become stale.
+- Whether a changed identity invalidates previous verification.
+- Whether the existing protocol supports authenticated comparison between two devices.
+
+Distinguish clearly:
+
+A. Displaying a SAS value.
+
+B. A human confirming that two displayed values match.
+
+C. Both devices recording the same successful verification transaction.
+
+D. A cryptographically authenticated mutual verification protocol.
+
+Do not describe A or B as D.
+
+If the current implementation only supports user-asserted confirmation, preserve that limitation explicitly.
+
+## 4\. TRUST PERSISTENCE HARDENING
+
+Audit DeviceTrustStore and confirm():
+
+- Only explicit confirmation can write trust.
+- A scanned QR never writes trust.
+- Invalid payloads never write trust.
+- Revoked devices never become verified.
+- Changed fingerprints invalidate old trust.
+- Account mismatch is rejected.
+- Local device mismatch is rejected.
+- Remote device mismatch is rejected.
+- Stale verification records are rejected.
+- Concurrent state changes cannot silently preserve stale trust.
+
+Ensure the final confirmation operation revalidates all relevant identities immediately before persistence.
+
+Add tests for race conditions and stale trust records where supported by the existing architecture.
+
+## 5\. QR SECURITY AUDIT
+
+Inspect the existing KNXQR1 format.
+
+Verify:
+
+- Payload size limits.
+- Field length limits.
+- Account binding.
+- Device binding.
+- Identity key parsing.
+- Invalid encoding rejection.
+- Unsupported version rejection.
+- Duplicate or replayed payload handling.
+- No private keys.
+- No authentication tokens.
+- No sensitive session material.
+
+Do not change the QR format without a documented compatibility reason.
+
+## 6\. CAMERA AND NAVIGATION READINESS
+
+Audit:
+
+- CameraX lifecycle.
+- Camera permission.
+- Permission denial.
+- Scanner lifecycle cleanup.
+- ImageProxy closure.
+- Camera unavailable handling.
+- QR result delivery.
+- Duplicate scan handling.
+- Navigation back stack.
+- Settings destination reachability.
+
+Run only safe tests that do not start an emulator.
+
+Separate compilation evidence from runtime evidence.
+
+## 7\. TESTING
+
+Run:
+
+- :core:security:testDebugUnitTest
+- :feature:settings:testDebugUnitTest
+- :app:compileDebugKotlin
+- Relevant backend contract tests if changed.
+
+Add tests for:
+
+- SAS consistency.
+- Fingerprint changes.
+- Trust binding.
+- Revocation precedence.
+- Invalid QR.
+- Replay protection where applicable.
+- Confirmation revalidation.
+- Concurrent trust changes.
+
+Do not fabricate test results.
+
+## 8\. SIGNED PREKEY READINESS
+
+Do not implement R1a/R1b/R1c yet.
+
+Produce a concrete implementation plan based on actual server and client source:
+
+- API response changes.
+- Current/previous key selection.
+- Device binding.
+- Key signature validation.
+- Expiration.
+- Revocation.
+- Retention.
+- Cleanup.
+- Future session references.
+
+Identify any protocol changes that require coordinated client/server deployment.
+
+## 9\. DOCUMENTATION
+
+Create:
+
+E2EE\_DEVICE\_VERIFICATION\_SAS\_PROTOCOL\_AUDIT.md
+
+E2EE\_DEVICE\_TRUST\_PERSISTENCE\_HARDENING.md
+
+E2EE\_DEVICE\_VERIFICATION\_QR\_SECURITY\_AUDIT.md
+
+E2EE\_DEVICE\_VERIFICATION\_RUNTIME\_READINESS.md
+
+E2EE\_SIGNED\_PREKEY\_IMPLEMENTATION\_PLAN.md
+
+E2EE\_PHASE3\_1\_5B\_3\_FINAL\_REPORT.md
+
+## 10\. FINAL GATE
+
+Report independently:
+
+- SAS fingerprint correctness.
+- Mutual verification protocol.
+- Trust persistence safety.
+- Revocation handling.
+- Identity change handling.
+- QR security.
+- Camera lifecycle.
+- Navigation readiness.
+- Signed prekey implementation readiness.
+
+Use only:
+
+PASS PASS WITH CONDITIONS BLOCKED NOT VERIFIED
+
+Do not claim mutual verification if the protocol does not support it.
+
+Do not mark VERIFIED through user assertion alone unless the security model explicitly supports and documents that assurance level.
+
+Do not start Phase 3.1.6 or Phase 3.2.
+
+Do not launch an emulator.
+
+Do not commit or push.
+
+Begin with repository audit.
+
+## 6\. Roadmap sau bước này
+
+| Phase | Mục tiêu |
+| --- | --- |
+| 3.1.5B.3 | Hoàn thiện xác minh thiết bị |
+| 3.1.5B.4 | Signed Prekey lifecycle và rotation |
+| 3.1.6 | Kyber Bundle Delivery |
+| 3.1.7 | Full Security Regression |
+| 3.2 | PQXDH + Double Ratchet |
+
+Quan điểm của tôi: Device Verification phải thực sự đáng tin trước khi KONNEX sử dụng nó làm nền tảng tin cậy cho trao đổi khóa và mã hóa tin nhắn.
+
+Sau khi chạy prompt này, gửi tôi báo cáo. Tôi sẽ đánh giá xem có thể chuyển sang hoàn thiện Signed Prekey Lifecycle hay chưa.
+
+
+
+* done
+Starting with the repository audit and reading the actual SAS, trust-store and confirmation code before deciding what needs hardening.
+
+Critical detail to establish empirically: whether libsignal canonicalises the two keys so both sides get the same digits. Inspecting the library API and the existing test harness.
+
+Now hardening trust persistence and making the confirmation revalidate everything immediately before it writes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+My test overwrote the first manager's vault (same temp dir). Fixing both test bugs.
+
+
+
+
+All 109 tests pass (69 core + 40 settings) and the app compiles. One last look at the screen's confirmation affordances before writing the audits.
+
+
+
+
+
+
+
+
+
+
+Phase 3.1.5B.3 is complete: audits done, real hardening applied, 109 JVM tests green, six documents written. `HEAD` is still `1d1b98d`, 228 working-tree entries, nothing committed, no emulator or device touched (`tasklist` shows 0 emulator processes).
+
+## The central question, answered honestly
+
+**This implementation cannot establish mutual device trust today.** It can establish a *local, user-asserted* trust decision backed by a genuine libsignal safety number. Levels A (display) and B (human comparison) exist; C (both devices recording the same transaction) and D (authenticated mutual protocol) do not. The audit says so in those terms.
+
+One important empirical result: I asserted both-direction SAS equality rather than trusting the documentation. `SasConsistencyTest` activates two real identities and confirms `A.sasDigits(B) == B.sasDigits(A)` (60 digits, deterministic). The same test set also proves the number binds *keys only* — copying one key pair into a vault under a different installation id yields the same digits, so account/device binding lives in the trust record and reducer, not in the number. That limitation is now documented, not hidden.
+
+## Hardening that actually changed behaviour
+
+- **`DeviceTrustStore`**: all entry points synchronized (a 16-thread test now guards lost updates); `evaluate` *persists* `IDENTITY_CHANGED` instead of returning a temporary downgrade, so a reappearing old key can no longer silently restore trust; `record` requires a non-blank local device id and a real timestamp.
+- **New `DeviceTrustConfirmation` guard**: `confirm()` re-fetches the device list, re-reads identity state and re-derives the number immediately before writing. It refuses on revoked/unknown peer, failed device fetch (fail closed), changed account/installation, changed selection, missing number, or a number that differs from the one shown. It can only refuse — never grant.
+- No QR format change, no schema change, no new dependency.
+
+## Checks run
+
+`./gradlew :core:security:testDebugUnitTest :feature:settings:testDebugUnitTest :app:compileDebugKotlin` → **BUILD SUCCESSFUL**, 69 + 40 tests, 0 failures. 21 tests are new this phase. Two failures encountered were my own test-harness bugs (a copied vault overwriting its source, an invalid key hitting libsignal before the intended check); both were fixed in the tests with assertions intact.
+
+## Gate
+
+| Item | Verdict |
+|---|---|
+| SAS fingerprint correctness | **PASS** |
+| Mutual verification protocol | **BLOCKED** (C/D absent) |
+| Trust persistence safety | PASS WITH CONDITIONS (Keystore runtime unverified) |
+| Revocation handling | PASS WITH CONDITIONS |
+| Identity change handling | PASS WITH CONDITIONS |
+| QR security | PASS WITH CONDITIONS (rendered symbol never scanned) |
+| Camera lifecycle | **NOT VERIFIED** |
+| Navigation readiness | PASS WITH CONDITIONS (never navigated) |
+| Signed prekey implementation readiness | PASS WITH CONDITIONS (plan only) |
+
+Also recorded as real findings: the scanner's one-shot latch never resets (a rejected code needs the screen reopened), and permanent permission denial has no settings path. Neither affects trust safety, since no scan path writes trust.
+
+Signed prekey delivery remains unimplemented. The plan is concrete about why it can't be server-only: the server has **no `ALTER TABLE` anywhere**, so `retired_at` needs a migration helper, and `core/network` has **zero bundle symbols** — shipping the response field without a client consumer would repeat the Kyber mistake. Phase 3.1.6/3.2, PQXDH and Double Ratchet were not started.
+
+
+
+11111111111
+Tôi đánh giá Phase 3.1.5B.3 là một trong những vòng kiểm tra có giá trị nhất từ đầu KONNEX đến nay.
+
+Đặc biệt, OpenCode đã trả lời được câu hỏi quan trọng: SAS hiện tại có thể chứng minh hai bên nhìn thấy cùng một safety number, nhưng chưa thể chứng minh hai thiết bị đã thiết lập mutual trust.
+
+Tôi đồng ý với hướng đánh giá và verdict của báo cáo.
+
+# 1. Kết quả Phase 3.1.5B.3
+
+Phase 3.1.5B.3
+
+COMPLETED WITH CONDITIONS
+
+# 109 / 109
+
+JVM tests passed · 0 failures
+
+69
+
+Core security
+
+40
+
+Settings
+
+- SAS fingerprint: PASS
+- Trust persistence: PASS WITH CONDITIONS
+- Mutual verification: BLOCKED
+- Camera lifecycle: NOT VERIFIED
+
+## 2. Phát hiện quan trọng: SAS không đồng nghĩa Device Verification
+
+Tôi đánh giá cao việc OpenCode đã kiểm tra bằng hai identity thật của libsignal.
+
+Kết quả:
+
+`A.sasDigits(B) == B.sasDigits(A)`
+
+60 chữ số, deterministic.
+
+Nhưng có một giới hạn quan trọng:
+
+- Safety number chỉ ràng buộc hai identity keys.
+- Nó không tự ràng buộc account ID.
+- Nó không tự ràng buộc installation ID.
+- Việc xác minh danh tính thiết bị phải được xử lý ở tầng trust record và protocol.
+
+Đây là cách phân chia trách nhiệm đúng.
+
+Tôi đề nghị giữ nguyên mô hình assurance level:
+
+| Level | Ý nghĩa | Trạng thái |
+| --- | --- | --- |
+| A | Hiển thị safety number | Có |
+| B | Người dùng so sánh thủ công | Có |
+| C | Hai thiết bị ghi nhận cùng giao dịch | Chưa có |
+| D | Mutual authenticated verification | Chưa có |
+
+Không nên gọi B là D.
+
+## 3. Tôi đánh giá cao ba thay đổi bảo mật
+
+1. DeviceTrustStore synchronization
+
+Việc đồng bộ các entry point và có test 16 threads là tốt.
+
+Đặc biệt, `IDENTITY_CHANGED` được lưu lại thay vì chỉ trả về trạng thái tạm thời. Điều này tránh việc identity cũ xuất hiện lại và vô tình khôi phục trust.
+
+2. DeviceTrustConfirmation
+
+Đây là thay đổi tôi thích nhất.
+
+Ngay trước khi ghi trust, hệ thống kiểm tra lại:
+
+- Device list.
+- Identity state.
+- Account.
+- Installation.
+- Selected device.
+- SAS hiện tại.
+
+Một confirmation guard chỉ có quyền từ chối khi điều kiện không hợp lệ là thiết kế an toàn.
+
+3. Không thay đổi QR format tùy tiện
+
+Tôi đồng ý chưa thay đổi KNXQR1 và database schema trong vòng này.
+
+# 4. Bốn việc còn tồn tại
+
+| Vấn đề | Mức độ | Hướng xử lý |
+| --- | --- | --- |
+| Scanner one-shot latch không reset | Trung bình | Sửa lifecycle |
+| Permission denial vĩnh viễn thiếu Settings path | Trung bình | Bổ sung hướng dẫn cấp quyền |
+| Camera chưa runtime verified | Cao | Chờ thiết bị được chủ sở hữu cho phép |
+| Mutual verification C/D chưa có | Cao | Thiết kế protocol riêng |
+
+Tôi muốn bổ sung một lưu ý: nếu sau này xây dựng mutual verification, không nên tự thiết kế một giao thức cryptographic mới nếu libsignal hoặc một giao thức đã được kiểm chứng có thể đáp ứng yêu cầu.
+
+# 5. Bước tiếp theo: KONNEX Phase 3.1.5B.4
+
+Tôi đề xuất hoàn thành Signed Prekey Lifecycle trước khi chuyển sang Kyber Bundle Delivery.
+
+Đây là phần còn thiếu quan trọng để hệ thống có thể quản lý khóa nhất quán giữa client và server.
+
+## Phase 3.1.5B.4
+
+Signed Prekey Lifecycle Implementation & Client-Server Validation
+
+Recommended next- Previous Signed Prekey Delivery.
+- Server database migration.
+- Client bundle consumption.
+- Retention and cleanup.
+- Rotation regression.
+- Client-server compatibility tests.
+
+## 6. Prompt tiếp theo cho OpenCode
+
+Đây là prompt tôi đề xuất. Tôi đưa thêm một số điều kiện để tránh lỗi cũ: server có API nhưng client không sử dụng, hoặc lưu previous key nhưng không thể tìm lại private key tương ứng.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.4
+
+# Signed Prekey Lifecycle Implementation & Client-Server Integration
+
+Continue from the actual Phase 3.1.5B.3 working tree.
+
+## Baseline
+
+- Branch: main
+- HEAD: 1d1b98d
+- Approximately 228 working-tree entries.
+- Envelope v1/v2/v3 compatibility verified.
+- F1/F2/F3 fixes implemented.
+- Device Verification state machine implemented.
+- DeviceTrustStore synchronization implemented.
+- DeviceTrustConfirmation implemented.
+- SAS consistency tested with real libsignal identities.
+- Mutual verification protocol C/D is not implemented.
+- Signed Prekey previous-key delivery remains unimplemented.
+
+Historical test results must not be treated as current results without rerunning.
+
+## PRIMARY OBJECTIVE
+
+Implement and validate the complete Signed Prekey lifecycle across server and Android client.
+
+The objective is not merely to retain previous private keys.
+
+The objective is to ensure that a peer can retrieve the correct signed public prekey and that the corresponding client private key remains available for legitimate protocol operations.
+
+Do not begin Phase 3.1.6 or Phase 3.2.
+
+Do not implement PQXDH or Double Ratchet.
+
+# 1\. REPOSITORY SAFETY
+
+Before editing:
+
+- Inspect Git status.
+- Confirm HEAD and branch.
+- Inventory existing modified and untracked files.
+- Read all Phase 3.1.5A/B reports.
+- Identify existing server migrations.
+- Identify current bundle API contracts.
+
+Preserve all existing work.
+
+PROHIBITED:
+
+- git reset
+- git clean
+- git stash
+- branch switching
+- commit
+- push
+- deleting existing untracked files
+- modifying KONNXBK2
+- overwriting existing identity material
+
+# 2\. CRITICAL ENVIRONMENT SAFETY
+
+Do not launch Android Emulator or AVD.
+
+Do not run emulator -avd.
+
+Do not run adb emu.
+
+Do not start Android Studio emulator sessions.
+
+Do not touch attached physical phones.
+
+Do not install APKs on physical devices.
+
+The repository owner has experienced machine freezes from emulator startup.
+
+Use JVM tests, backend tests, compilation and static analysis.
+
+If Android runtime testing requires a device, mark it NOT VERIFIED.
+
+# 3\. SERVER API AUDIT
+
+Inspect the actual implementation of:
+
+- Bundle retrieval endpoint.
+- SignedPreKey database model.
+- Device registration.
+- Key rotation.
+- Key revocation.
+- Existing database schema.
+- Existing migration helpers.
+- Authentication and device ownership checks.
+
+Document the current contract before modifying it.
+
+Do not assume predecessor rows are safe to serve merely because they exist.
+
+# 4\. SIGNED PREKEY LIFECYCLE
+
+Implement explicit lifecycle states:
+
+CURRENT PREVIOUS RETIRED DELETED
+
+Requirements:
+
+CURRENT:
+
+- Distributed to new peers.
+- Signature validated.
+- Bound to account and device.
+
+PREVIOUS:
+
+- Public key retrievable by eligible peers.
+- Corresponding private key retained by owner.
+- Not used for new sessions.
+- Available only under explicit retention rules.
+
+RETIRED:
+
+- Not distributed for new sessions.
+- Retained while valid references or protocol requirements exist.
+
+DELETED:
+
+- Removed only when cleanup conditions are satisfied.
+
+Do not treat 30 days as proof that a key is no longer needed.
+
+Where session references do not yet exist, explicitly document this limitation.
+
+Do not fabricate session records.
+
+# 5\. SERVER PREVIOUS KEY DELIVERY
+
+Design and implement a backward-compatible bundle response.
+
+Requirements:
+
+- Current signed prekey.
+- Eligible previous signed prekeys.
+- Stable key identifiers.
+- Public key material only.
+- Signature.
+- Creation timestamp.
+- Expiration metadata.
+- Account/device binding.
+- Revocation checks.
+
+Never expose private key material.
+
+Never return revoked or expired keys.
+
+Verify signatures against the correct identity key.
+
+Do not silently change existing API semantics.
+
+Document the deployment and compatibility strategy.
+
+# 6\. DATABASE MIGRATION
+
+The previous audit found no existing ALTER TABLE migration implementation.
+
+Inspect the current migration architecture.
+
+Implement schema migration using the established project conventions.
+
+Requirements:
+
+- Forward migration.
+- Existing data preservation.
+- Idempotent migration where supported.
+- Rollback considerations.
+- Migration tests.
+- No destructive schema replacement.
+- No modification of existing production databases.
+
+Do not directly edit schema metadata without corresponding migration logic.
+
+# 7\. CLIENT CONSUMPTION
+
+Inspect core/network and existing bundle models.
+
+Implement actual client consumption of the new response fields.
+
+Requirements:
+
+- Parse current and previous keys.
+- Preserve key IDs.
+- Verify signatures.
+- Reject invalid device binding.
+- Reject revoked keys.
+- Reject expired keys.
+- Preserve backward compatibility with older server responses where safe.
+- Fail closed when a required security property is missing.
+
+Do not implement server-only fields without a real client consumer.
+
+Do not create fake production sessions.
+
+# 8\. CLIENT PRIVATE KEY RETENTION
+
+Inspect DeviceKeyMaterialStore and DeviceIdentityManager.
+
+Ensure:
+
+- Current private key is retained.
+- Previous private key is retained.
+- Key IDs match server public records.
+- Rotation does not discard the previous private key prematurely.
+- Corrupted records fail safely.
+- Device binding remains enforced.
+- Envelope v1/v2/v3 compatibility is preserved.
+- Atomic persistence remains intact.
+
+Do not invent session references.
+
+Document the future integration point for signed\_prekey\_id.
+
+# 9\. ROTATION AND CLEANUP
+
+Implement safe rotation and cleanup.
+
+Requirements:
+
+- First rotation.
+- Repeated rotation.
+- Previous key retention.
+- Grace-period expiration.
+- Revocation.
+- Cleanup transactionality.
+- Crash-safe persistence.
+- Concurrent rotation safety.
+
+Cleanup must never delete the current key.
+
+Cleanup must not delete a key with a known active protocol reference.
+
+If active-session references are not implemented, cleanup must use a conservative policy and clearly document the limitation.
+
+# 10\. TESTING
+
+Run available tests:
+
+- Backend unit tests.
+- Backend integration tests.
+- Database migration tests.
+- :core:security:testDebugUnitTest.
+- Relevant network tests.
+- Client bundle parsing tests.
+- Signature verification tests.
+- Rotation tests.
+- Retention tests.
+- Compilation.
+
+Use real libsignal key material wherever possible.
+
+Test client-server compatibility against the actual API contract.
+
+Do not rely only on isolated module tests.
+
+Do not launch an emulator.
+
+# 11\. DOCUMENTATION
+
+Create or update:
+
+E2EE\_SIGNED\_PREKEY\_LIFECYCLE\_PHASE3\_1\_5B\_4.md
+
+E2EE\_SIGNED\_PREKEY\_SERVER\_DELIVERY\_PHASE3\_1\_5B\_4.md
+
+E2EE\_SIGNED\_PREKEY\_CLIENT\_CONSUMPTION\_PHASE3\_1\_5B\_4.md
+
+E2EE\_SIGNED\_PREKEY\_RETENTION\_AND\_CLEANUP\_PHASE3\_1\_5B\_4.md
+
+E2EE\_SIGNED\_PREKEY\_ROTATION\_TEST\_REPORT\_PHASE3\_1\_5B\_4.md
+
+E2EE\_CLIENT\_SERVER\_COMPATIBILITY\_PHASE3\_1\_5B\_4.md
+
+E2EE\_PHASE3\_1\_5B\_4\_FINAL\_REPORT.md
+
+# 12\. FINAL GATE
+
+Report independently:
+
+- Server migration.
+- Current key delivery.
+- Previous key delivery.
+- Signature validation.
+- Device binding.
+- Client response consumption.
+- Private key retention.
+- Rotation.
+- Cleanup.
+- Crash safety.
+- Client-server compatibility.
+
+Use only:
+
+PASS PASS WITH CONDITIONS BLOCKED NOT VERIFIED
+
+A server endpoint compiling is not proof of client-server integration.
+
+A key stored locally is not proof that its matching public key can be retrieved.
+
+A previous key retained for 30 days is not proof that all active sessions are safe.
+
+# 13\. FINAL RESTRICTIONS
+
+Do not begin Phase 3.1.6.
+
+Do not begin Phase 3.2.
+
+Do not implement Kyber Bundle Delivery.
+
+Do not implement PQXDH.
+
+Do not implement Double Ratchet.
+
+Do not launch an emulator.
+
+Do not touch physical phones.
+
+Do not commit or push.
+
+Preserve all previous work.
+
+Begin with repository audit.
+
+## 7. Roadmap sau Phase 3.1.5B.4
+
+| Giai đoạn | Mục tiêu |
+| --- | --- |
+| 3.1.5B.4 | Signed Prekey Lifecycle |
+| 3.1.6 | Kyber Bundle Delivery & Consumption |
+| 3.1.7 | Full Security Regression |
+| 3.2 | PQXDH + Double Ratchet |
+
+Quyết định: Tôi chấp thuận kết quả Phase 3.1.5B.3 với điều kiện. Bước tiếp theo nên hoàn thiện Signed Prekey Lifecycle xuyên suốt server và client.
+
+Một lưu ý cuối: mutual verification C/D vẫn là một khoảng trống riêng, không được mặc định rằng hoàn thành Signed Prekey sẽ giải quyết được vấn đề đó.
+
+
+
+* done
+Starting the repository audit: migration architecture, current bundle contract, and what the client already has.
+
+The audit claim from last phase was wrong — there *is* a versioned migration framework. Reading it before touching anything.
+
+Now implementing the server lifecycle: idempotent migration, retirement on publish, eligible predecessor selection, and a conservative prune.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now running the full verification: server suite, client contract tests, security suite and app compilation.
+
+`server` is a standalone build, not a subproject — running it with `-p server`.
+
+
+
+
+Both suites pass. Collecting exact counts for the reports.
+
+All 226 tests pass across four modules. Now updating the project's own docs (API/DB/security) as AGENTS.md requires, then writing the phase reports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Phase 3.1.5B.4 is implemented and verified across server and client: the full signed-prekey lifecycle now has explicit states, a real migration, delivery of an eligible predecessor, client-side verification, conservative cleanup, and 37 new tests. `HEAD` remains `1d1b98d`, 238 working-tree entries preserved, nothing committed, no emulator or device touched.
+
+## What actually changed
+
+**Server (schema v7).** `retired_at` was added through the repository's existing `MIGRATIONS` runner — I found the versioned framework this time, and corrected last phase's wrong claim that none existed. SQLite has no `ADD COLUMN IF NOT EXISTS`, so `executeScript` now treats a duplicate-column error from an `ALTER` as already applied, keeping the startup repair pass idempotent. `putSignedPreKey` retires the previous key in the same transaction, but only when the incoming key is usable; `activeSignedPreKey` requires `retired_at IS NULL`; `previousSignedPreKey` returns the most recently retired key inside a 30-day window; `pruneRetiredSignedPreKeys` deletes only retired, unrevoked rows past a 180-day horizon and is never called automatically.
+
+**Delivery.** `GET …/bundle` re-verifies signatures at read time and returns a nullable `previousSignedPreKey` with `createdAt`/`retiredAt`. `404` still means "no key"; `409 signed_prekey_invalid` is reserved for a present-but-unverifiable row — a test caught me breaking that distinction and I restored it.
+
+**Client.** `KeyBundleDto` + `fetchKeyBundle` in `core:network`; `PeerKeyBundleVerifier` in `core:security` with 13 fail-closed rejections (device, account, identity key, current key, predecessor ordering/expiry/signature), all tested against real libsignal keys.
+
+## Defects found by the tests
+
+1. An **already-expired upload retired a live key** — the pre-existing rotation test caught it; retirement now requires the incoming key to be usable.
+2. The **404→409 regression** above.
+3. Two test-fixture mistakes (a device with no published key; revoke returns `204`, not `200`) — fixed in tests without weakening assertions.
+
+## Verification
+
+`./gradlew -p server test` → **77 tests, 0 failures**. `:core:security` 89, `:core:network` 20, `:feature:settings` 40, plus `:app:compileDebugKotlin` → **BUILD SUCCESSFUL**. That is **226 JVM tests, 0 failures**, 37 of them new.
+
+## Gate
+
+| Item | Verdict |
+|---|---|
+| Server migration | **PASS** |
+| Current key delivery | **PASS** |
+| Previous key delivery | **PASS** |
+| Signature validation | **PASS** |
+| Device binding | **PASS** |
+| Client response consumption | PASS WITH CONDITIONS |
+| Private key retention | PASS WITH CONDITIONS |
+| Rotation | **PASS** |
+| Cleanup | PASS WITH CONDITIONS |
+| Crash safety | PASS WITH CONDITIONS |
+| Client-server compatibility | PASS WITH CONDITIONS |
+
+## Honest gaps
+
+The largest is that **the app still does not publish its own keys** — `PUT …/keys` and `POST …/prekeys` are exercised only by server tests, so a production device has no directory entry and there is no app-level "A publishes, B fetches" flow. Second, **no session references exist**: the envelope carries no `signed_prekey_id`, so the 30-day window is a retention policy, not proof that in-flight messages stay decryptable, and a double rotation can strand a peer. Cleanup is manual and reference-blind; consumed one-time prekeys are still never purged. Compatibility is proven by paired contract tests (server shape, client decoding of the same shape), not a live Android→server request, and crash safety is argued from transactions and atomic rename rather than fault-injected.
+
+I also updated `API_SPEC.md` (new device-key-directory section), `SECURITY.md` (corrected the stale "no E2EE code ships" claim and documented the lifecycle), and `E2EE_KEY_DIRECTORY_PHASE3_1.md`. Phase 3.1.6, 3.2, Kyber delivery, PQXDH and Double Ratchet were not started.
+
+
+
+1111111111
+Đây là một bước tiến rất lớn của KONNEX. Tôi đánh giá Phase 3.1.5B.4 tốt hơn các vòng trước ở một điểm quan trọng: lần này OpenCode đã triển khai được cả server lẫn client contract, đồng thời dùng test để phát hiện lỗi rotation thực tế.
+
+Tôi đồng ý với kết quả PASS WITH CONDITIONS, nhưng chưa chấp thuận chuyển Phase 3.1.6.
+
+Có một khoảng trống kiến trúc cần giải quyết trước: ứng dụng chưa tự publish key của thiết bị lên server.
+
+# 1. Đánh giá kết quả Phase 3.1.5B.4
+
+Signed Prekey Lifecycle
+
+IMPLEMENTED WITH CONDITIONS
+
+# 226 / 226
+
+JVM tests · 0 failures
+
+| Module | Tests |
+| --- | --- |
+| Server | 77 |
+| Core security | 89 |
+| Core network | 20 |
+| Settings | 40 |
+| Total | 226 |
+
+Các hạng mục server đã đạt khá tốt:
+
+- Schema v7 migration.
+- Current Signed Prekey delivery.
+- Previous Signed Prekey delivery.
+- Signature validation.
+- Device binding.
+- Rotation.
+- Conservative cleanup.
+
+Đặc biệt, việc sửa lỗi upload một key đã hết hạn nhưng lại retire key còn hiệu lực là rất quan trọng.
+
+Đây là loại lỗi có thể gây gián đoạn bảo mật dù từng module riêng lẻ vẫn chạy bình thường.
+
+# 2. Ba vấn đề tôi muốn xử lý trước Phase 3.1.6
+
+## A. App chưa publish key của chính mình
+
+Ưu tiên cao nhấtHiện tại:
+
+- Server có endpoint publish key.
+- Server có endpoint lấy bundle.
+- Client đã có `KeyBundleDto`.
+- Client đã có `PeerKeyBundleVerifier`.
+- Nhưng ứng dụng chưa có luồng publish key thực tế.
+
+Do đó, hai thiết bị chưa thể thực hiện đầy đủ luồng:
+
+Thiết bị A
+
+Tạo identity và prekeys
+
+KONNEX Server
+
+Device Key Directory
+
+Thiết bị B
+
+Fetch bundle và verify chữ ký
+
+Đây là công việc cần hoàn thành trước khi mở rộng Kyber Bundle Delivery.
+
+## B. Chưa có session references
+
+Tôi đồng ý với cảnh báo của OpenCode.
+
+30 ngày không thể bảo đảm rằng tất cả session vẫn giải mã được.
+
+Hiện tại:
+
+- Chưa có `signed_prekey_id` trong session.
+- Chưa có active-session references.
+- Cleanup chưa biết khóa nào còn được session sử dụng.
+
+Không nên vội tạo session reference giả.
+
+Tuy nhiên, cần thiết kế contract ngay từ bây giờ để tránh phải thay đổi dữ liệu và giao thức nhiều lần sau này.
+
+## C. Chưa có end-to-end client-server runtime
+
+226 test thành công là kết quả tốt, nhưng phần lớn vẫn là kiểm thử JVM và contract.
+
+Chưa chứng minh được:
+
+1. App A tạo và publish key.
+2. Server lưu key.
+3. App B fetch bundle.
+4. App B xác minh chữ ký.
+5. Rotation xảy ra.
+6. App B nhận được previous key.
+7. Private key tương ứng vẫn còn ở App A.
+
+Đây là vòng kiểm chứng quan trọng tiếp theo.
+
+# 3. Phase tiếp theo tôi đề xuất
+
+Tôi chưa muốn mở 3.1.6.
+
+Thay vào đó, nên thực hiện:
+
+## KONNEX — Phase 3.1.5B.5
+
+Device Key Publication & End-to-End Directory Integration
+
+Recommended nextHoàn thiện luồng publish/fetch/verify giữa Android client và server.
+
+- P1: Publish local device identity.
+- P2: Publish Signed Prekey.
+- P3: Publish One-Time Prekeys.
+- P4: Fetch remote KeyBundle.
+- P5: Verify bằng libsignal.
+- P6: Rotation và predecessor retrieval.
+- P7: Client-server integration tests.
+
+## 4. Prompt tiếp theo cho OpenCode
+
+Tôi đã bổ sung các điều kiện để OpenCode không chỉ tạo API client mà phải tích hợp vào đúng lifecycle của ứng dụng.
+
+Writing
+
+# KONNEX — Phase 3.1.5B.5
+
+# Device Key Publication & End-to-End Directory Integration
+
+Continue from the actual Phase 3.1.5B.4 working tree.
+
+## BASELINE
+
+- Branch: main
+- HEAD: 1d1b98d
+- Approximately 238 working-tree entries.
+- Server schema v7.
+- Current and previous Signed Prekey delivery implemented.
+- KeyBundleDto implemented.
+- PeerKeyBundleVerifier implemented.
+- DeviceIdentityManager integrated into Device Verification.
+- Device key publication is not yet integrated into the production application.
+- No active session references exist.
+- 226 JVM tests passed in the previous phase.
+
+Historical test results must not be treated as current results without rerunning.
+
+## PRIMARY OBJECTIVE
+
+Complete the actual Android application lifecycle for publishing local device keys and retrieving remote device bundles.
+
+Prove compatibility between the Android client and server API.
+
+Do not begin Phase 3.1.6 or Phase 3.2.
+
+Do not implement PQXDH or Double Ratchet.
+
+Do not implement Kyber Bundle Delivery in this phase.
+
+# 1\. REPOSITORY SAFETY
+
+Before editing:
+
+- Inspect Git status.
+- Verify branch and HEAD.
+- Inventory all modified and untracked files.
+- Read Phase 3.1.5A through 3.1.5B.4 reports.
+- Inspect server schema v7 and API\_SPEC.md.
+
+Preserve all existing work.
+
+PROHIBITED:
+
+- git reset
+- git clean
+- git stash
+- branch switching
+- commit
+- push
+- deleting existing untracked files
+- modifying KONNXBK2
+- overwriting existing identity material
+
+# 2\. CRITICAL ENVIRONMENT SAFETY
+
+The repository owner has experienced host freezes when OpenCode/FreeBuff launches AVD.
+
+Do not launch:
+
+- Android Emulator.
+- AVD.
+- emulator -avd.
+- adb emu.
+- Android Studio emulator sessions.
+
+Do not touch physical phones.
+
+Do not install APKs on physical devices.
+
+Use JVM tests, backend tests, compilation and static analysis.
+
+Mark Android runtime integration NOT VERIFIED when it cannot be safely exercised.
+
+# 3\. CLIENT PUBLICATION AUDIT
+
+Inspect:
+
+- DeviceIdentityManager.
+- DeviceKeyMaterialStore.
+- Signed Prekey generation.
+- One-Time Prekey generation.
+- Existing registration and activation flows.
+- AppContainer.
+- Authentication lifecycle.
+- core/network.
+- Existing server publication endpoints.
+
+Identify the exact point at which a local device identity becomes eligible for publication.
+
+Do not publish partially initialized identity material.
+
+Do not generate a new identity merely because publication failed.
+
+# 4\. P1 — DEVICE IDENTITY PUBLICATION
+
+Implement production client integration for publishing local identity material.
+
+Requirements:
+
+- Use the authenticated account.
+- Use the stable installation/device identifier.
+- Publish the correct public identity key.
+- Never upload private identity material.
+- Verify server response.
+- Handle retries safely.
+- Avoid duplicate device registration.
+- Handle revoked devices.
+- Handle authentication expiration.
+- Avoid silently replacing an existing server identity.
+
+Identity publication must be idempotent where the API permits it.
+
+# 5\. P2 — SIGNED PREKEY PUBLICATION
+
+Integrate actual Signed Prekey publication.
+
+Requirements:
+
+- Use real libsignal-generated Signed Prekey material.
+- Preserve stable prekey identifiers.
+- Include public key and signature.
+- Verify correspondence to the local identity.
+- Preserve the matching private key locally.
+- Publish only after local persistence succeeds.
+- Handle network failure without losing the local key.
+- Avoid generating unnecessary replacement keys during retries.
+
+Do not publish a key that has not been safely persisted.
+
+# 6\. P3 — ONE-TIME PREKEY PUBLICATION
+
+Audit existing One-Time Prekey generation and server endpoints.
+
+Implement safe publication where supported.
+
+Requirements:
+
+- Use real libsignal records.
+- Preserve key identifiers.
+- Never expose private key material.
+- Support retry after network failure.
+- Avoid accidental identifier reuse.
+- Handle server acknowledgements.
+- Track publication state safely.
+
+Do not invent a new prekey consumption protocol.
+
+# 7\. P4 — REMOTE BUNDLE RETRIEVAL
+
+Integrate fetchKeyBundle into the actual application data flow.
+
+Requirements:
+
+- Authenticated requests.
+- Account/device binding.
+- Correct remote device selection.
+- Current Signed Prekey.
+- Previous Signed Prekey.
+- Available One-Time Prekeys where supported.
+- Stable identifiers.
+- Error handling.
+- Cache invalidation after rotation.
+
+Do not use hardcoded peer identities.
+
+Do not create fake production bundles.
+
+# 8\. P5 — CLIENT VERIFICATION
+
+Integrate PeerKeyBundleVerifier into the production bundle retrieval flow.
+
+Requirements:
+
+- Verify identity key.
+- Verify Signed Prekey signature.
+- Verify device binding.
+- Verify account binding.
+- Verify key identifier consistency.
+- Verify expiration.
+- Verify revocation.
+- Reject malformed bundles.
+- Reject invalid predecessor ordering.
+- Fail closed.
+
+Do not accept a bundle merely because JSON parsing succeeded.
+
+Do not mark a remote device verified merely because its bundle is valid.
+
+Cryptographic bundle validity and human device verification are separate concepts.
+
+# 9\. P6 — ROTATION AND RETRY
+
+Implement or integrate the publication lifecycle:
+
+1. Local key generation.
+2. Atomic local persistence.
+3. Server publication.
+4. Server acknowledgement.
+5. Publication state update.
+6. Rotation.
+7. Previous key retention.
+8. Previous key retrieval.
+
+Requirements:
+
+- Idempotent retry.
+- No private key upload.
+- No premature local deletion.
+- No replacement of a valid key on transient network errors.
+- No duplicate rotation caused by retry.
+- Recovery from process interruption.
+
+Do not invent active session references.
+
+Document the future signed\_prekey\_id integration point.
+
+# 10\. TESTING
+
+Run:
+
+- Backend tests.
+- :core:security:testDebugUnitTest.
+- :core:network:testDebugUnitTest.
+- Relevant app JVM tests.
+- Client publication tests.
+- Bundle retrieval tests.
+- Signature verification tests.
+- Retry and idempotency tests.
+- Rotation tests.
+- Server-client contract tests.
+- App compilation.
+
+Use real libsignal key material.
+
+Where possible, use a local test HTTP server to exercise actual serialization, HTTP requests and response decoding.
+
+Do not rely exclusively on mocked repositories.
+
+Do not launch an emulator.
+
+# 11\. SECURITY REVIEW
+
+Specifically investigate:
+
+- Identity replacement attacks.
+- Cross-account publication.
+- Cross-device key substitution.
+- Duplicate publication.
+- Retry races.
+- Stale bundle caches.
+- Key ID collisions.
+- Private key leakage.
+- Revoked device publication.
+- Server/client response disagreement.
+
+Add regression tests for every discovered issue.
+
+# 12\. DOCUMENTATION
+
+Create or update:
+
+E2EE\_DEVICE\_IDENTITY\_PUBLICATION\_PHASE3\_1\_5B\_5.md
+
+E2EE\_SIGNED\_PREKEY\_CLIENT\_PUBLICATION\_PHASE3\_1\_5B\_5.md
+
+E2EE\_ONE\_TIME\_PREKEY\_PUBLICATION\_PHASE3\_1\_5B\_5.md
+
+E2EE\_REMOTE\_KEY\_BUNDLE\_CONSUMPTION\_PHASE3\_1\_5B\_5.md
+
+E2EE\_CLIENT\_SERVER\_DIRECTORY\_INTEGRATION\_PHASE3\_1\_5B\_5.md
+
+E2EE\_KEY\_PUBLICATION\_SECURITY\_AUDIT\_PHASE3\_1\_5B\_5.md
+
+E2EE\_PHASE3\_1\_5B\_5\_TEST\_REPORT.md
+
+E2EE\_PHASE3\_1\_5B\_5\_FINAL\_REPORT.md
+
+# 13\. FINAL ACCEPTANCE GATE
+
+Report independently:
+
+- P1 Device Identity Publication.
+- P2 Signed Prekey Publication.
+- P3 One-Time Prekey Publication.
+- P4 Remote Bundle Retrieval.
+- P5 Bundle Verification.
+- P6 Rotation and Retry.
+- Client-server Compatibility.
+- Private Key Protection.
+- Revocation Handling.
+- Crash-safe Publication.
+
+Use only:
+
+PASS PASS WITH CONDITIONS BLOCKED NOT VERIFIED
+
+A repository API client is not production integration.
+
+A successful HTTP mock is not proof of live server compatibility.
+
+A valid public bundle is not proof of device trust.
+
+A successful upload is not proof that private key retention is correct.
+
+# 14\. FINAL RESTRICTIONS
+
+Do not begin Phase 3.1.6.
+
+Do not begin Phase 3.2.
+
+Do not implement Kyber Bundle Delivery.
+
+Do not implement PQXDH.
+
+Do not implement Double Ratchet.
+
+Do not launch an emulator.
+
+Do not touch physical phones.
+
+Do not commit or push.
+
+Preserve all previous work.
+
+Begin with repository audit.
+
+# 5. Roadmap sau bước này
+
+| Giai đoạn | Mục tiêu |
+| --- | --- |
+| 3.1.5B.5 | Device Key Publication |
+| 3.1.6 | Kyber Bundle Delivery & Consumption |
+| 3.1.7 | Full Security Regression |
+| 3.2 | PQXDH + Double Ratchet |
+
+Một lưu ý kỹ thuật quan trọng: trước khi triển khai Kyber Bundle, chúng ta phải chứng minh client thực sự publish và fetch được Signed Prekey/One-Time Prekey. Nếu chưa hoàn thành vòng đời key cổ điển thì thêm PQ key sẽ chỉ làm tăng số thành phần chưa được kiểm chứng.
+
+Tôi đề nghị giữ nguyên nguyên tắc: không commit, không push, không mở AVD tự động và không đụng tới KONNXBK2.
+
+
+* done
+Starting with the publication audit: what the client can build from a local identity, and where in `:app` a publication can be triggered.
+
+The audit shows no client publication path and no test deps in `:app`, so I'll keep the logic in JVM-testable modules and make `:app` a thin gateway. Starting with the publication core.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The failing test exposed a real defect: after consuming one-time prekeys, replenishment reused ids 1–50. Fixing the id allocator with vault format v3.
+
+
+
+
+
+
+
+
+
+
+
+
+
+All suites green: security 114, network 27, settings 40, server 78. Forcing the network suite to re-execute (it had been cached) and taking the working-tree inventory before writing the reports.
+
+All checks are green. Writing the eight phase reports now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Phase 3.1.5B.5 complete — device key publication wired into the app
+
+**Repository:** `main` @ `1d1b98d`, 249 working-tree entries (was 238; +4 test files, +8 reports, net of 1 fewer? — precisely: 11 new files, no deletions). Nothing committed, reset, cleaned, stashed or switched. `KONNXBK2` and existing identity material untouched. No emulator, AVD, `adb emu`, Android Studio device or phone was started; no APK installed.
+
+### What now runs in production code
+- `DeviceKeyPublisher` (Mutex, read-only on keys) plans from the sealed vault plus the acknowledged-publication record and uploads only the difference: identity → signed prekey → one-time prekeys, saving acknowledgement stepwise.
+- `AppContainer` gateway verifies every server echo (`deviceId`, `keyVersion`, identity/signing keys, `storedSignedPreKeyId`) and resolves `409 stale_key_version` with `GET /keys`, accepting only an exact match — never bumping a version, never replacing a server identity.
+- `KonnexRoot` publishes from one `LaunchedEffect(session)` on authentication; nothing else generates keys.
+- `GET /bundle` flows through `RemoteBundleLoader` → `PeerKeyBundleVerifier` into Device Verification, showing ids only; validity never sets trust.
+
+### Acceptance gate
+| Item | Verdict |
+|---|---|
+| P1 Device identity publication | PASS WITH CONDITIONS |
+| P2 Signed prekey publication | PASS WITH CONDITIONS |
+| P3 One-time prekey publication | PASS WITH CONDITIONS |
+| P4 Remote bundle retrieval | PASS WITH CONDITIONS |
+| P5 Bundle verification | PASS WITH CONDITIONS |
+| P6 Rotation and retry | PASS WITH CONDITIONS |
+| Client–server compatibility | PASS WITH CONDITIONS |
+| Private key protection | PASS |
+| Revocation handling | NOT VERIFIED |
+| Crash-safe publication | PASS WITH CONDITIONS |
+| Android runtime integration | NOT VERIFIED |
+
+### Real defect found by the new tests
+`only newly generated one-time prekeys are published after replenishment` failed first run: after all 50 one-time prekeys were consumed, the allocator restarted at id 1 — ids the server had already stored and deleted — so the planner treated the new keys as already published and never uploaded them. Fixed with a persisted monotonic allocator (`nextOneTimePreKeyId`, vault format v3 → v4, v1–v3 still decode); the failing test is kept as the regression test. Pre-v4 vaults can reuse one consumed id on their first replenishment — documented, bounded.
+
+### Checks actually run (all this phase)
+`server` 78 · `:core:security` 114 · `:core:network` 27 (forced `cleanTest` rerun) · `:feature:settings` 40 = **259 tests, 0 failures**; `:app:compileDebugKotlin` success. Network tests use a real loopback `HttpServer` with the production client (method, path, headers, body, 409/401/401 envelopes, bundle decode) — not mocks. Not run: any device/emulator execution, deployment, or live server; `:app` has no JVM tests by design, so it was compiled only.
+
+Reports: `E2EE_*_PHASE3_1_5B_5.md` (8 files), with `E2EE_PHASE3_1_5B_5_FINAL_REPORT.md` as the entry point. Phase 3.1.6/3.2, PQXDH, Double Ratchet and Kyber delivery were not started.
+
+
+1111111111111
+Tôi đánh giá Phase 3.1.5B.5 là một bước tiến rất đáng kể. Lần này KONNEX đã vượt qua một ranh giới quan trọng: từ việc có các API và module quản lý khóa sang có luồng publication được nối vào lifecycle đăng nhập của ứng dụng.
+
+Tuy nhiên, tôi vẫn giữ verdict:
+
+Phase 3.1.5B.5
+
+PASS WITH CONDITIONS
+
+# 259 / 259
+
+Tests passed · 0 failures
+
+- Production publication flow: Implemented
+- Client-server contract: Tested
+- Private key protection: PASS
+- Android runtime: NOT VERIFIED
+- Live server integration: NOT VERIFIED
+
+## 1. Phát hiện quan trọng nhất: One-Time Prekey ID reuse
+
+Đây là lỗi đáng chú ý nhất của phase này.
+
+Trước khi sửa:
+
+1. Client tạo 50 One-Time Prekeys.
+2. Server lưu các key.
+3. Client sử dụng hết.
+4. Client replenishes.
+5. ID allocator quay lại ID 1–50.
+6. Publication planner tưởng những key mới đã được publish.
+
+Hậu quả là server không nhận được các key mới.
+
+Việc chuyển sang persisted monotonic allocator là hướng sửa đúng.
+
+Tôi đặc biệt đánh giá cao việc giữ lại regression test đã phát hiện lỗi.
+
+Nhưng có một điều cần kiểm tra thêm: ID không được trùng trong phạm vi mà server sử dụng để định danh key, kể cả sau khi revoke, delete, reinstall hoặc restore backup.
+
+## 2. Đánh giá kiến trúc publication mới
+
+Luồng hiện tại hợp lý:
+
+KonnexRoot
+
+Authentication lifecycle
+
+DeviceKeyPublisher
+
+Mutex · publication planning · retry
+
+Sealed Key Vault
+
+Local private material
+
+AppContainer Gateway
+
+Server echo verification · conflict recovery
+
+KONNEX Server
+
+Identity · Signed Prekey · One-Time Prekeys
+
+Ba điểm thiết kế tôi đồng ý:
+
+- Chỉ publish key đã được lưu an toàn.
+- Acknowledgement được lưu từng bước.
+- HTTP 409 không được phép khiến client tự thay thế identity.
+
+Đặc biệt, bundle verification không tự động chuyển thiết bị thành VERIFIED. Đây là ranh giới bảo mật cần giữ nguyên.
+
+## 3. Bốn điều kiện chưa được đóng
+
+| Hạng mục | Nhận xét |
+| --- | --- |
+| Revocation handling | Chưa xác minh |
+| Android runtime | Chưa chạy |
+| Live server | Chưa kiểm chứng |
+| Vault v3 → v4 migration | Cần kiểm tra sâu hơn |
+
+Tôi muốn nhấn mạnh vấn đề migration:
+
+Báo cáo nói vault cũ có thể reuse một consumed ID trong lần replenishment đầu tiên.
+
+Đây không nên trở thành hành vi mặc định trong production.
+
+Cần chứng minh allocator có thể khôi phục an toàn sau migration, đồng thời không tạo ID xung đột với key vẫn còn trên server.
+
+# 4. Phase tiếp theo: KONNEX 3.1.5B.6
+
+Tôi đề xuất chưa mở Kyber ngay.
+
+Nên dành một phase để kiểm tra publication, rotation, revocation và recovery trong các tình huống lỗi.
+
+## Phase 3.1.5B.6
+
+Device Key Lifecycle Hardening & Publication Recovery
+
+RecommendedMục tiêu: chứng minh publication hoạt động an toàn khi server, client hoặc quá trình lưu trữ gặp sự cố.
+
+- R1: One-Time Prekey ID uniqueness.
+- R2: Vault v1–v4 migration regression.
+- R3: Publication crash recovery.
+- R4: Revoked device publication rejection.
+- R5: Concurrent publication.
+- R6: Rotation and stale server state.
+- R7: Server-client integration.
+- R8: Recovery after app process restart.
+
+## 5. Prompt tiếp theo cho OpenCode
+
+Writing
+
+# KONNEX — Phase 3.1.5B.6
+
+# Device Key Lifecycle Hardening & Publication Recovery
+
+Continue from the actual Phase 3.1.5B.5 working tree.
+
+## Baseline
+
+- HEAD: 1d1b98d
+- Branch: main.
+- Approximately 249 working-tree entries.
+- DeviceKeyPublisher implemented.
+- AppContainer publication gateway implemented.
+- KonnexRoot authentication-triggered publication implemented.
+- RemoteBundleLoader implemented.
+- PeerKeyBundleVerifier integrated.
+- Server schema v7.
+- Vault format v4.
+- Vault v1/v2/v3 backward compatibility retained.
+- Monotonic One-Time Prekey ID allocator implemented.
+- 259 tests passed in the previous phase.
+
+Rerun all relevant tests. Historical results are not current evidence.
+
+## PRIMARY OBJECTIVE
+
+Prove that the new production publication flow remains safe under retries, crashes, concurrency, revocation, rotation, vault migration and server state changes.
+
+This phase is a hardening and verification phase.
+
+Do not begin Phase 3.1.6 or Phase 3.2.
+
+Do not implement Kyber Bundle Delivery, PQXDH or Double Ratchet.
+
+# 1\. REPOSITORY SAFETY
+
+Audit Git status, HEAD, branch and all existing uncommitted work.
+
+Preserve every existing file and modification.
+
+Do not commit, push, reset, clean, stash or switch branches.
+
+Do not modify KONNXBK2.
+
+Do not overwrite existing identity material.
+
+# 2\. ENVIRONMENT SAFETY
+
+STRICTLY PROHIBITED:
+
+- Launching Android Emulator.
+- Launching AVD.
+- Running emulator -avd.
+- Running adb emu.
+- Starting Android Studio emulator sessions.
+- Touching attached physical phones.
+- Installing APKs on physical devices.
+
+Use JVM tests, backend tests, local HTTP integration tests and compilation.
+
+Do not risk host stability.
+
+# 3\. R1 — ONE-TIME PREKEY ID UNIQUENESS
+
+Audit the monotonic allocator introduced in vault v4.
+
+Test:
+
+- Initial allocation.
+- Full consumption.
+- Replenishment.
+- Repeated replenishment.
+- Process restart.
+- Vault migration.
+- Corrupted allocator metadata.
+- Concurrent generation.
+- Publication retry.
+- Server deletion.
+- Revocation.
+- Device identity replacement.
+
+Critical requirements:
+
+- Never reuse an identifier that may still exist on the server.
+- Do not reset the counter merely because local One-Time Prekeys were consumed.
+- Do not reset the counter when publication fails.
+- Do not derive the next identifier only from the currently stored local keys.
+- Handle integer overflow safely.
+- Preserve account/device namespace rules.
+
+Investigate whether server key IDs are globally unique or scoped by device.
+
+If the current server contract cannot guarantee uniqueness, document and fix the contract before proceeding.
+
+# 4\. R2 — VAULT MIGRATION
+
+Audit vault formats v1 through v4.
+
+Use independent historical fixtures, not production encode().
+
+Verify:
+
+- v1 decoding.
+- v2 decoding.
+- v3 decoding.
+- v4 round-trip.
+- Monotonic allocator preservation.
+- Existing identity preservation.
+- Signed Prekey preservation.
+- Kyber record preservation.
+- Corrupted envelope rejection.
+- AAD binding.
+- Atomic migration.
+- Crash-safe writes.
+
+Specifically resolve the documented first-replenishment ID reuse concern for pre-v4 vaults.
+
+Do not silently claim uniqueness if the old format lacks enough historical information to prove it.
+
+Where uniqueness cannot be proven, implement a safe recovery policy that does not overwrite existing server keys.
+
+# 5\. R3 — PUBLICATION CRASH RECOVERY
+
+Inspect DeviceKeyPublisher and acknowledgement persistence.
+
+Test simulated process interruption after each stage:
+
+1. Identity persisted.
+2. Identity uploaded.
+3. Identity acknowledgement persisted.
+4. Signed Prekey persisted.
+5. Signed Prekey uploaded.
+6. Signed Prekey acknowledgement persisted.
+7. One-Time Prekeys persisted.
+8. One-Time Prekeys uploaded.
+9. Publication acknowledgement persisted.
+
+On restart:
+
+- Resume safely.
+- Do not regenerate valid identity material.
+- Do not reuse identifiers.
+- Do not mark unacknowledged uploads as acknowledged.
+- Do not overwrite a valid remote identity.
+- Do not lose locally retained private keys.
+
+Use deterministic fault-injection tests.
+
+Do not claim OS-level crash validation.
+
+# 6\. R4 — REVOCATION
+
+Audit the actual server revocation model.
+
+Verify that:
+
+- Revoked devices cannot publish new keys.
+- Revoked devices cannot replace their identity.
+- Bundle retrieval rejects revoked devices.
+- Existing publication acknowledgements cannot bypass revocation.
+- Cached remote bundles are invalidated when revocation is observed.
+- HTTP errors are mapped to explicit security states.
+
+Add server and client regression tests.
+
+Fail closed on unknown revocation status where security requires it.
+
+Do not invent a new trust state without reviewing the existing state machine.
+
+# 7\. R5 — CONCURRENCY
+
+Test:
+
+- Two simultaneous publication attempts.
+- Authentication lifecycle triggering duplicate publication.
+- Concurrent prekey replenishment.
+- Concurrent rotation and publication.
+- Retry during an in-progress request.
+- Multiple publisher instances sharing one vault.
+
+Requirements:
+
+- No duplicate key generation caused by retry.
+- No duplicate identifier allocation.
+- No lost acknowledgement updates.
+- No private key deletion during publication.
+- No race that replaces an existing identity.
+
+Use deterministic concurrency tests rather than timing-dependent sleeps.
+
+# 8\. R6 — SERVER STATE RECONCILIATION
+
+Inspect how the client handles:
+
+-
+  401.
+-
+  403.
+-
+  404.
+- 409 stale\_key\_version.
+- Revoked device.
+- Missing server identity.
+- Mismatched server identity.
+- Duplicate publication.
+- Network timeout after successful server write.
+
+A timeout does not prove the server rejected the request.
+
+The client must reconcile remote state before generating replacement material.
+
+Never automatically overwrite a mismatched identity.
+
+# 9\. R7 — END-TO-END CLIENT-SERVER TESTS
+
+Use a local test HTTP server with the actual production serialization and networking code.
+
+Test a complete logical flow:
+
+Device A:
+
+- Create or load identity.
+- Persist keys.
+- Publish identity.
+- Publish Signed Prekey.
+- Publish One-Time Prekeys.
+
+Server:
+
+- Store records.
+- Return acknowledgements.
+- Expose bundle.
+
+Device B:
+
+- Fetch A's bundle.
+- Parse response.
+- Verify signatures.
+- Verify account/device binding.
+- Reject invalid or revoked bundles.
+
+Then test:
+
+- A rotates Signed Prekey.
+- B fetches the new bundle.
+- B receives the eligible predecessor.
+- Corresponding private material remains retained by A.
+
+Do not fabricate live Android runtime evidence.
+
+# 10\. R8 AND BUILD SAFETY
+
+Run available:
+
+- Full server tests.
+- Core security tests.
+- Core network tests.
+- Settings tests.
+- App compilation.
+- Debug build.
+- Release build.
+- R8 build if safe and supported.
+
+Do not build AAB unless its configuration can be validated without signing secrets or modifying production configuration.
+
+Do not launch an emulator.
+
+# 11\. DOCUMENTATION
+
+Create:
+
+E2EE\_DEVICE\_KEY\_PUBLICATION\_RECOVERY\_PHASE3\_1\_5B\_6.md
+
+E2EE\_ONE\_TIME\_PREKEY\_ID\_UNIQUENESS\_PHASE3\_1\_5B\_6.md
+
+E2EE\_VAULT\_V1\_V4\_MIGRATION\_AUDIT\_PHASE3\_1\_5B\_6.md
+
+E2EE\_PUBLICATION\_CRASH\_RECOVERY\_PHASE3\_1\_5B\_6.md
+
+E2EE\_DEVICE\_REVOCATION\_PUBLICATION\_AUDIT\_PHASE3\_1\_5B\_6.md
+
+E2EE\_PUBLICATION\_CONCURRENCY\_TESTS\_PHASE3\_1\_5B\_6.md
+
+E2EE\_CLIENT\_SERVER\_END\_TO\_END\_TESTS\_PHASE3\_1\_5B\_6.md
+
+E2EE\_PHASE3\_1\_5B\_6\_FINAL\_REPORT.md
+
+Update living security and API documents where necessary.
+
+# 12\. FINAL ACCEPTANCE GATE
+
+Report separately:
+
+- One-Time Prekey ID uniqueness.
+- Vault migration.
+- Identity preservation.
+- Publication crash recovery.
+- Revocation.
+- Concurrent publication.
+- Server state reconciliation.
+- Client-server integration.
+- Signed Prekey rotation.
+- Previous key retention.
+- Release/R8 build.
+- Android runtime.
+
+Allowed verdicts:
+
+PASS PASS WITH CONDITIONS BLOCKED NOT VERIFIED
+
+Do not promote a module-level test into an end-to-end claim.
+
+Do not claim Android runtime validation.
+
+Do not approve Phase 3.1.6 solely because all JVM tests pass.
+
+# 13\. FINAL RESTRICTIONS
+
+No Phase 3.1.6. No Phase 3.2. No Kyber Bundle Delivery. No PQXDH. No Double Ratchet. No emulator. No physical phone. No commit. No push.
+
+Preserve all previous work.
+
+Begin with repository audit.
+
+## 6. Roadmap hiện tại
+
+| Phase | Mục tiêu |
+| --- | --- |
+| 3.1.5B.6 | Publication hardening |
+| 3.1.6 | Kyber Bundle Delivery |
+| 3.1.7 | Full Security Regression |
+| 3.2 | PQXDH + Double Ratchet |
+
+Quyết định của tôi: Chưa mở Phase 3.1.6. Hãy hoàn thành B.6 trước.
+
+KONNEX đang tiến gần đến giai đoạn có thể bắt đầu xây dựng session protocol, nhưng chúng ta cần chắc chắn rằng identity, Signed Prekey và One-Time Prekey không bị mất, trùng hoặc thay thế sai khi ứng dụng gặp lỗi thực tế.
+
+
+
+* done
+Starting with a repository/environment audit and reading the code that this hardening phase must attack.
+
+Two likely real findings are emerging (signing-key semantics vs. verifier; prekey rows surviving identity re-registration). Checking those before writing anything.
+
+Now applying the hardening changes: cross-instance vault locking, allocator overflow/legacy-epoch policy, publish-progress persistence failures, a shared production gateway, revocation error typing, and server prekey clearing on identity replacement.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Android unit-test classpaths hide `com.sun.net.httpserver`, so I'm replacing the E2E harness with a plain `java.net.ServerSocket` HTTP/1.1 server (portable to the Android test JVM).
+
+
+
+
+
+
+
+All suites and both release builds pass. Verifying the E2E class actually executed before writing reports.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Phase 3.1.5B.6 complete — lifecycle hardening with fault injection
+
+**Repository:** `main` @ `1d1b98d`, 258 working-tree entries, nothing committed/pushed/reset/stashed, no branch change. `KONNXBK2` and identity material untouched. No emulator, AVD, `adb emu`, Android Studio device or phone was started; only a pre-existing `adb.exe` server process was observed and left alone.
+
+### Real defects found and fixed
+1. **Progress-save exception escaped the `Outcome` contract** — a failed acknowledgement write threw instead of returning `KonnexError.Storage`; now typed and tested at every stage.
+2. **Cross-instance vault races** — `@Synchronized` did not serialise two `DeviceIdentityManager`s over one vault (Device Verification builds its own), so concurrent replenishment could allocate overlapping ids and lose a batch. Fixed with a per-directory JVM lock.
+3. **Allocator overflow** — `startId + batch` could wrap negative; now refused, allocator unchanged.
+4. **Server inherited prekeys across identity replacement** — every bundle then answered `409 signed_prekey_invalid` and offered keys the new identity could never use. Fixed: prekeys are deleted in the same transaction as a `keyVersion` increase (API_SPEC §2.6 updated).
+5. **Revocation looked like an expiring session** (`403 → Unauthorized`, inviting retries). New `KonnexError.Revoked`.
+6. **Doc defect from 3.1.5B.5**: that report claimed `signingPublicKey` carried the identity key — it carries the current signed prekey's public key. Corrected.
+
+Also: legacy pre-v4 vaults now allocate from an epoch floor (1,000,000) instead of guessing from surviving ids, resolving the documented reuse concern; publication policy (`ApiKeyDirectoryGateway`/`PublicationReconciler`) moved from `:app` into `:core:security` so app and tests run identical reconciliation code.
+
+### Acceptance gate
+| Item | Verdict |
+|---|---|
+| One-Time Prekey ID uniqueness | PASS WITH CONDITIONS |
+| Vault migration (v1–v4) | PASS WITH CONDITIONS |
+| Identity preservation | PASS |
+| Publication crash recovery | PASS WITH CONDITIONS |
+| Revocation | PASS WITH CONDITIONS |
+| Concurrent publication | PASS WITH CONDITIONS |
+| Server state reconciliation | PASS |
+| Client–server integration | PASS WITH CONDITIONS |
+| Signed prekey rotation | PASS |
+| Previous key retention | PASS |
+| Release/R8 build | PASS |
+| Android runtime | NOT VERIFIED |
+
+### Checks actually run (all this phase)
+`server` 80 · `:core:security` 149 · `:core:network` 29 · `:feature:settings` 40 = **298 tests, 0 failures** (39 new: 8 allocator/lifecycle, 10 crash-stage, 12 gateway/reconciler, 5 end-to-end, 2 network revocation mapping, 2 server revocation/re-registration). `:app:assembleDebug`, `:app:assembleRelease` and `-PkonnexMinifyRelease=true :app:assembleRelease` (R8 `minifyReleaseWithR8`) all exit 0; APKs produced. E2E drives the production `KonnexApiClient` + `DeviceKeyPublisher` + `RemoteBundleLoader` over real TCP against a contract-faithful loopback directory (real libsignal signatures verified server-side).
+
+**Not verified / limits:** no Android runtime; no OS-level kill test (recovery is proven at stage/ordering level); the Ktor server and the client were not run against each other; cross-process and multi-process vault sharing unhandled; pre-v4 uniqueness is a bounded margin, not a proof; no v4 independent writer fixture. Phase 3.1.6/3.2, PQXDH, Double Ratchet and Kyber delivery were not started — passing JVM tests is not approval for protocol work, which still needs independent review per `SECURITY.md`.
+
+Reports: the eight `E2EE_*_PHASE3_1_5B_6*.md` files, entry point `E2EE_PHASE3_1_5B_6_FINAL_REPORT.md`.
+
+
+
+1111111111
