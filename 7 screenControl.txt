@@ -8102,3 +8102,619 @@ A fresh relay, non-elevated, on `0.0.0.0:8788`, logging to `D:/AI/Temp/mr2/logs/
 
 
 11111111111
+Mình đã đọc phần cập nhật mới. Đây là một bước tiến lớn: hiện tại lỗi chính không còn nằm ở FPS hay H.264 mà nằm ở quá trình thiết lập đường truyền WebRTC ICE giữa hai máy khi Cloudflare WARP đang hoạt động.
+
+Mình phân tích và đề xuất hướng xử lý tiếp theo như sau.
+
+## 1. Chẩn đoán chính xác lỗi hiện tại
+
+ICE connection failureHai máy đã vượt qua được các bước:
+
+- Signaling kết nối thành công.
+- Xác thực mật khẩu thành công.
+- Session được tạo.
+- Host capture màn hình thành công.
+- NVIDIA H.264 encode thành công.
+
+Nhưng thất bại ở bước ICE Connectivity Checks.
+
+Trạng thái pipeline hiện tại
+
+1. Signaling
+   OK
+2. Authentication
+   OK
+3. Screen Capture
+   OK
+4. H.264 Encoding
+   OK
+5. ICE Candidate Pair
+   FAILED
+6. DTLS / SRTP
+   NOT STARTED
+7. Video Viewer
+   BLACK SCREEN
+
+Đây là lý do màn hình đen: Host đã encode video nhưng không có đường truyền media.
+
+## 2. Nguyên nhân: Cloudflare WARP
+
+Hai máy đang có các địa chỉ mạng:
+
+| Máy | IP |
+| --- | --- |
+| Host | 10.0.0.142 |
+| Viewer | 10.0.0.108 |
+
+Nhưng Viewer không quảng bá địa chỉ `10.0.0.108` trong ICE candidates.
+
+Thay vào đó, nó quảng bá:
+
+- `172.16.0.2` – địa chỉ adapter ảo.
+- `104.28.234.80` – địa chỉ WARP egress.
+- IPv6 qua WARP.
+
+Điều này khiến hai máy không tìm được đường truyền trực tiếp phù hợp.
+
+WebRTC Infrastructure Guide 2026: Signalling, SFU & Scaling at Enterprise Load
+
+[rtcleague.com](<https://rtcleague.com/blogs/webrtc-infrastructure?utm_source=chatgpt.com>)
+
+Lưu ý: Đây là bằng chứng cho thấy WARP có ảnh hưởng đến đường đi mạng, nhưng chưa đủ để kết luận WARP là nguyên nhân duy nhất. Cần kiểm tra routing, interface enumeration, ICE candidate filtering và firewall trên cả hai máy.
+
+## 3. Mình khuyên không nên bắt người dùng tắt WARP
+
+Nếu MiniRemote hướng tới sản phẩm thương mại, người dùng không nên phải tắt VPN hoặc Cloudflare WARP mới sử dụng được.
+
+Nên xây dựng khả năng lựa chọn đường truyền:
+
+1. LAN trực tiếp.
+2. Public IP trực tiếp qua STUN.
+3. TURN relay khi P2P không thành công.
+
+Kiến trúc kết nối mục tiêu
+
+MiniRemote Host
+
+ICE Connectivity Manager
+
+LAN candidate
+
+Ưu tiên khi khả dụng
+
+STUN / Public candidate
+
+Thử tiếp
+
+TURN Relay
+
+Fallback
+
+MiniRemote Viewer
+
+Không nên tự ý bỏ qua các adapter VPN hoặc ép sử dụng một interface mà chưa xác minh routing. Phải bảo đảm ICE chọn được đường truyền thực sự hoạt động.
+
+## 4. Prompt tiếp theo cho OpenCode
+
+Mình đề xuất TASK 03, tập trung hoàn toàn vào Network Connectivity.
+
+Writing
+
+# TASK 03 — MINIREMOTE WEBRTC ICE AND CLOUDFLARE WARP COMPATIBILITY
+
+## Current Status
+
+MiniRemote successfully:
+
+- Connects two physical Windows computers through the signaling server.
+- Authenticates sessions.
+- Creates WebRTC peer connections.
+- Captures desktop frames.
+- Encodes H.264 using NVIDIA hardware encoding.
+
+However, the physical LAN connection fails at ICE connectivity checks.
+
+### Test environment
+
+Host:
+
+- IP: 10.0.0.142
+- Device ID: 938641493
+
+Viewer:
+
+- IP: 10.0.0.108
+- Device ID: 448435468
+
+The Viewer runs Cloudflare WARP.
+
+### Observed failure
+
+Viewer ICE candidates:
+
+- host 172.16.0.2
+- srflx 104.28.234.80
+- IPv6 WARP candidates
+
+Missing:
+
+- host 10.0.0.108
+
+Host candidate:
+
+- host 10.0.0.142
+
+ICE checks never succeeded. DTLS never connected. Zero RTP bytes were transmitted.
+
+## OBJECTIVE
+
+Make MiniRemote work reliably with:
+
+1. Normal LAN connections.
+2. Cloudflare WARP enabled.
+3. VPN-enabled networks.
+4. Different NAT configurations.
+5. Internet connections requiring TURN relay.
+
+Do not require users to disable their VPN as a permanent solution.
+
+## PHASE 1 — NETWORK DIAGNOSTICS
+
+Investigate:
+
+- Windows network interface enumeration.
+- Interface addresses and interface indexes.
+- Routing table and route metrics.
+- IPv4 and IPv6 candidate gathering.
+- ICE candidate types.
+- Candidate pair states.
+- STUN request/response counters.
+- Windows Firewall.
+- VPN and virtual network adapters.
+
+Identify why 10.0.0.108 is absent from the Viewer candidate set.
+
+Do not assume the absence is caused exclusively by Cloudflare WARP.
+
+## PHASE 2 — LAN CONNECTIVITY
+
+Verify that the correct LAN interface can be used for ICE connectivity.
+
+Test:
+
+- Both computers on the same subnet.
+- VPN disabled.
+- VPN enabled.
+- Multiple active network interfaces.
+- IPv4 and IPv6.
+
+Preserve normal ICE security and connectivity checks.
+
+Do not fabricate candidates or advertise addresses that are not actually reachable.
+
+## PHASE 3 — VPN COMPATIBILITY
+
+Investigate how WebRTC behaves with:
+
+- Cloudflare WARP.
+- VPN virtual adapters.
+- Multiple default routes.
+- VPN DNS and routing policies.
+
+Determine whether the VPN:
+
+- Changes candidate gathering.
+- Changes the route selected for STUN.
+- Blocks UDP.
+- Prevents direct LAN traffic.
+
+Support legitimate interface selection and user-configurable network policies.
+
+Do not silently bypass VPN security or force traffic outside the user's configured VPN policy.
+
+## PHASE 4 — TURN FALLBACK
+
+Implement or verify TURN support.
+
+Requirements:
+
+- Authenticated TURN credentials.
+- Short-lived credentials.
+- UDP support.
+- TCP/TLS fallback where appropriate.
+- Proper credential rotation.
+- Resource limits.
+- Secure relay configuration.
+
+Use relay candidates when direct connectivity cannot be established.
+
+Do not send media through the signaling server.
+
+## PHASE 5 — CONNECTION STATE AND RECOVERY
+
+Improve the connection state machine.
+
+Clearly distinguish:
+
+- Signaling connected.
+- Authentication successful.
+- ICE gathering.
+- ICE checking.
+- ICE connected.
+- DTLS connected.
+- Media flowing.
+- Connection failed.
+
+Add actionable error messages.
+
+Avoid treating successful authentication as successful remote desktop connectivity.
+
+## PHASE 6 — TESTING
+
+Test the actual physical machines:
+
+Host: 10.0.0.142 Viewer: 10.0.0.108
+
+Test:
+
+1. LAN without WARP.
+2. LAN with WARP enabled on Viewer.
+3. LAN with WARP enabled on Host.
+4. WARP enabled on both.
+5. Different Internet networks.
+6. TURN relay fallback.
+
+Record:
+
+- Candidate pairs.
+- Selected candidate pair.
+- ICE state.
+- DTLS state.
+- RTP bytes sent and received.
+- Actual decoded FPS.
+- Connection establishment time.
+
+## ACCEPTANCE CRITERIA
+
+- LAN connection works.
+- VPN compatibility is tested and documented.
+- TURN fallback works.
+- No black screen after successful authentication.
+- ICE and DTLS failures have actionable diagnostics.
+- Existing authentication and Trusted Device security remain intact.
+
+Do not claim a test passed without actual execution on both physical computers.
+
+## FINAL REPORT
+
+Provide:
+
+- Root cause.
+- Modified files.
+- Before/after ICE candidate details.
+- Selected candidate pair.
+- Actual media statistics.
+- Physical two-PC test results.
+- Remaining limitations.
+
+Task 03 remains OPEN until the physical tests pass.
+
+## 5. Một điều mình muốn làm rõ trước khi đi tiếp
+
+Có một câu hỏi quyết định hướng phát triển MiniRemote:
+
+Bạn muốn MiniRemote hoạt động được khi cả hai máy đều bật Cloudflare WARP, không cần tắt WARP, đúng không?
+
+Nếu đúng, mình sẽ ưu tiên thiết kế ICE + TURN fallback ngay từ bây giờ thay vì chỉ sửa riêng lỗi thiếu IP LAN. Đây là hướng phù hợp hơn nếu sau này bạn muốn MiniRemote hoạt động trên Internet ở nhiều môi trường mạng khác nhau.
+
+
+* done
+No new instruction in your message beyond the test I already completed — so here's a quick liveness check of what I left running, in case you're about to change WARP on .108 and want the rerun.
+
+Significant: there are **247 samples in `connected` state** starting 18:05:04 — a later attempt actually established media. My previous report only covered the first three sessions. Analysing that window now.
+
+
+
+
+A **fourth attempt succeeded completely** — 4:08 of continuous media, 4567 frames, real LAN addresses in the pair. Let me pin down which pair carried it and why it ended.
+
+## Correction: a fourth attempt connected and carried video for 4 minutes
+
+My earlier report only covered the first three attempt windows. After those, one more session (`s-56e2560b552a69cb`) **did** establish media. The evidence was already in the recorder's file; here it is.
+
+### What actually worked
+| Measurement | Value |
+|---|---|
+| Session | `s-56e2560b552a69cb`, authenticated |
+| Connected window | 18:05:04 → 18:09:12 UTC (**4 min 08 s**), 247 consecutive 1 s samples, **0 gaps** |
+| ICE state | `connected` |
+| DTLS state | `connected` |
+| Selected pair | `host [2601:2c0:8201:93c0:388c:…:6aba]:58086 → host [2601:2c0:8201:93c0:68e6:…:96e7]:60435` (same /64 — direct LAN, both `host` candidates) |
+| Pair RTT | 5–17 ms steady (two spikes to 468/491 ms in the first second only) |
+| IPv4 pair also nominated | `10.0.0.142:58085 → 10.0.0.108:60434`, RTT 6–17 ms, in 2 samples — **so .108 finally offered its real LAN address** |
+| Outbound frames | `framesEncoded` 10 → 4577, `framesSent` identical (no send loss) |
+| Outbound FPS | avg **18.4**, p50 **19**, min 12, max 25 |
+| Bitrate | 13.26 MiB over WebRTC; target 1.25 Mbps, `qualityLimitationReason: none` |
+| Host pipeline | 4599 frames, **0 dropped**, 154 keyframes, 38.4 MB, `NVIDIA H.264 Encoder MFT` (hardware), 1280×720 |
+| How it ended | stream `reason: authorization-revoked`; relay logged `device offline 448435468` then `device online` — the .108 app dropped, not the host |
+
+So the fault reproduces exactly as two different regimes, and the fix is confirmed by measurement: **with only WARP/virtual-adapter candidates offered, ICE never forms a pair and the viewer shows black; once the real LAN candidates exist, the same build streams 720p at ~18 fps over a direct host-to-host pair with zero frame loss.**
+
+### Report deltas from my previous message
+- **Authentication:** 4 verified sessions, not 3 (adds `s-56e2560b552a69cb`).
+- **Selected candidate pair:** not "none" for the working run — `2601:…:58086 → 2601:…:60435` (IPv6 host/host), with `10.0.0.142 → 10.0.0.108` also nominated.
+- **Outbound FPS:** 18.4 avg peak 25 in the successful run (0 in the three failed ones).
+- **Inbound / decoded FPS on .108:** still **unmeasured** — that number only exists on .108's side and I cannot read that machine.
+- **5-minute stability:** not reached. It ran 4:08 and ended when .108's app went offline, so I am still not claiming the 30-minute or 5-minute acceptance, and I have not verified that the picture on .108 was visible rather than black during those 4 minutes.
+
+### What I believe changed between the failing and working attempts
+The failing attempts offered `host 172.16.0.2` + WARP `srflx` addresses with no `10.0.0.108`; the working attempt offered real `host` candidates on both IPv4 and IPv6. That is a change on .108 (the virtual adapter no longer winning candidate selection), not something in the app. I did not make that change and cannot see it from here — if you did pause WARP, that is the confirmed fix and it is worth writing down.
+
+### Ready to finish the acceptance run
+The relay is healthy (uptime 29 min, 0 errors, 2 devices registered, .108 back online) and this PC is still hosting as `938 641 493` with password `TY2AP5DYdzR8` (generation 25, ~9 minutes left — I can regenerate if it expires). Say the word and, when you reconnect from .108, I will record the full 5 minutes and this time also capture a **second** window on .108's side: while it runs, read the HUD on .108 and tell me its fps/resolution/quality, since decoded FPS is the one number that has to come from there.
+
+Raw evidence retained: `D:/AI/Temp/mr2/host-stats.jsonl` (all 247 connected samples), `D:/AI/Temp/mr2/ice.jsonl` (candidate-level detail of the failing attempt), `D:/AI/Temp/mr2/logs/relay-02.log`. No code, firewall, device-ID or credential changes were made.
+
+
+1111111111
+Vậy chúng ta đã xác định được một kết luận rất quan trọng:
+
+Đã xác nhận MiniRemote P2P hoạt động khi tắt Cloudflare WARP trên máy `.108`.
+
+Chưa tương thích Khi bật WARP, ICE không thiết lập được đường truyền media và Viewer bị màn hình đen.
+
+## 1. Kết luận kỹ thuật
+
+| Thành phần | WARP OFF | WARP ON |
+| --- | --- | --- |
+| Signaling | OK | Có thể OK |
+| Authentication | OK | OK theo các lần thử |
+| ICE | Connected | Không thành công trong các lần lỗi |
+| DTLS | Connected | Không kết nối |
+| Video | Có hình | Black screen |
+| P2P LAN | Hoạt động | Chưa hoạt động |
+
+Vấn đề không nằm ở H.264 Encoder hay Screen Capture.
+
+Nút thắt hiện tại là Network Interface Selection và ICE Connectivity khi WARP hoạt động.
+
+## 2. Hướng giải quyết mình đề xuất
+
+Không nên yêu cầu người dùng tắt WARP. MiniRemote nên có ba phương thức kết nối:
+
+1. Direct LAN: ưu tiên kết nối nội bộ.
+2. Direct Internet: sử dụng ICE/STUN.
+3. TURN Relay: chuyển tiếp media khi kết nối trực tiếp thất bại.
+
+The Magic Behind Video Calls: A Simple Guide to WebRTC - DEV Community
+
+[dev.to](<https://dev.to/driannaird/the-magic-behind-video-calls-a-simple-guide-to-webrtc-4c3j?utm_source=chatgpt.com>)
+
+Đặc biệt, TURN là thành phần cần thiết nếu VPN hoặc NAT khiến hai máy không thể tạo đường truyền trực tiếp. TURN không đồng nghĩa với Signaling Server và không nên chuyển video qua signaling.
+
+## 3. Giao OpenCode Task 03C
+
+Writing
+
+# TASK 03C — CLOUDFLARE WARP COMPATIBILITY
+
+## Confirmed Physical Test Results
+
+Host: 10.0.0.142
+
+Viewer: 10.0.0.108
+
+Confirmed:
+
+- WARP OFF: WebRTC P2P works.
+- WARP ON: Viewer displays a black screen.
+- With WARP OFF, ICE and DTLS successfully connect.
+- Direct IPv4 and IPv6 LAN candidate pairs have been observed.
+- H.264 hardware encoding works.
+
+## OBJECTIVE
+
+Make MiniRemote work with Cloudflare WARP enabled without requiring users to disable their VPN.
+
+## 1\. Diagnose the actual difference
+
+Compare WARP OFF and WARP ON:
+
+- Windows network interfaces.
+- Interface indexes and metrics.
+- IPv4 and IPv6 routes.
+- ICE host candidates.
+- ICE server-reflexive candidates.
+- ICE relay candidates.
+- Selected candidate pair.
+- STUN request/response counters.
+- UDP reachability.
+- WebRTC ICE state transitions.
+
+Identify exactly why the real LAN candidate disappears or becomes unreachable.
+
+## 2\. Implement correct ICE network handling
+
+Investigate the existing WebRTC implementation and supported interface configuration.
+
+Requirements:
+
+- Support multiple active interfaces.
+- Preserve legitimate LAN connectivity.
+- Respect user VPN routing policies.
+- Do not fabricate candidates.
+- Do not silently bypass VPN security.
+- Do not disable or modify Cloudflare WARP.
+- Preserve existing working LAN connectivity.
+
+## 3\. Implement TURN fallback
+
+If direct connectivity is blocked:
+
+- Configure authenticated TURN.
+- Support UDP.
+- Support TCP/TLS fallback.
+- Use short-lived credentials.
+- Add relay selection diagnostics.
+- Measure relay latency and throughput.
+
+Do not use the signaling server as a media relay.
+
+## 4\. Test physical devices
+
+Run these tests:
+
+A. WARP OFF on both machines. B. WARP ON on Viewer only. C. WARP ON on Host only. D. WARP ON on both machines.
+
+For every test record:
+
+- ICE state.
+- Selected candidate pair.
+- Candidate types.
+- DTLS state.
+- RTP bytes sent/received.
+- Actual Viewer decoded FPS.
+- Actual visible video.
+
+## 5\. Preserve existing functionality
+
+Do not regress:
+
+- Authentication.
+- Trusted Device Access.
+- LAN connectivity.
+- Hardware H.264.
+- Existing session authorization.
+- Frame pacing.
+- Signaling stability.
+
+## ACCEPTANCE CRITERIA
+
+MiniRemote must support:
+
+- LAN without WARP.
+- LAN with WARP enabled.
+- TURN fallback when direct connectivity is unavailable.
+
+Do not claim success until each mode is tested on the actual two physical computers.
+
+Keep Task 03C OPEN until all required tests pass.
+
+Provide exact root causes, modified files and physical test evidence.
+
+## 4\. Một quyết định kiến trúc mình muốn chốt
+
+Mình khuyên MiniRemote hướng tới:
+
+- LAN P2P: không cần server chuyển tiếp video.
+- Internet P2P: STUN.
+- Mạng VPN/NAT khó: TURN.
+- Signaling Server: chỉ quản lý đăng ký, xác thực và thiết lập session.
+
+Như vậy MiniRemote có thể phát triển thành sản phẩm Remote Desktop sử dụng được trong nhiều môi trường mạng.
+
+Mục tiêu tiếp theo: giữ nguyên kết nối LAN đang chạy tốt, bổ sung khả năng tương thích WARP bằng ICE/TURN, không đánh đổi bảo mật hoặc buộc người dùng tắt VPN.
+
+
+* done
+Before writing anything I need the exact place the webview's ICE behaviour is configured — Chromium gathers host candidates only from default-route interfaces by default, which is precisely what the WARP candidate set showed. Checking the browser args and peer-connection wiring.
+
+The Stack Overflow answer plus Chromium's own policy documentation explain the mechanism precisely: without a camera/microphone grant, Chromium applies RFC 8828 **Mode 2** and gathers host candidates only from the default-route interface — and WARP owns that route. Let me confirm how the app configures ICE and TURN today.
+
+TURN plumbing is already complete (coturn REST short-lived credentials, and the client passes `iceServers` with `iceTransportPolicy: "all"`). One last check before I ship anything: whether the Chromium switch that lifts the default-route restriction actually exists.
+
+The authoritative answer is in the WebRTC project's own trickle-ICE page: *"if no getUserMedia permissions for this origin are persisted, only candidates from a single interface will be gathered in Chrome"* — there is no command-line switch that lifts it. Let me confirm the TURN issuer and write the .108 evidence collector.
+
+
+
+
+TURN issuance is correct coturn REST (HMAC-SHA1, expiry in the username, per-session TTL) — so §3 needs a deployed relay, not code. The real fix for direct LAN under WARP is the permission gate. Checking the app's current permission state and what it would take to grant it.
+
+Permission state is `prompt` — the gate is confirmed closed, and Tauri 2.12.7 + `webview2-com` 0.39.1 are already in the tree, so I can open it deterministically without new third-party deps. Reading the manifest and the viewer-window builder I'll need to hook.
+
+Implementing the fix now: grant the app's own origin the media permission WebView2 persists, which is the documented switch from single-interface (Mode 2) to all-interface (Mode 1) candidate gathering — no VPN bypass, no fabricated candidates.
+
+
+
+
+
+
+
+`SetPermissionState` lives on `ICoreWebView2Profile4` in this binding version — correcting the cast.
+
+
+
+
+Compiles cleanly. Running the new test and lint, then I'll rebuild and verify the permission actually flips.
+
+Test and lint pass. Rebuilding the release binary (this needs the running instance closed), then I'll verify the permission state in the new build.
+
+Build succeeded. Relaunching the new binary to verify the permission state actually changes.
+
+The permission is now **`granted`** in the real release binary (was `prompt`), which is the documented condition for all-interface candidate gathering. Checking formatting before I report.
+
+
+
+
+## Task 03C — root cause found, fix implemented and verified as far as this machine allows; physical WARP acceptance still OPEN
+
+### 1. Exact root cause (not a guess — measured plus documented)
+Chromium follows RFC 8828. With **no persisted camera/microphone permission for an origin it runs in Mode 2 and gathers ICE host candidates only from the interface that owns the default route**. The WebRTC project says this verbatim on its own trickle-ICE sample: *"if no getUserMedia permissions for this origin are persisted only candidates from a single interface will be gathered in Chrome."*
+
+Cloudflare WARP installs `0.0.0.0/1` + `128.0.0.0/1` routes, so on .108 it owns the **IPv4** default route while IPv6 still belongs to Wi-Fi. That predicts exactly the candidate set I recorded from the failing physical session:
+
+| | WARP OFF (working) | WARP ON (black screen) |
+|---|---|---|
+| Viewer host candidates | `host 10.0.0.108…` | `host 172.16.0.2` (WARP adapter) — **no 10.0.0.108** |
+| Viewer srflx | LAN public address | `104.28.234.80`, `2a09:bac1:…` (WARP egress) |
+| Selected pair | `10.0.0.142 ↔ 10.0.0.108` and `2601:…  ↔ 2601:…` | none; 4 pairs `in-progress`, `requestsSent=54`, `responsesReceived=0` |
+
+So: the LAN candidate does not "become unreachable" — it is **never gathered**. Host candidates come from the tunnel, connectivity checks cross the LAN to an address that only exists inside the tunnel, and nothing answers. Signaling and DTLS never get a chance; the host kept encoding (388 frames, NVIDIA H.264) while `bytesSent` stayed 0.
+
+Also confirmed, not assumed: this PC's permission state before the fix was `camera: prompt`, `microphone: prompt` — the gate was closed.
+
+### 2. Implementation
+| File | Change |
+|---|---|
+| `src/media_permission.rs` | **new** — persists `camera`+`microphone` = allow for `http://tauri.localhost` via `ICoreWebView2Profile4::SetPermissionState`; documents the RFC 8828 mode flip; never fatal |
+| `src/lib.rs` | `mod media_permission`; grant applied to the main window after build |
+| `src/commands/stream.rs` | grant applied to the viewer window (it owns its own peer connection) |
+| `Cargo.toml` / `Cargo.lock` | `webview2-com = "0.39"` — the exact crate/version Tauri 2.12.7 already links, so no second copy in the graph |
+
+No routes, metrics, adapters, firewall, ICE servers, authentication or signaling were touched. The grant is scoped to the app's own bundled origin (no remote content is ever loaded), does not open any camera or microphone device, and does not bypass WARP: the tunnel's candidates are still offered and ICE keeps its normal ordering — the LAN interface is simply no longer hidden from this app.
+
+**Verified on this machine:** `cargo check` clean, `clippy -D warnings` clean, `cargo fmt --check` clean, new unit test passes (315 Rust tests total), release `npm run build` exit 0, app relaunched from the built binary and **`camera: granted`, `microphone: granted`** (was `prompt`), device 938 641 493 registered, relay healthy (2 devices, 0 errors).
+
+### 3. TURN fallback
+Already implemented and correct — no code needed: the relay mints **coturn REST** credentials per session (`username = <expiry>:<sessionId>`, `credential = base64(HMAC-SHA1(secret, username))`, TTL from config), and the client passes `iceServers` through with `iceTransportPolicy: "all"`. What is missing is a deployed relay. Health currently reports `turn: false`. To enable:
+
+```
+SIGNALING_TURN_URLS=turn:10.0.0.142:3478?transport=udp,turn:10.0.0.142:3478?transport=tcp,turns:relay.example:5349
+SIGNALING_TURN_SECRET=<shared secret, also in coturn static-auth-secret>
+SIGNALING_TURN_TTL_SECONDS=600
+```
+
+I did not deploy a TURN server: there is no relay host here, and standing one up changes infrastructure you told me to leave alone. Relay selection diagnostics already exist — `getStats()` reports `relay` candidate types and the selected pair, which is what the host recorder captures.
+
+### 4. Physical acceptance status — not claimed
+| Mode | Result |
+|---|---|
+| A. WARP OFF both | Passed earlier (`s-56e2560b552a69cb`, 4:08, 4567 frames, 18.4 fps avg) — **before** this change |
+| B. WARP ON viewer only | **Untested.** Needs the new build on .108 and a rerun |
+| C. WARP ON host only | **Untested, and untestable here:** 10.0.0.142 has no WARP — no WARP process, no 172.16.x adapter, one IPv4 default route |
+| D. WARP ON both | **Untested, same blocker** |
+| TURN fallback | **Untested** — no relay deployed |
+
+I cannot claim "LAN with WARP enabled" works: the fix's *mechanism* is verified (permission granted, which is the documented precondition), but the candidate set under WARP has not been observed on the physical pair. **Task 03C stays OPEN.**
+
+### 5. What I need to close it
+1. **Install this build on 10.0.0.108 too** — the viewer creates its own peer connection, so the grant must exist on whichever machine has WARP on.
+2. On .108, run the collector I wrote and send me the output — `D:/AI/Temp/mr2/warp-collect.ps1`, read-only, no admin:
+   `powershell -NoProfile -ExecutionPolicy Bypass -File warp-collect.ps1 -Label warp-on`
+   (and again with `-Label warp-off`). This gives the interface indexes/metrics/routes §1 asks for, which I cannot read any other way.
+3. Reconnect from .108 with WARP on; I will record candidates, pairs, STUN counters, DTLS and RTP bytes and tell you immediately whether `host 10.0.0.108` now appears in the candidate list — that is the single measurement that decides whether this fix works.
+
+One caution worth knowing before you retest: with WARP on, if the candidate now exists but checks still fail, the remaining cause is WARP's own firewall dropping inbound LAN UDP — in that case the answer is the TURN fallback, not more ICE tuning.
+
+
+111111111111
