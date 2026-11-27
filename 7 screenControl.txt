@@ -8718,3 +8718,2329 @@ One caution worth knowing before you retest: with WARP on, if the candidate now 
 
 
 111111111111
+Mình sẽ viết prompt theo phong cách triển khai trong nhật ký `7 screenControl.txt`: giao việc cụ thể cho OpenCode/FreeCode, yêu cầu đọc code trước, phân tích kiến trúc, thực hiện từng Phase, build/test, báo cáo kết quả và chỉ commit khi đạt yêu cầu.
+
+Prompt dưới đây dành cho Bước 2 – Trusted Device & Device Management của MiniRemote. Mình thiết kế để AI coding agent tự kiểm tra source code thực tế, không tự ý đoán cấu trúc dự án.
+
+Prompt hoàn chỉnh – Task 02Writing
+
+# TASK 02 – COMPLETE TRUSTED DEVICE & DEVICE MANAGEMENT
+
+## Project: MiniRemote
+
+## Priority: HIGH – Security
+
+## Execution Mode: Autonomous implementation with mandatory verification
+
+---
+
+# 1\. PROJECT CONTEXT
+
+We are developing MiniRemote, a Windows remote desktop application similar to UltraViewer.
+
+Current technology stack (verify against actual repository before making changes):
+
+- Tauri 2
+- Rust Core
+- React + TypeScript
+- Node.js Signaling Server
+- WebSocket
+- WebRTC
+- H.264 Screen Streaming
+- Windows SendInput
+
+Current project status:
+
+- Device ID mechanism has been implemented.
+- Authentication and password-based connection have been implemented.
+- Signaling Server is operational.
+- WebRTC connection has been tested.
+- Screen Capture and H.264 encoding have been implemented.
+- Mouse and Keyboard remote control have been implemented.
+- Cloudflare WARP connectivity has been temporarily resolved.
+
+IMPORTANT:
+
+This task focuses ONLY on security improvements related to Trusted Device and Device Management.
+
+Do not modify the existing WebRTC, WARP, ICE, screen capture or video streaming architecture unless a change is absolutely required for security integration.
+
+Do not break existing LAN and WARP connectivity.
+
+# 2\. MAIN OBJECTIVES
+
+Implement a complete Trusted Device management system.
+
+The system must support:
+
+1. Device identification.
+2. Device trust registration.
+3. Trusted Device persistence.
+4. Trusted Device listing.
+5. Individual device revocation.
+6. Global device revocation.
+7. Active session revocation.
+8. Separate permissions for viewing and controlling.
+9. Secure device authentication.
+10. Security audit logging.
+
+The security model must ensure:
+
+- Device ID is an identifier, NOT an authentication credential.
+- A copied Device ID must not be sufficient to impersonate a trusted device.
+- Every trusted device must possess a valid cryptographic credential.
+- Revoked devices must not be able to establish new sessions.
+- Existing sessions must be terminated when their device trust is revoked.
+
+# 3\. PHASE 0 – REPOSITORY INSPECTION
+
+Before writing any code:
+
+1. Inspect the complete repository structure.
+2. Read README and existing development documentation.
+3. Inspect Git status and current branch.
+4. Identify all authentication-related modules.
+5. Identify Device ID generation and storage.
+6. Identify Signaling Server authentication logic.
+7. Identify session creation and termination logic.
+8. Identify Rust commands exposed to Tauri.
+9. Identify frontend connection and device management screens.
+10. Identify existing database or persistent storage.
+11. Inspect existing tests.
+
+Search for relevant terms:
+
+- device\_id
+- deviceId
+- authentication
+- auth
+- password
+- session
+- session\_token
+- trusted
+- revoke
+- disconnect
+- permission
+- pairing
+
+Create a report:
+
+TASK\_02\_INITIAL\_ANALYSIS.md
+
+The report must contain:
+
+- Existing architecture.
+- Existing authentication flow.
+- Existing Device ID mechanism.
+- Existing storage mechanism.
+- Existing session lifecycle.
+- Security weaknesses.
+- Files that need modification.
+- Proposed implementation architecture.
+- Compatibility risks.
+
+Do not assume a feature is missing merely because its name differs.
+
+Do not duplicate existing implementations.
+
+STOP after Phase 0 if the current architecture cannot be determined reliably. Report the blocker instead of inventing an implementation.
+
+# 4\. PHASE 1 – TRUSTED DEVICE DATA MODEL
+
+Design a persistent Trusted Device data model.
+
+Each trusted device should contain:
+
+- Internal record ID.
+- Device ID.
+- Device display name.
+- Public key or public credential.
+- Trust creation timestamp.
+- Last successful authentication timestamp.
+- Last connection timestamp.
+- Device status.
+- Permission configuration.
+- Revocation timestamp.
+- Optional metadata.
+
+Suggested device statuses:
+
+- PENDING
+- TRUSTED
+- REVOKED
+- BLOCKED
+
+Suggested permissions:
+
+- VIEW\_SCREEN
+- CONTROL\_MOUSE
+- CONTROL\_KEYBOARD
+
+Security requirements:
+
+1. Never store private keys in plaintext.
+2. Never use Device ID as a secret.
+3. Never store reusable authentication tokens in frontend localStorage.
+4. Use cryptographically secure random values.
+5. Use appropriate operating system secure storage where applicable.
+6. Validate all data received from the Viewer.
+7. Prevent duplicate trusted-device records.
+8. Make trust registration and revocation persistent across application restarts.
+
+Use the existing database/storage architecture if suitable.
+
+Do not introduce a new database unnecessarily.
+
+Document the schema and migration strategy.
+
+# 5\. PHASE 2 – TRUST REGISTRATION
+
+Implement the Trusted Device enrollment workflow.
+
+Expected workflow:
+
+1. Viewer requests connection to Host.
+2. Host identifies the requesting Device ID.
+3. Host checks whether the device is already trusted.
+4. If the device is unknown, Host requires explicit approval.
+5. Host displays device information.
+6. User approves or rejects the request.
+7. If approved, establish a cryptographically authenticated device credential.
+8. Persist the trusted-device record.
+9. Allow subsequent authentication using the registered credential.
+
+Security requirements:
+
+- Approval must happen on the Host.
+- A Viewer cannot approve itself.
+- Do not trust a device based only on Device ID.
+- Prevent replay of previous authentication challenges.
+- Bind authentication to the correct device credential.
+- Apply expiration to temporary enrollment challenges.
+- Protect against duplicate enrollment and race conditions.
+- Require re-authentication when trust credentials are rotated or invalidated.
+
+If the existing password authentication must remain, preserve backward compatibility.
+
+Do not silently bypass existing authentication.
+
+# 6\. PHASE 3 – TRUSTED DEVICE MANAGEMENT
+
+Implement device management on the Host.
+
+Required functionality:
+
+## 6.1 Trusted Device List
+
+Display:
+
+- Device Name
+- Device ID
+- First Trusted Date
+- Last Seen
+- Last Authentication
+- Device Status
+- Permissions
+
+The list must refresh when device state changes.
+
+## 6.2 Individual Revoke
+
+Allow the Host user to revoke one selected device.
+
+Expected behavior:
+
+1. User selects a trusted device.
+2. User confirms revocation.
+3. Server marks that device as REVOKED.
+4. Invalidate its authentication credentials.
+5. Terminate its active sessions.
+6. Prevent new connections.
+7. Update the frontend immediately.
+
+Revoking one device must not revoke unrelated devices.
+
+## 6.3 Revoke All
+
+Provide a separate action to revoke all trusted devices.
+
+Require explicit confirmation.
+
+Ensure that all corresponding sessions are terminated.
+
+## 6.4 Device Rename
+
+Allow changing the display name without changing the underlying Device ID or cryptographic identity.
+
+## 6.5 Permission Management
+
+Allow the Host to manage permissions independently:
+
+- View screen.
+- Control mouse.
+- Control keyboard.
+
+A device without CONTROL\_MOUSE must not be able to move or click the Host mouse.
+
+A device without CONTROL\_KEYBOARD must not be able to inject keyboard input.
+
+The Host must remain able to revoke control immediately.
+
+# 7\. PHASE 4 – SESSION REVOCATION AND AUTHORIZATION
+
+Integrate Trusted Device status into the existing session authorization system.
+
+Requirements:
+
+1. Every authenticated session must be associated with a trusted device identity or an explicitly approved temporary session.
+2. Check device status when creating a session.
+3. Check permissions when authorizing sensitive operations.
+4. Revocation must invalidate existing sessions.
+5. Prevent stale sessions from being reused.
+6. Handle concurrent sessions correctly.
+7. Reject revoked or blocked devices.
+8. Avoid race conditions between session creation and revocation.
+
+IMPORTANT:
+
+Do not rely only on frontend permission checks.
+
+All security-sensitive authorization must be enforced in the trusted backend.
+
+The Host must retain final authority over screen viewing and remote input permissions.
+
+# 8\. PHASE 5 – SECURITY AUDIT LOGGING
+
+Implement security event logging.
+
+Record events such as:
+
+- Device enrollment requested.
+- Device enrollment approved.
+- Device enrollment rejected.
+- Device authentication succeeded.
+- Device authentication failed.
+- Device revoked.
+- All devices revoked.
+- Session created.
+- Session terminated.
+- Permission changed.
+- Unauthorized operation rejected.
+
+Log fields should include:
+
+- Timestamp.
+- Event type.
+- Device ID where available.
+- Session ID where available.
+- Result.
+- Reason code.
+
+Security requirements:
+
+- Never log passwords.
+- Never log private keys.
+- Never log complete authentication tokens.
+- Sanitize untrusted input.
+- Prevent log injection.
+- Avoid exposing sensitive information in frontend error messages.
+
+# 9\. PHASE 6 – FRONTEND IMPLEMENTATION
+
+Implement the Trusted Device management UI using the existing UI framework and design system.
+
+Required screens/components:
+
+1. Trusted Devices list.
+2. Device details.
+3. Enrollment approval dialog.
+4. Revoke confirmation dialog.
+5. Revoke All confirmation dialog.
+6. Permission management.
+7. Device status indicators.
+
+UI requirements:
+
+- Consistent with existing MiniRemote design.
+- Clear device identity.
+- Clear trusted/revoked status.
+- Loading states.
+- Empty states.
+- Error handling.
+- Confirmation before destructive operations.
+- No fake device data in production.
+
+Do not redesign unrelated application screens.
+
+# 10\. PHASE 7 – TESTING
+
+Write automated tests for all new functionality.
+
+## Unit Tests
+
+- Device ID validation.
+- Device credential validation.
+- Trusted Device registration.
+- Duplicate registration.
+- Device status transitions.
+- Individual revocation.
+- Global revocation.
+- Permission validation.
+- Session invalidation.
+
+## Security Tests
+
+- Unknown device attempts connection.
+- Spoofed Device ID.
+- Invalid public credential.
+- Expired enrollment challenge.
+- Replay of previous authentication challenge.
+- Revoked device attempts reconnection.
+- Revoked device attempts to reuse an old session.
+- Unauthorized mouse control.
+- Unauthorized keyboard control.
+- Concurrent enrollment requests.
+- Concurrent session revocation.
+
+## Integration Tests
+
+Test complete flows:
+
+Scenario A: New device -\> Host approval -\> Trusted -\> Connect successfully.
+
+Scenario B: Trusted device -\> Reconnect -\> Authentication succeeds.
+
+Scenario C: Trusted device -\> Host revokes -\> Existing session terminated.
+
+Scenario D: Revoked device -\> Reconnect -\> Rejected.
+
+Scenario E: Two trusted devices -\> Revoke one -\> Other device continues working.
+
+Scenario F: Trusted device has VIEW\_SCREEN only -\> Remote input rejected.
+
+Scenario G: Host restarts -\> Trusted Device records remain persistent.
+
+Scenario H: Signaling Server restarts -\> Revoked credentials remain invalid.
+
+Do not claim a test passed unless it was actually executed.
+
+# 11\. PHASE 8 – BUILD AND REGRESSION TESTING
+
+Run the project's existing build and test commands.
+
+Determine the actual commands from package.json, Cargo.toml and repository documentation.
+
+At minimum, verify:
+
+- Rust compilation.
+- Rust unit tests.
+- Frontend TypeScript checks.
+- Frontend build.
+- Signaling Server tests.
+- Signaling Server build.
+- Tauri application build.
+
+Regression testing:
+
+- Device ID generation still works.
+- Existing password authentication still works.
+- LAN connection still works.
+- Cloudflare WARP connection still works.
+- WebRTC signaling still works.
+- Screen streaming still works.
+- Mouse control still works when authorized.
+- Keyboard control still works when authorized.
+
+Do not change networking configuration to make security tests pass.
+
+Do not disable existing tests.
+
+Do not weaken authentication to preserve compatibility.
+
+# 12\. PHASE 9 – DOCUMENTATION AND FINAL REPORT
+
+Create:
+
+TASK\_02\_IMPLEMENTATION\_REPORT.md
+
+Include:
+
+1. Original architecture.
+2. Changes implemented.
+3. Modified files.
+4. New files.
+5. Database/schema changes.
+6. Authentication changes.
+7. Trusted Device workflow.
+8. Permission architecture.
+9. Session revocation behavior.
+10. Security improvements.
+11. Tests executed.
+12. Test results.
+13. Build results.
+14. Known limitations.
+15. Remaining security risks.
+16. Recommended next tasks.
+
+Update README or technical documentation if required.
+
+# 13\. GIT MANAGEMENT
+
+Before modifying files:
+
+- Inspect git status.
+- Do not overwrite user changes.
+- Do not reset the repository.
+- Do not discard unrelated modifications.
+
+After successful implementation:
+
+1. Review complete Git diff.
+2. Remove temporary debugging code.
+3. Check for hardcoded secrets.
+4. Check for accidentally committed credentials.
+5. Run final tests.
+6. Commit changes using a descriptive commit message:
+
+feat(security): implement trusted device management
+
+Do not push to remote unless explicitly authorized.
+
+# 14\. STRICT EXECUTION RULES
+
+IMPORTANT:
+
+- Work sequentially.
+- Inspect before modifying.
+- Preserve existing working functionality.
+- Avoid unnecessary refactoring.
+- Do not rewrite the entire authentication architecture.
+- Do not introduce unnecessary dependencies.
+- Do not silently change API contracts.
+- Do not create fake successful test results.
+- Do not leave security-sensitive operations implemented only in frontend.
+- Do not expose private credentials in logs.
+- Do not weaken existing authentication.
+- Do not modify WARP/ICE/WebRTC behavior unless absolutely necessary.
+
+If a critical architectural issue is discovered:
+
+1. Stop the affected phase.
+2. Explain the issue.
+3. Describe the impact.
+4. Propose a minimal safe solution.
+5. Wait for approval if the change would alter existing authentication or network architecture.
+
+For large tasks, complete and verify each phase before continuing.
+
+Do not stop after generating a plan. Implement the task.
+
+# 15\. DEFINITION OF DONE
+
+TASK 02 is complete only when:
+
+- Trusted Device registration works.
+- Device credentials are securely managed.
+- Trusted Device list works.
+- Individual revocation works.
+- Global revocation works.
+- Active sessions are terminated after revocation.
+- Permission enforcement works in the backend.
+- Security audit logs work.
+- All relevant automated tests pass.
+- Existing LAN and WARP connections remain functional.
+- Existing screen streaming and remote input remain functional.
+- Build succeeds.
+- Implementation report is complete.
+
+Final status must be one of:
+
+- PASS – All acceptance criteria verified.
+- PARTIAL – Some criteria remain incomplete.
+- BLOCKED – A critical blocker prevents completion.
+
+Never mark PASS if any mandatory acceptance criterion has not been verified.
+
+---
+
+# START EXECUTION
+
+Begin with PHASE 0 – REPOSITORY INSPECTION.
+
+Read the existing source code and documentation before making any changes.
+
+Then execute the phases sequentially.
+
+The goal is to improve MiniRemote security without breaking any existing functionality.
+
+## Cách sử dụng
+
+1. Mở OpenCode hoặc FreeCode tại thư mục gốc repository MiniRemote.
+2. Chọn model coding agent có khả năng đọc và sửa toàn bộ repository.
+3. Dán nguyên prompt trên.
+4. Cho agent thực hiện Phase 0 trước.
+5. Kiểm tra báo cáo `TASK_02_INITIAL_ANALYSIS.md` trước khi cho phép sửa code.
+
+Lưu ý quan trọng: Prompt yêu cầu agent không push code lên GitHub và không thay đổi WARP/WebRTC. Điều này giúp tránh làm hỏng phần kết nối bạn vừa xử lý được.
+
+Sau Task 02, chúng ta mới chuyển sang Task 03 – STUN/TURN và NAT/Firewall.
+
+
+
+* done
+I'll start with Phase 0: inspecting the repository structure, docs, git state, and existing auth/device/session code.
+
+Existing Trusted Device Access already exists (commit `e52c3c3`) — I need to extend, not duplicate. Reading the architecture and all auth/session/trust modules now.
+
+Now reading the existing Trusted Device Access implementation and session store in focused batches.
+
+Now the gates, state wiring, and frontend trust UI, so the new model fits the existing seams.
+
+I have the architecture. Next: the remaining seams I must touch — Tauri command registration, crypto deps, the host link wiring, and the main page layout.
+
+Architecture is clear: the existing Trusted Device Access is only a global switch, with no per-device identity. I'm adding a real trust registry (credentials, statuses, permissions), backend enforcement, and the enrollment UI. Checking the existing crypto idioms first.
+
+Now I'll write the two new Rust security modules: a per-device trust registry with device credentials, and an append-only security audit log.
+
+
+
+
+Now the viewer-side credential store (DPAPI-sealed), plus per-capability enforcement in the input gate and runtime.
+
+
+
+
+Now wiring the new stores into `AppState` and adding the host-side device-management commands.
+
+
+
+
+Now the session integration: unknown devices become pending, revoked devices are refused and their session ended, and the peer of each session is tracked for revocation.
+
+
+
+
+Rust core is wired. Compiling now to catch API and type errors before I touch the frontend.
+
+
+
+
+
+
+
+
+
+
+353 Rust tests pass; the one failure is my test serializing the UI view instead of the stored record. Fixing that and writing the frontend service layer.
+
+
+
+
+Wiring the credential exchange into the peer link and the two hooks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TypeScript, Vitest (122) and Rust (354) all pass. Now correcting the Trusted Access copy to the credential-based model, then linting and running the remaining build/test gates.
+
+
+
+
+
+
+
+All gates pass: clippy `-D warnings`, `fmt --check`, 101 signaling tests, web build. Now the Phase 0 analysis and implementation report.
+
+
+
+
+Adding the new modules to the architecture doc, then checking whether a packaged build is possible (the app may be running) and reviewing the diff.
+
+
+
+
+
+
+
+## Task 02 — Trusted Device & Device Management
+
+**Status: PARTIAL** (all automated criteria pass; the two-PC enrollment flow and installer build were not run — details below).
+
+### What was there before
+A single global ON/OFF "Trusted Device Access" flag: while ON, **any** device with the right Device ID + password got screen, mouse and keyboard with no per-device record. The Device ID effectively acted as the device identity, and input was all-or-nothing.
+
+### What I implemented
+**Trust registry (Rust, host-side)** — `trusted_devices.rs`
+- One record per Device ID: internal ID, name, `pending/trusted/revoked/blocked`, independent `viewScreen`/`controlMouse`/`controlKeyboard`, trusted/last-seen/last-auth/revoked timestamps.
+- Approval mints a 256-bit credential and returns it **once**; disk holds only `SHA-256(salt ‖ token)`. Constant-time comparison. Re-approval issues a new token and invalidates the old one.
+- Revocation destroys the credential and permissions; revoke-all does it for every record. Corrupt/unknown-version file → trusts nobody, refuses writes, leaves the file for inspection.
+
+**Credential delivery** — no signaling/ICE/WebRTC-architecture change: the optional `trustToken` travels in the existing DTLS `hello`, and the host returns a `{kind:"trust",token}` message after approval. Viewer stores it DPAPI-sealed (`peer-trust.bin`, `peer_trust.rs`).
+
+**Backend authorization**
+- Unknown device → `PENDING`, zero capability, appears for approval; revoked/blocked → session refused **and ended**.
+- `verify_viewer_trust` resolves the peer from Rust's own session binding, so the window cannot name a different device. A verified credential grants only that device's permissions, and only when Trusted Access is ON.
+- `InputGuard` now carries a capability set; `InputRuntime` rejects keyboard events under a mouse-only grant (and vice versa) before any OS call.
+- Revoking clears guards, releases held keys/buttons, and ends matching live sessions. Narrowing permissions re-applies to the live session.
+
+**Audit log** — append-only `security-audit.log`, JSONL, all fields control-character-stripped and bounded, no secrets accepted. Covers enrollment, auth success/failure, revocation, permission changes, session create/terminate/refuse.
+
+**UI** — `TrustedDevicesPanel`: pending-first list, status pill, capabilities, timestamps, per-device checkboxes, rename, confirmed revoke, confirmed revoke-all, empty/loading/error states. Trusted Access copy corrected to the credential model (it no longer claims ID+password is enough).
+
+Reports: `TASK_02_INITIAL_ANALYSIS.md`, `TASK_02_IMPLEMENTATION_REPORT.md`. Committed on `master` as `feat(security): implement trusted device management` (the commit also carries the previously uncommitted Task 03C WebView2 media-permission files, since `lib.rs` registers both modules). Not pushed.
+
+### Checks actually run
+| Check | Result |
+| --- | --- |
+| `cargo test --lib` | 354 passed, 0 failed |
+| `cargo clippy --all-targets -- -D warnings` | clean |
+| `cargo fmt --check` | clean |
+| `npm run typecheck` (all workspaces) | clean |
+| desktop Vitest | 122 passed (11 files) |
+| signaling Vitest | 101 passed (6 files) |
+| `npm run build:web` | built (80 modules) |
+
+### Not verified / limitations
+- **No two-PC test**: enrollment → credential delivery → reconnect-as-Verified → revoke-ends-session was not executed on 10.0.0.142/10.0.0.108, so LAN/WARP regression for this change is unproven. ICE, capture, encode and signaling code were not modified.
+- **Installer build not run**: `npm run build` needs the running `miniremote.exe` (PID 28328) closed first; I did not terminate your live session. Close the app and run `npm run build` to produce the installer.
+- UI was typechecked/built but not clicked through.
+- `PENDING` records have no TTL; `BLOCKED` is enforced but not reachable from the UI yet; audit log has no rotation/viewer.
+
+Task 03C remains open and untouched — its WARP-on physical modes are still unverified.
+
+
+
+1111111111111111
+Rất tốt. Mình đã xem báo cáo triển khai Task 02. Đánh giá của mình: đây là một bước tiến lớn về kiến trúc bảo mật của MiniRemote, nhưng chưa nên chuyển thẳng sang Task 03.
+
+PARTIAL – Chưa đủ điều kiện nghiệm thu## 1. Đánh giá kết quả Task 02
+
+Những phần đã làm tốt:
+
+- Trusted Device Registry: Mỗi Device ID có một bản ghi và trạng thái riêng.
+- Credential: Token ngẫu nhiên 256-bit, chỉ trả về một lần, lưu hash phía Host.
+- DPAPI: Viewer lưu credential được bảo vệ.
+- Backend authorization: Không chỉ dựa vào kiểm tra giao diện.
+- Permission: Tách quyền xem màn hình, chuột và bàn phím.
+- Revocation: Thu hồi thiết bị sẽ kết thúc session liên quan.
+- Audit log: Ghi nhận các sự kiện bảo mật.
+
+Đặc biệt, mình đánh giá cao việc sử dụng Rust để xác định danh tính peer từ session binding, thay vì tin Device ID do frontend gửi lên.
+
+## 2. Những việc phải hoàn thành trước khi nghiệm thu
+
+| Hạng mục | Trạng thái |
+| --- | --- |
+| Rust tests | 354 PASS |
+| TypeScript | PASS |
+| Desktop Vitest | 122 PASS |
+| Signaling tests | 101 PASS |
+| Clippy / Format | PASS |
+| Hai máy kết nối thực tế | Chưa test |
+| UI thực tế | Chưa test |
+| Installer | Chưa build |
+
+Có thêm ba điểm cần chú ý:
+
+1. `PENDING` chưa có TTL, có thể tích tụ yêu cầu đăng ký thiết bị.
+2. `BLOCKED` chưa có giao diện quản lý.
+3. Audit log chưa có rotation, cần tránh tăng dung lượng vô hạn.
+
+## 3. Prompt tiếp theo: Task 02.1 – Acceptance & Security Verification
+
+Mình khuyên chạy prompt này trước. Không viết thêm tính năng mới, chỉ kiểm chứng những gì vừa triển khai.
+
+Writing
+
+# TASK 02.1 – TRUSTED DEVICE ACCEPTANCE & SECURITY VERIFICATION
+
+## Project: MiniRemote
+
+## Priority: CRITICAL
+
+## Mode: Verification, bug fixing and regression testing
+
+## Scope: Existing Task 02 implementation only
+
+### 1\. OBJECTIVE
+
+Verify the actual Task 02 implementation on real Windows machines.
+
+Do not redesign or rewrite the Trusted Device architecture.
+
+Do not start Task 03.
+
+Preserve all existing LAN, WARP, WebRTC, screen streaming and input functionality.
+
+### 2\. INITIAL INSPECTION
+
+1. Check current Git branch and status.
+2. Inspect commit `feat(security): implement trusted device management`.
+3. Read `TASK_02_IMPLEMENTATION_REPORT.md`.
+4. Review:
+   - trusted\_devices.rs
+   - peer\_trust.rs
+   - InputGuard
+   - InputRuntime
+   - Session management
+   - Trust credential exchange
+   - TrustedDevicesPanel
+   - Security audit logging
+
+Identify any implementation/report discrepancies.
+
+Do not overwrite unrelated working-tree changes.
+
+### 3\. TWO-PC ACCEPTANCE TEST
+
+Use the existing two authorized test machines.
+
+Test the complete lifecycle:
+
+A. New device:
+
+- Connect Viewer to Host.
+- Confirm it appears as PENDING.
+- Confirm no remote input is authorized.
+
+B. Enrollment:
+
+- Approve the device on Host.
+- Confirm credential delivery.
+- Confirm Viewer stores credential securely.
+
+C. Reconnection:
+
+- Disconnect Viewer.
+- Reconnect using the stored credential.
+- Confirm device is recognized as TRUSTED.
+
+D. Revocation:
+
+- Revoke that device on Host.
+- Confirm its active session ends.
+- Confirm subsequent connection is rejected.
+
+E. Other trusted device:
+
+- Connect a second trusted device.
+- Revoke the first.
+- Confirm the second remains functional.
+
+F. Permission tests:
+
+- VIEW\_SCREEN only.
+- VIEW\_SCREEN + CONTROL\_MOUSE.
+- VIEW\_SCREEN + CONTROL\_KEYBOARD.
+- All permissions.
+
+Confirm enforcement in Rust/backend, not just UI.
+
+### 4\. NETWORK REGRESSION
+
+Repeat the existing successful network configuration.
+
+Verify:
+
+- LAN connection.
+- Cloudflare WARP connection.
+- WebRTC signaling.
+- Screen streaming.
+- Authorized mouse input.
+- Authorized keyboard input.
+
+Record connection establishment, ICE state and session termination.
+
+Do not change ICE configuration or WARP workarounds during this task.
+
+### 5\. SECURITY EDGE CASES
+
+Test:
+
+- Invalid trust token.
+- Expired or malformed enrollment challenge.
+- Replayed challenge.
+- Revoked token.
+- Duplicate device enrollment.
+- Concurrent revocation and connection.
+- Host restart.
+- Signaling Server restart.
+- Corrupted trust registry.
+- Unauthorized input after revocation.
+
+Do not claim security guarantees that were not tested.
+
+### 6\. PENDING TTL AND BLOCKED MANAGEMENT REVIEW
+
+Inspect the existing implementation.
+
+If safe and minimal:
+
+- Propose a configurable PENDING expiration.
+- Ensure expired requests cannot be approved.
+- Add BLOCKED management only if the existing architecture supports it without broad refactoring.
+
+Do not expand scope unnecessarily.
+
+### 7\. AUDIT LOG REVIEW
+
+Verify:
+
+- No passwords in logs.
+- No trust tokens in logs.
+- No private keys in logs.
+- Revoke events recorded.
+- Failed authentication recorded.
+- Session termination recorded.
+
+Check log growth and recommend a safe rotation policy.
+
+### 8\. UI ACCEPTANCE
+
+Manually verify:
+
+- Trusted device list.
+- Pending device approval.
+- Device rename.
+- Permission toggles.
+- Individual revoke.
+- Revoke all.
+- Loading and error states.
+
+Check that the UI refreshes correctly after backend state changes.
+
+### 9\. BUILD AND INSTALLER
+
+Do not terminate a running MiniRemote process without permission.
+
+Once the application is closed by the user:
+
+- Run the full production build.
+- Verify the installer is generated.
+- Verify installation.
+- Verify application startup.
+- Verify existing configuration persistence.
+
+### 10\. FINAL REPORT
+
+Create `TASK_02_1_ACCEPTANCE_REPORT.md`.
+
+Include:
+
+- Test machine roles.
+- Test environment.
+- Test scenarios.
+- Actual results.
+- Screenshots or logs where available.
+- Failed tests.
+- Fixed bugs.
+- Remaining limitations.
+- Installer result.
+- LAN/WARP regression result.
+
+Final status:
+
+PASS – All mandatory acceptance tests passed.
+
+PARTIAL – Automated tests pass but physical acceptance tests remain.
+
+BLOCKED – A critical security or connectivity defect prevents acceptance.
+
+Do not mark PASS without actual two-PC verification.
+
+### EXECUTION RULES
+
+Work sequentially.
+
+Do not start Task 03.
+
+Do not rewrite working modules.
+
+Do not weaken authentication.
+
+Do not push to GitHub.
+
+Preserve existing uncommitted changes.
+
+Start with repository inspection and proceed through verification.
+
+## 4. Sau khi Task 02.1 PASS
+
+Thứ tự tiếp theo sẽ là:
+
+Task 02.1
+
+Đang chờ nghiệm thu
+
+Kiểm thử bảo mật và kết nối thực tế
+
+Task 03 – Internet Connectivity
+
+- STUN/TURN.
+- NAT detection.
+- Firewall diagnostics.
+- Relay fallback.
+- Kiểm thử Internet thực tế.
+  Task 04 – Streaming Performance
+
+Task 05 – Stability & Recovery
+
+Task 06 – Production & Release
+
+Một lưu ý quan trọng: Báo cáo cho biết commit Task 02 đã vô tình chứa cả các file WebView2 của Task 03C. Cần giữ nguyên và kiểm tra Git diff, không cherry-pick hoặc reset tùy tiện.
+
+Mình đề xuất: chạy Task 02.1 trước, gửi lại báo cáo cho mình. Mình sẽ kiểm tra PASS/PARTIAL và quyết định có đủ điều kiện chuyển sang Task 03 hay chưa.
+
+
+* done
+Starting with repository state and the committed implementation, then I'll fix the defects I can prove from the code before running acceptance gates.
+
+Working tree is clean at `fc25a32`; the app is still running, so the installer build remains gated. Reviewing the exact committed code regions I intend to fix.
+
+Review found three real defects. Fixing them now: reconnects overwriting a host rename, the active-control row losing the device identity, and an approval whose credential is dropped if it happens before the channel finishes verifying. Plus the configurable pending TTL this task asks for.
+
+
+
+
+
+
+
+
+
+
+Automated gates pass with 4 new tests. I'll build the installer to a separate target directory so the running application is not touched, and record the acceptance fixes meanwhile.
+
+
+
+
+Installer built successfully into an isolated target directory (1.80 MiB) without touching the running app. Writing the acceptance report with actual results.
+
+
+
+
+## Task 02.1 — Trusted Device acceptance & security verification
+
+**Status: PARTIAL** — code review, defect fixes, automated verification and the production installer build all pass; the physical two-PC scenarios were **not executed**, so PASS is not claimed.
+
+### Inspection
+- Branch `master`, worktree clean, HEAD `fc25a32` (Task 02). Read the report and all listed modules.
+- **Report/code discrepancies found:** the report claimed grants were attributed to the device (they were recorded as “Unknown device”), claimed renames persist (reconnects overwrote them), and treated enrollment expiry as covered (pending records never expired).
+
+### Defects found and fixed (`321ac76`)
+1. **Host rename reverted on every reconnect** — existing records now only refresh `lastSeenMs`; the peer’s label is used at first sighting. Regression test added.
+2. **Automatic grant recorded as “Unknown device”** — the verified peer’s ID/name now flows into the Trusted Access active row.
+3. **Credential dropped if approval happened before the channel verified** — the one-copy token is now queued on the link and flushed when the hello verifies.
+4. **No pending-request lifetime** — implemented: 30 min default, `MINIREMOTE_PENDING_TRUST_MINUTES` (1–1440) override, `approve` rejects expired requests even between prunes, a reconnect reopens the request, and the list prunes what can no longer be approved.
+5. **No audit trail for a trust command from a non-host window** — now logged as `operation.unauthorized` / `denied`.
+6. Revoking a device now clears its “Active control” row before ending its session.
+
+**BLOCKED management:** reviewed and deliberately not exposed — it is enforced, but adding a block action without an unblock path would create a permanent lockout. Recommendation recorded.
+
+### Verification actually run
+| Check | Result |
+| --- | --- |
+| `cargo test --lib` | **358 passed** (4 new for TTL/rename) |
+| `cargo clippy --all-targets -D warnings` | clean |
+| `cargo fmt --check` | clean |
+| `npm run typecheck` | clean |
+| Desktop Vitest | **122 passed** |
+| Signaling Vitest | **101 passed** |
+| Production build (isolated `CARGO_TARGET_DIR`) | **succeeded**, NSIS installer **1.80 MiB** at `apps/desktop/src-tauri/target/acceptance/release/bundle/nsis/MiniRemote_0.1.0_x64-setup.exe` |
+
+Audit-log review: no password, token, verifier or key reaches the log; revoke, failed authentication, session create/terminate/refuse and unauthorized attempts are recorded; fields sanitized and bounded. Growth ≈150–250 bytes/line with no rotation — recommended 1 MiB rotation keeping `.1`/`.2`.
+
+### Not run (why PARTIAL)
+- **Scenarios A–F on the two PCs:** `10.0.0.108` is user-operated; this host has ICMP only, and the installed build there predates Task 02. No shell, IPC or UI access exists for it, so I did not substitute a loopback run for “actual two physical computers”.
+- **LAN/WARP regression:** not repeated (no second machine; Task 03C stays open). ICE/SDP/capture/WARP were not modified.
+- **Installer not installed / new build not started:** your MiniRemote (PID 28328) is still running and I did not terminate it. The build used a separate target directory precisely to avoid touching it.
+- **UI not clicked through:** typechecked and bundled only.
+
+### To finish acceptance
+Install the installer above on both PCs, then run the seven steps in `TASK_02_1_ACCEPTANCE_REPORT.md` §12 (pending → approve → sealed `peer-trust.bin` → reconnect Trusted → revoke ends session → second device unaffected → view-only refuses input). The expected evidence per run is the host’s `security-audit.log` plus the `[WEBRTC]`/`[VIDEO]` lines.
+
+Both commits are local on `master`; nothing was pushed.
+
+
+11111111
+Được. Chúng ta chuyển thẳng sang Task 03 – Hoàn thiện Internet Connectivity.
+
+Mình đồng ý chưa cần chờ Task 02.2, vì các bài kiểm thử hai máy có thể thực hiện song song sau. Tuy nhiên, phải giữ nguyên các thay đổi Trusted Device đã hoàn thành, không được hy sinh bảo mật để làm kết nối Internet hoạt động.
+
+## Task 03 – Mục tiêu
+
+Bắt đầu triển khaiMiniRemote cần hoạt động ổn định trong các môi trường:
+
+- Hai máy cùng mạng LAN.
+- Hai máy ở hai mạng Internet khác nhau.
+- Một máy bật Cloudflare WARP.
+- Cả hai máy bật Cloudflare WARP.
+- NAT đối xứng hoặc mạng hạn chế UDP.
+- Firewall chặn kết nối trực tiếp.
+
+Kiến trúc mục tiêu:
+
+Viewer – PC A
+
+Device authentication · Trusted Device
+
+Signaling · ICE negotiation
+
+STUN
+
+Discover public network mapping
+
+TURN
+
+Relay when direct connection fails
+
+Host – PC B
+
+Authentication · Authorization · Screen streaming
+
+WebRTC vẫn sử dụng DTLS/SRTP để bảo vệ luồng truyền media. TURN chỉ chuyển tiếp dữ liệu, không thay thế xác thực của MiniRemote.
+
+## Các giai đoạn triển khai
+
+| Phase | Nội dung |
+| --- | --- |
+| 0 | Kiểm tra kiến trúc mạng hiện tại |
+| 1 | STUN configuration |
+| 2 | NAT và ICE diagnostics |
+| 3 | TURN server và relay fallback |
+| 4 | Firewall và transport fallback |
+| 5 | WARP compatibility |
+| 6 | Kiểm thử Internet thực tế |
+| 7 | Báo cáo và nghiệm thu |
+
+## Prompt OpenCode / FreeCode – TASK 03
+
+Mình viết theo cách làm của `7 screenControl.txt`: yêu cầu agent tự đọc repository, xác định module hiện tại, triển khai tuần tự, chạy test và tạo báo cáo. Không được chỉ lập kế hoạch rồi dừng.
+
+Writing
+
+# TASK 03 – COMPLETE INTERNET CONNECTIVITY
+
+## Project: MiniRemote
+
+## Priority: HIGH
+
+## Execution: Sequential implementation with mandatory verification
+
+---
+
+# 1\. PROJECT CONTEXT
+
+MiniRemote is a Windows remote desktop application.
+
+Technology stack (verify actual repository):
+
+- Tauri 2
+- Rust Core
+- React + TypeScript
+- Node.js Signaling Server
+- WebSocket
+- WebRTC
+- H.264
+- Windows APIs
+
+Existing functionality:
+
+- Device ID authentication.
+- Password authentication.
+- Trusted Device registry.
+- Per-device credentials.
+- Device permission management.
+- Session revocation.
+- WebRTC signaling.
+- Screen Capture.
+- H.264 encoding.
+- Mouse and keyboard control.
+
+Cloudflare WARP connectivity has been temporarily resolved through previous work.
+
+Previous commits:
+
+- fc25a32 – Trusted Device implementation.
+- 321ac76 – Trusted Device acceptance fixes.
+
+IMPORTANT:
+
+This task focuses exclusively on Internet connectivity.
+
+Preserve all existing authentication and security functionality.
+
+Do not weaken Trusted Device authentication to make networking work.
+
+Do not rewrite the existing WebRTC architecture without demonstrating why it is necessary.
+
+---
+
+# 2\. MAIN OBJECTIVES
+
+Make MiniRemote work reliably across:
+
+1. Same LAN.
+2. Different LAN networks.
+3. Different Internet providers.
+4. Host behind NAT.
+5. Viewer behind NAT.
+6. Both devices behind NAT.
+7. Cloudflare WARP enabled on Viewer.
+8. Cloudflare WARP enabled on Host.
+9. WARP enabled on both devices.
+10. Networks where direct UDP connectivity is restricted.
+11. Networks requiring TURN relay.
+
+The system should automatically select the best available connection path.
+
+Preferred connection order:
+
+1. Direct host-to-viewer connectivity where available.
+2. STUN-assisted ICE connectivity.
+3. TURN relay when direct connectivity fails.
+
+Do not force TURN for every connection.
+
+Keep the existing WARP behavior intact unless a specific, reproducible defect is identified.
+
+---
+
+# 3\. PHASE 0 – REPOSITORY INSPECTION
+
+Before changing code, inspect:
+
+- Git branch and status.
+- Existing WebRTC implementation.
+- ICE configuration.
+- STUN configuration.
+- TURN configuration.
+- ICE candidate generation.
+- ICE candidate exchange.
+- SDP offer/answer flow.
+- Signaling Server.
+- WebSocket connection lifecycle.
+- Network adapter detection.
+- Cloudflare WARP handling.
+- Existing connection timeout and retry logic.
+- Existing logging and diagnostics.
+
+Search for:
+
+- iceServers
+- stun:
+- turns:
+- turn:
+- iceCandidate
+- RTCIceCandidate
+- RTCConfiguration
+- iceConnectionState
+- connectionState
+- candidatePair
+- relayProtocol
+- nominated
+- selectedCandidatePair
+
+Identify the actual locations where configuration is generated and consumed.
+
+Create:
+
+TASK\_03\_INITIAL\_ANALYSIS.md
+
+Include:
+
+1. Current connection architecture.
+2. Existing STUN/TURN implementation.
+3. Existing ICE behavior.
+4. Network adapter handling.
+5. WARP compatibility implementation.
+6. Current connection failure cases.
+7. Files requiring modification.
+8. Proposed implementation.
+9. Security risks.
+10. Regression risks.
+
+Do not duplicate existing functionality.
+
+---
+
+# 4\. PHASE 1 – CENTRALIZED STUN/TURN CONFIGURATION
+
+Implement centralized ICE server configuration.
+
+Requirements:
+
+- Support multiple STUN servers.
+- Support multiple TURN servers.
+- Support UDP relay.
+- Support TCP relay.
+- Support TURN over TLS.
+- Support configurable credentials.
+- Support server-side configuration.
+- Support development and production environments.
+
+Do not hardcode credentials in frontend source code.
+
+Do not embed permanent TURN usernames or passwords in the installer.
+
+The Viewer and Host must receive the correct ICE configuration through the existing trusted configuration mechanism.
+
+Configuration should support:
+
+- STUN URLs.
+- TURN UDP URLs.
+- TURN TCP URLs.
+- TURN TLS URLs.
+- Credential expiration.
+- Configuration version.
+- Connection timeout.
+
+Use environment variables or the existing secure configuration architecture.
+
+Preserve existing configuration compatibility.
+
+If configuration is missing, provide a clearly documented fallback behavior.
+
+---
+
+# 5\. PHASE 2 – TURN SERVER INTEGRATION
+
+Evaluate an established TURN implementation such as coturn.
+
+Do not implement a TURN server from scratch.
+
+Requirements:
+
+1. TURN allocation support.
+2. UDP relay support.
+3. TCP relay support.
+4. TLS relay support.
+5. Short-lived authentication credentials.
+6. Credential expiration.
+7. Allocation timeout handling.
+8. Bandwidth and allocation monitoring.
+9. Server health monitoring.
+10. Proper error reporting.
+
+Security requirements:
+
+- Never expose permanent TURN credentials to clients.
+- Use time-limited credentials.
+- Validate TURN authentication.
+- Restrict relay allocation according to deployment policy.
+- Prevent unauthorized open-relay behavior.
+- Use TLS certificates for TLS endpoints.
+- Document secret management.
+- Do not expose credentials in logs.
+
+Deployment requirements:
+
+- Document coturn installation.
+- Document firewall ports.
+- Document DNS requirements.
+- Document TLS certificate requirements.
+- Document server monitoring.
+- Provide a sample configuration without real secrets.
+
+Do not automatically deploy infrastructure without explicit authorization.
+
+If TURN infrastructure is unavailable, implement and test the client integration with a controlled test environment.
+
+---
+
+# 6\. PHASE 3 – NAT AND ICE DIAGNOSTICS
+
+Implement reliable ICE diagnostics.
+
+Capture and report:
+
+- ICE gathering state.
+- ICE connection state.
+- Peer connection state.
+- Local candidate types.
+- Remote candidate types.
+- Selected candidate pair.
+- Candidate protocol.
+- Relay usage.
+- Round-trip time where available.
+- Connection establishment time.
+- ICE failure reason.
+
+Candidate types:
+
+- host
+- srflx
+- prflx
+- relay
+
+Provide a diagnostic classification:
+
+- Direct LAN.
+- Direct public connectivity.
+- STUN-assisted connectivity.
+- TURN relay.
+- Connection failed.
+- Network policy restricted.
+
+IMPORTANT:
+
+Do not claim that a simple STUN request can accurately identify every NAT type.
+
+NAT classification must be based on observable network behavior and clearly indicate uncertainty.
+
+Create a useful diagnostic report that does not expose private credentials or unnecessary sensitive network information.
+
+---
+
+# 7\. PHASE 4 – ICE CONNECTION AND FALLBACK
+
+Improve connection establishment.
+
+Requirements:
+
+1. Support multiple ICE candidates.
+2. Handle candidates arriving before or after SDP.
+3. Handle duplicate candidates safely.
+4. Handle delayed candidate delivery.
+5. Handle ICE gathering timeout.
+6. Handle connection timeout.
+7. Handle failed candidate pairs.
+8. Handle peer connection failure.
+9. Handle network changes.
+10. Support controlled reconnection.
+
+Use the WebRTC implementation's standard ICE behavior.
+
+Do not manually override candidate selection without a demonstrated requirement.
+
+Preserve the existing DTLS/SRTP security.
+
+TURN fallback must not bypass:
+
+- Trusted Device verification.
+- Device credential validation.
+- Session authorization.
+- Host permission checks.
+
+Connection diagnostics should distinguish:
+
+- Authentication failure.
+- Signaling failure.
+- ICE failure.
+- TURN authentication failure.
+- TURN allocation failure.
+- DTLS failure.
+- Media transport failure.
+
+Do not report every connection failure as a generic network error.
+
+---
+
+# 8\. PHASE 5 – FIREWALL AND NETWORK DIAGNOSTICS
+
+Implement a network diagnostic module.
+
+Detect and report:
+
+- Network interface availability.
+- Default network connectivity.
+- DNS resolution problems.
+- STUN reachability.
+- TURN reachability.
+- UDP connectivity limitations.
+- TCP fallback availability.
+- TLS certificate errors.
+- Firewall-related connection symptoms.
+
+Where possible, distinguish between:
+
+- Local network issue.
+- DNS issue.
+- Firewall restriction.
+- NAT traversal failure.
+- TURN server unavailable.
+- Authentication failure.
+
+Do not:
+
+- Disable Windows Firewall.
+- Modify firewall rules without explicit user approval.
+- Disable antivirus.
+- Bypass corporate network policy.
+- Change VPN routes automatically.
+- Override Cloudflare WARP settings.
+
+Provide diagnostic recommendations instead of silently changing system networking.
+
+---
+
+# 9\. PHASE 6 – CLOUDFLARE WARP COMPATIBILITY
+
+This phase is especially important.
+
+Previous Task 03C established temporary WARP connectivity.
+
+Read all existing WARP-related code and documentation before modifying anything.
+
+Test the following modes:
+
+A. Both devices without WARP.
+
+B. Viewer with WARP enabled, Host without WARP.
+
+C. Host with WARP enabled, Viewer without WARP.
+
+D. Both devices with WARP enabled.
+
+E. WARP enabled with restrictive network conditions.
+
+Requirements:
+
+- Preserve working WARP connectivity.
+- Detect network adapter changes.
+- Avoid assuming that the first network interface is the correct interface.
+- Avoid treating virtual adapters as automatically invalid.
+- Preserve valid candidate pairs.
+- Record selected candidate pair information.
+- Avoid unnecessary reconnect loops.
+- Recover after WARP network changes.
+
+Do not hardcode a specific local IP address.
+
+Do not disable WARP.
+
+Do not change the user's VPN configuration.
+
+If an existing WARP workaround becomes incompatible with a new implementation, explain the conflict and provide a minimal fix.
+
+---
+
+# 10\. PHASE 7 – CONNECTION QUALITY AND TRANSPORT
+
+Add connection quality monitoring.
+
+Collect:
+
+- Connection establishment duration.
+- RTT.
+- Packet loss where available.
+- Jitter where available.
+- Selected candidate type.
+- Relay usage.
+- Connection state changes.
+
+Classify the connection:
+
+- LAN direct.
+- Internet direct.
+- STUN-assisted.
+- TURN relay.
+
+Use actual WebRTC statistics where supported.
+
+Do not invent metrics.
+
+Do not confuse signaling RTT with media RTT.
+
+Do not automatically switch to a worse transport when the existing connection is healthy.
+
+For relay connections, provide useful information about relay usage and connection quality.
+
+---
+
+# 11\. PHASE 8 – AUTOMATED TESTING
+
+Write tests for:
+
+## Configuration
+
+- Missing STUN configuration.
+- Multiple STUN servers.
+- TURN UDP configuration.
+- TURN TCP configuration.
+- TURN TLS configuration.
+- Expired TURN credentials.
+- Invalid configuration.
+- Configuration refresh.
+
+## ICE
+
+- Host candidate.
+- Server-reflexive candidate.
+- Relay candidate.
+- Delayed candidate.
+- Duplicate candidate.
+- ICE timeout.
+- ICE failure.
+- Successful direct connection.
+- Successful relay connection.
+
+## Signaling
+
+- Delayed SDP.
+- Delayed ICE candidates.
+- Duplicate messages.
+- Disconnected signaling server.
+- Signaling reconnection.
+- Session termination.
+
+## Security
+
+- TURN credential expiration.
+- Invalid TURN credentials.
+- No permanent secrets in frontend.
+- No TURN credentials in logs.
+- Trusted Device verification still required.
+- Revoked devices remain rejected.
+- Permissions remain enforced.
+
+## Regression
+
+- LAN connection.
+- Existing WARP connection.
+- Screen streaming.
+- Mouse input.
+- Keyboard input.
+- Trusted Device authentication.
+
+Run all existing tests.
+
+Do not disable existing tests.
+
+---
+
+# 12\. PHASE 9 – REAL NETWORK TESTING
+
+Prepare a test matrix:
+
+| Scenario | Expected |
+| --- | --- |
+| Same LAN | Direct connection |
+| Different LAN | Direct or TURN |
+| Both behind NAT | STUN or TURN |
+| Viewer WARP | Stable connection |
+| Host WARP | Stable connection |
+| Both WARP | Stable connection |
+| UDP restricted | TCP/TLS relay if configured |
+| TURN unavailable | Clear failure diagnostics |
+| TURN credentials expired | Authentication error |
+| Network interruption | Recoverable connection state |
+
+Use real test machines when available.
+
+Do not claim a scenario passed based only on unit tests.
+
+If a physical test cannot be performed, report it as NOT TESTED.
+
+Record actual selected candidate pair and connection results.
+
+---
+
+# 13\. PHASE 10 – PERFORMANCE VALIDATION
+
+Compare:
+
+- LAN direct.
+- Internet direct.
+- TURN relay.
+
+Record:
+
+- Connection establishment time.
+- RTT.
+- Video FPS.
+- Video bitrate.
+- Packet loss.
+- CPU usage.
+- Memory usage.
+
+Do not optimize video encoding in this task.
+
+That belongs to Task 04.
+
+The purpose here is to verify that the new network paths work correctly and provide measurable diagnostics.
+
+---
+
+# 14\. PHASE 11 – DOCUMENTATION
+
+Create:
+
+TASK\_03\_IMPLEMENTATION\_REPORT.md
+
+Include:
+
+1. Initial architecture.
+2. Existing implementation.
+3. Files changed.
+4. STUN configuration.
+5. TURN integration.
+6. NAT diagnostics.
+7. ICE changes.
+8. Firewall diagnostics.
+9. WARP compatibility.
+10. Connection quality monitoring.
+11. Automated test results.
+12. Physical network test results.
+13. Known limitations.
+14. Deployment instructions.
+15. Required production infrastructure.
+16. Remaining risks.
+
+Also create:
+
+TASK\_03\_NETWORK\_TEST\_MATRIX.md
+
+Document every tested network scenario and its actual result.
+
+---
+
+# 15\. GIT MANAGEMENT
+
+Before changes:
+
+- Inspect Git status.
+- Preserve all user modifications.
+- Do not reset or clean the repository.
+- Do not discard unrelated files.
+
+After implementation:
+
+1. Review Git diff.
+2. Remove temporary debug code.
+3. Check for secrets.
+4. Run formatting.
+5. Run tests.
+6. Run production builds.
+7. Commit only Task 03 changes.
+
+Suggested commit:
+
+feat(network): implement complete internet connectivity
+
+Do not push unless explicitly authorized.
+
+---
+
+# 16\. STRICT RULES
+
+- Execute sequentially.
+- Inspect before modifying.
+- Preserve Trusted Device security.
+- Preserve LAN connectivity.
+- Preserve WARP connectivity.
+- Do not implement TURN from scratch.
+- Do not introduce unnecessary dependencies.
+- Do not hardcode credentials.
+- Do not silently alter firewall settings.
+- Do not claim untested Internet connectivity.
+- Do not rewrite WebRTC without justification.
+- Do not start Task 04.
+- Do not stop after writing a plan.
+
+If a phase requires unavailable external infrastructure:
+
+1. Implement the client-side integration where possible.
+2. Provide deployment documentation.
+3. Run tests with available infrastructure.
+4. Clearly mark physical tests as NOT TESTED.
+5. Continue with independent phases.
+
+If a change risks breaking existing WARP connectivity, stop that change and report the issue.
+
+---
+
+# 17\. DEFINITION OF DONE
+
+Task 03 is complete only when:
+
+- Centralized STUN/TURN configuration works.
+- TURN credentials are securely managed.
+- TURN integration works with an actual TURN server.
+- ICE diagnostics identify the selected candidate pair.
+- NAT/network diagnostics provide useful results.
+- Connection errors are distinguishable.
+- Firewall diagnostics work without modifying firewall policy.
+- Existing LAN connectivity remains functional.
+- Existing WARP connectivity remains functional.
+- Trusted Device authentication remains enforced.
+- Automated tests pass.
+- Production build succeeds.
+- Implementation and test reports are complete.
+
+Final status:
+
+PASS – All mandatory acceptance criteria verified.
+
+PARTIAL – Implementation works but some real network scenarios remain untested.
+
+BLOCKED – Critical architecture or connectivity issue prevents completion.
+
+Never mark PASS when actual TURN or required physical network tests have not been performed.
+
+---
+
+# START EXECUTION
+
+Begin with PHASE 0 – REPOSITORY INSPECTION.
+
+Read the existing code and documentation.
+
+Identify the actual current WebRTC and WARP implementation.
+
+Then implement all phases sequentially.
+
+The goal is reliable Internet connectivity without breaking existing MiniRemote functionality or security.
+
+## 3. Những điểm mình muốn bạn đặc biệt chú ý khi OpenCode hoàn thành
+
+Có 4 vấn đề rất dễ bị làm sai:
+
+1. TURN credential: Không được để username/password cố định trong file JavaScript hoặc installer.
+2. TURN fallback: Chỉ relay khi cần thiết, không làm tất cả kết nối LAN phải đi vòng qua server.
+3. WARP: Không xóa workaround hiện tại chỉ vì agent muốn đơn giản hóa ICE.
+4. Trusted Device: Dù kết nối qua TURN, thiết bị vẫn phải xác thực bằng credential riêng như Task 02.
+
+## 4\. Tiêu chuẩn nghiệm thu Task 03
+
+Mình sẽ không chấp nhận báo cáo chỉ có unit test.
+
+Các kết quả quan trọng phải có:
+
+- PASS Hai máy cùng LAN kết nối trực tiếp.
+- PASS Hai mạng Internet khác nhau kết nối được.
+- PASS TURN Relay thực sự hoạt động.
+- PASS WARP không bị hỏng.
+- PASS Reconnect sau mất mạng.
+- PASS Trusted Device vẫn được xác thực.
+
+Lưu ý: Task 03 có thể triển khai client trước, nhưng để nghiệm thu TURN thật, cần có TURN server công khai hoặc máy chủ riêng được cấu hình đúng. Không có server thì không thể tuyên bố TURN đã hoạt động.
+
+Sau khi OpenCode chạy xong, gửi mình toàn bộ báo cáo giống như Task 02.1. Mình sẽ kiểm tra kiến trúc, những file đã sửa và kết quả thực tế trước khi cho chuyển sang Task 04.
+
+
+* done
+Starting PHASE 0: inspecting the actual networking, ICE, signaling and WARP implementation before changing anything.
+
+Phase 0 done: STUN/TURN issuance exists, but there's no path classification, no TURN transport validation, no configurable ICE timeout/version, and no distinct failure taxonomy. Implementing those now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now the core of Phase 3/4/7: a measured connectivity classifier, ICE reachability probe, and failure taxonomy.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Task 03 implemented, tested and committed as `f6d4bd1` (nothing pushed). Final status: PARTIAL — implementation and automation complete, real TURN/WARP/two-machine paths NOT TESTED.**
+
+## What was actually there (Phase 0)
+The relay already minted per-session ICE (STUN + coturn REST credential) and the client applied it verbatim; the WARP candidate-gathering fix (`media_permission.rs`) and firewall probe existed. I did not duplicate those. The real gaps were: no ICE URL validation, no configurable/versioned deadline, no path classification, and only two failure buckets.
+
+## What changed
+- **Centralised ICE config (server):** `SIGNALING_STUN_URLS` / `SIGNALING_TURN_URLS` now validated at startup (`stun:`, `turn:`, `turns:` + host required), TURN TTL clamped 60–86400 s, new `SIGNALING_ICE_CONFIG_VERSION` and `SIGNALING_ICE_CONNECT_TIMEOUT_MS` (5–120 s) issued with every `session.ready`; `/health` gains `ice {version, connectTimeoutMs, stunServers, turnUrls, turnTransports}` — counts only, never a URL or the secret.
+- **TURN integration (client):** UDP, TCP and TLS relay URLs pass through unchanged, so ordinary ICE ordering does the fallback; deadline from the relay reaches both windows (Rust parse → `SessionUpdate` → viewer context → `RtcLink`), clamped in Rust too.
+- **Path + failure diagnostics (`services/connectivity.ts`, new):** path classified from the *nominated pair* (`direct-lan`, `direct-internet`, `stun-assisted`, `turn-relay`, `unknown`), mDNS pairs marked `uncertain` instead of guessed, NAT types never inferred; failure codes `no-candidates`, `stun-unreachable`, `turn-unreachable`, `turn-relay-failed`, `ice-restricted`, `dtls-failed`, each with its own sentence; `probeIceServers` measures STUN/TURN reachability by gathering (no TCP ping pretending to be an allocation test).
+- **ICE robustness:** candidates deduplicated, a rejected `addIceCandidate` no longer aborts the frame, early/delayed candidates still buffered by negotiation.
+- **Diagnostics surface:** "Network path" row in the panel; exported report gains a `connectivity` object (path, pair, protocol, establishment ms, candidate mix, ICE endpoint counts — no credentials).
+- **Docs:** `docs/TURN_DEPLOYMENT.md` (coturn install, sample config without secrets, ports incl. relay range, `external-ip`, TLS, quotas, monitoring, symptom→cause table), README updates, plus `TASK_03_INITIAL_ANALYSIS.md`, `TASK_03_IMPLEMENTATION_REPORT.md`, `TASK_03_NETWORK_TEST_MATRIX.md`.
+
+Security untouched: trusted-device verification, revocation, permission enforcement and the audit log all still pass their suites.
+
+## Checks run
+`cargo test --lib` **359 passed** · `clippy -D warnings` clean · `fmt --check` clean · `npm run typecheck` clean · desktop Vitest **149 passed** · signaling Vitest **106 passed** · `vite build` ok · `tauri build` (release + NSIS) ok → `apps/desktop/src-tauri/apps/desktop/src-tauri/target/task03/release/bundle/nsis/MiniRemote_0.1.0_x64-setup.exe`.
+
+## Not verified (why it is PARTIAL)
+No TURN relay exists here (`/health` reports `turn:false`), no WARP, no second PC. So real allocation/auth over coturn, UDP-blocked fallback to TCP/TLS, WARP modes B/C/D, NAT↔NAT and the physical LAN pair are **NOT TESTED** — nothing is claimed as passing.
+
+About your `10.0.0.108` attempt: it ran against a build that predates this task (the app data dir had no trust/audit files), and no console log was captured, so it is not diagnosed. Install this new build on both PCs, retry, then use **Diagnostics → Export diagnostics** on each side: the `connectivity` block will now say whether it gathered nothing, never reached STUN/TURN, was ICE-restricted, or failed after the transport was up. Deploying coturn per `docs/TURN_DEPLOYMENT.md` is what makes NAT↔NAT sessions connect at all.
+
+
+11111111111
+Rất tốt. Task 03 đã có tiến triển đáng kể. Mình đánh giá đây là một lần nâng cấp kiến trúc mạng đúng hướng: thay vì viết lại WebRTC, OpenCode đã tận dụng hệ thống STUN/TURN sẵn có và bổ sung những phần còn thiếu.
+
+PARTIAL – Chưa nghiệm thu mạng thực tế## 1. Đánh giá kết quả Task 03
+
+| Hạng mục | Kết quả |
+| --- | --- |
+| ICE configuration | PASS |
+| STUN/TURN URL validation | PASS |
+| TURN UDP/TCP/TLS integration | PASS – Client |
+| ICE timeout configuration | PASS |
+| Candidate deduplication | PASS |
+| Network path classification | PASS |
+| Failure diagnostics | PASS |
+| Trusted Device regression | PASS |
+| Real TURN allocation | NOT TESTED |
+| WARP thực tế | NOT TESTED |
+| Hai máy Internet | NOT TESTED |
+
+Các bài kiểm thử tự động cũng khá tốt:
+
+- Rust: 359 tests.
+- Desktop Vitest: 149 tests.
+- Signaling Vitest: 106 tests.
+- TypeScript, Clippy, Format: PASS.
+- Tauri release build: PASS.
+
+Commit mới: `f6d4bd1`.
+
+## 2. Có 3 việc cần lưu ý
+
+Thứ nhất: TURN chưa hoạt động thực tế.
+
+`/health` báo `turn:false`, vì vậy việc client nhận được TURN URL chưa chứng minh được TURN allocation thành công.
+
+Thứ hai: Path classification phải dựa trên nominated candidate pair.
+
+Đây là lựa chọn đúng. Không nên suy luận đường truyền thực tế chỉ từ danh sách candidate được thu thập.
+
+Thứ ba: Cần phân biệt STUN reachability và TURN allocation.
+
+Một phép kiểm tra STUN thành công không chứng minh TURN hoạt động. Phải kiểm tra allocation, authentication và relay traffic riêng.
+
+# 3. Tiếp theo: Task 03.1 – Deploy TURN và kiểm thử Internet thực tế
+
+Mình đề xuất chưa chuyển sang Task 04. Trước tiên cần làm cho MiniRemote thực sự kết nối được qua Internet khi hai máy nằm sau NAT.
+
+Mục tiêu nghiệm thu
+
+1. Triển khai coturn thật.
+2. Kiểm tra TURN authentication và allocation.
+3. Kiểm tra UDP relay.
+4. Kiểm tra TCP/TLS fallback khi UDP bị hạn chế.
+5. Kiểm tra hai máy ở hai mạng Internet khác nhau.
+6. Kiểm tra Cloudflare WARP.
+7. Export diagnostics và đối chiếu candidate pair.
+
+## 4. Prompt cho OpenCode – Task 03.1
+
+Writing
+
+# TASK 03.1 – REAL TURN SERVER DEPLOYMENT & INTERNET ACCEPTANCE
+
+Project: MiniRemote
+
+Priority: CRITICAL
+
+Current commit: f6d4bd1
+
+Current status: PARTIAL
+
+## OBJECTIVE
+
+Complete real-world Internet connectivity verification using an actual coturn server.
+
+The previous Task 03 implementation is complete at code level, but real TURN allocation and physical network scenarios remain unverified.
+
+This task must focus on infrastructure integration, diagnostics and real connectivity tests.
+
+Do not start Task 04.
+
+## PHASE 0 – INSPECT CURRENT IMPLEMENTATION
+
+Read:
+
+- TASK\_03\_IMPLEMENTATION\_REPORT.md
+- TASK\_03\_NETWORK\_TEST\_MATRIX.md
+- docs/TURN\_DEPLOYMENT.md
+- Current signaling ICE configuration.
+- TURN credential generation.
+- /health endpoint.
+- Client ICE diagnostics.
+- Connectivity path classification.
+
+Verify that all previous changes are committed and the working tree is safe.
+
+## PHASE 1 – TURN INFRASTRUCTURE
+
+Inspect available deployment infrastructure.
+
+Determine whether a suitable Linux server and public IP are available.
+
+Do not assume access to a server.
+
+If no server is available, provide exact deployment prerequisites and stop infrastructure deployment.
+
+Use coturn.
+
+Configure:
+
+- STUN support.
+- TURN UDP.
+- TURN TCP.
+- TURN TLS.
+- Time-limited REST authentication.
+- Certificate validation.
+- Relay port range.
+- Allocation limits.
+- Bandwidth limits.
+- Monitoring.
+
+Follow docs/TURN\_DEPLOYMENT.md.
+
+Never expose permanent TURN secrets in client code.
+
+Never create an unauthenticated open relay.
+
+Do not expose server credentials in logs.
+
+Do not deploy or modify external infrastructure without authorization.
+
+## PHASE 2 – HEALTH CHECK
+
+Verify:
+
+- coturn process health.
+- Public DNS resolution.
+- TLS certificate validity.
+- TURN authentication.
+- Allocation capacity.
+- Relay port availability.
+- Firewall configuration.
+- Server clock synchronization.
+
+Verify /health reports correct ICE configuration.
+
+The health endpoint must never expose TURN secrets.
+
+Distinguish configured TURN from actually operational TURN.
+
+## PHASE 3 – TURN ALLOCATION TESTS
+
+Test actual TURN allocations.
+
+Verify:
+
+- UDP allocation.
+- TCP allocation.
+- TLS allocation.
+- Valid credentials.
+- Invalid credentials.
+- Expired credentials.
+- Allocation expiration.
+- Relay traffic in both directions.
+
+Do not use STUN reachability as a substitute for TURN allocation verification.
+
+## PHASE 4 – REAL TWO-PC CONNECTIVITY
+
+Install the latest MiniRemote build on both authorized test PCs.
+
+Test:
+
+A. Same LAN. B. Different Internet networks. C. Host behind NAT and Viewer behind NAT. D. TURN relay connection. E. UDP restricted network. F. TCP/TLS relay where available.
+
+For each scenario capture:
+
+- ICE gathering state.
+- Selected candidate pair.
+- Candidate types.
+- Relay protocol.
+- Connection establishment time.
+- Media RTT.
+- Video FPS.
+- Connection result.
+
+Do not invent results for unavailable scenarios.
+
+## PHASE 5 – WARP REGRESSION
+
+Test:
+
+A. Both WARP disabled. B. Viewer WARP enabled. C. Host WARP enabled. D. Both WARP enabled.
+
+Preserve the existing WARP implementation.
+
+Do not disable VPN or change routing automatically.
+
+## PHASE 6 – SECURITY
+
+Verify:
+
+- TURN credentials are time-limited.
+- Expired credentials are rejected.
+- No open relay exists.
+- No permanent credentials are shipped to clients.
+- Trusted Device authentication remains mandatory.
+- Revoked devices cannot reconnect.
+- TURN does not bypass Host authorization.
+- DTLS/SRTP remains enabled.
+
+## PHASE 7 – REPORT
+
+Create:
+
+TASK\_03\_1\_TURN\_ACCEPTANCE\_REPORT.md
+
+Include:
+
+- Infrastructure information.
+- coturn deployment status.
+- Actual TURN allocation results.
+- UDP/TCP/TLS results.
+- Two-PC connectivity results.
+- WARP test results.
+- Diagnostics exports.
+- Security results.
+- Remaining blockers.
+
+Final status:
+
+PASS – All required real connectivity tests pass.
+
+PARTIAL – Infrastructure or physical scenarios remain untested.
+
+BLOCKED – Critical deployment or connectivity issue.
+
+Do not mark PASS based only on automated tests.
+
+## STRICT RULES
+
+- Preserve existing working code.
+- Do not rewrite WebRTC.
+- Do not modify Trusted Device architecture.
+- Do not start Task 04.
+- Do not push to GitHub.
+- Do not modify firewall settings without authorization.
+- Do not deploy external services without authorization.
+- Do not claim TURN works without actual allocation and relay traffic.
+
+Start with PHASE 0.
+
+## 5. Một thông tin mình cần từ bạn
+
+Để triển khai Task 03.1 thuận lợi, mình cần biết bạn có máy chủ TURN chưa.
+
+Bạn hiện có VPS/server Linux public IP không?
+
+none Chưa có VPS, cần tư vấn triển khai
+
+Có VPS Ubuntu/Linux
+
+Đã có coturn server
+
+Có Cloud server hoặc hạ tầng khác
+
+OpenCode có thể truy cập server không?
+
+Có SSH và quyền quản trị
+
+Chỉ có quyền cấu hình hạn chế
+
+unknown Chưa xác định
+
+ Gửi thông tin
+
+Sau Task 03.1 PASS, chúng ta mới chuyển sang Task 04 – Tối ưu truyền màn hình: độ trễ, FPS, H.264 và tránh encode hai lần.
+
+
+
+* done
+Starting PHASE 0: verifying the commit/worktree, then checking what deployment infrastructure actually exists rather than assuming it.
+
+PHASE 0 result: worktree clean at `f6d4bd1`. Now checking what infrastructure is actually reachable — no Docker, no WSL, no coturn, no SSH keys, so I need to measure the host's real network capability before deciding.
+
+No Linux host, no Docker/WSL, no coturn binary and no SSH/cloud credentials exist on this machine — but UDP egress to public STUN servers works (both answered a binding success), so the network itself is not UDP-blocked. Let me check the diagnostics UI wiring before deciding what can still be verified.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Interesting — the UDP probe got an answer on `127.0.0.1:3478` with 179 ms latency, which is not loopback behaviour. Checking whether a real relay/STUN service is already running on this machine.
+
+The probe correctly reported liveness, but that answer came from an unrelated Java STUN service on port 3478 — so claiming "operational TURN" from a binding reply would be wrong. Fixing that claim, plus an IPv6/IP servername warning I spotted.
+
+
+
+
+
+
+
+
+
+
+The second run returned the old schema — likely a leftover server from the first run still holding port 8899 (`npx` spawned a child that outlived the parent kill). Checking and cleaning that up before re-measuring.
+
+Two of my own test servers outlived their shell kills. Verifying and force-stopping them by PID.
+
+
+
+
+**TASK 03.1 — status: BLOCKED. No TURN allocation or relayed traffic was verified, and none is claimed.**
+
+## PHASE 0
+Worktree clean at `f6d4bd1`; re-read the Task 03 reports, `docs/TURN_DEPLOYMENT.md`, the ICE issuer, credential minting, `/health` and the client diagnostics. All prior changes were committed.
+
+## PHASE 1 — infrastructure survey (no access assumed, all checked)
+| Checked | Result |
+| --- | --- |
+| Linux host / public IP | none, no SSH material (`~/.ssh` empty) |
+| Docker / WSL | not installed |
+| coturn / turnutils | not installed |
+| Cloud credentials | none (AWS/Azure/DO/Linode/Hetzner/Vultr/Cloudflare all absent) |
+| Shell | `winget` present, **not elevated** |
+| Port 3478/UDP | held by an unrelated `java.exe` (PID 33560, `7miniChatCall`) — not ours, left untouched |
+| Second PC `10.0.0.108` | user-operated, no shell/IPC, pre-Task-03 build |
+
+So infrastructure deployment was stopped per your Phase 1 rule. `TASK_03_1_TURN_ACCEPTANCE_REPORT.md` §2 has the exact prerequisites (host, DNS, cert, ports incl. relay range 49160–49200, secret generation, signaling env, verification commands).
+
+## What I could measure for real
+- **UDP egress works:** STUN binding got a valid `0x0101` response (correct magic cookie) from `stun.l.google.com:19302` and `stun.cloudflare.com:3478`. This network is not UDP-blocked; a relay would be reachable from here.
+- **Live `/health` with a relay configured** (dummy endpoints): UDP answered, TCP/TLS `ECONNREFUSED`, and the payload leaked **0** occurrences of the secret, hostname or ports.
+- That live run exposed a real defect in my own Task 03 design: the probe answered `operational: true` because an unrelated Java STUN service sits on 3478. I fixed it — `/health` now reports three separate claims: `configured`, `answering` (port replied / TLS chain valid), `allocationVerified` (always `null` server-side, because only a TURN client with a live credential can prove an Allocate).
+
+## Code delivered so the next run needs no development
+- `apps/signaling-server/src/health/turn_probe.ts`: per-transport probes — STUN binding over UDP, TCP accept, TLS handshake with `rejectUnauthorized`, 30 s cache, `SIGNALING_TURN_PROBE=off` to disable; documented as liveness, not allocation.
+- **Diagnostics → Test relay**: runs `probeIceServers` with *this session's* credentials, so `TURN udp · ok (relay)` is the actual allocation evidence; `no answer` is a failure.
+- Docs updated (configured vs answering vs allocation-verified), plus a TLS SNI fix for IP targets that Node warned about.
+
+## PHASE 3–5 results
+Allocation UDP/TCP/TLS, valid/invalid/expired credentials, allocation expiry, relayed traffic both directions, all six two-PC scenarios and all four WARP modes: **NOT TESTED**, with reasons recorded in the report. No RTT/FPS/pair numbers were invented.
+
+## PHASE 6 — security (automated evidence, not live relay)
+Time-limited credentials (TTL clamped 60–86400 s), no permanent TURN credential in clients, nothing deployed so no open relay, `/health` no-leak assertion, trusted-device/revocation/permission suites still green, DTLS-SRTP untouched. "Expired credential rejected by coturn" remains NOT TESTED.
+
+## Checks run
+`npm run typecheck` clean · signaling Vitest **120 passed** (was 106; 14 new probe tests incl. real UDP/TCP sockets) · desktop Vitest **149 passed** · `tauri build` release + NSIS succeeded. (One stale test server of mine held port 8899 and returned the old schema on a re-measurement; I identified its PID, killed it, and re-measured on 8901 — the numbers above are from the corrected run. Both test servers are stopped.)
+
+Committed `31f5bbe`, not pushed.
+
+**To unblock:** give me SSH access to a Linux host with a public IPv4 (with authorization to deploy coturn), plus a session on the second PC. I'll then deploy, verify `ice.turn.answering` on all three transports with `certificateValid: true`, run Test relay for the allocation proof, and fill the matrix with measured pairs, timings and RTT.
+
+
+Task 3 Turn Internet Stop
+Mình đã nắm được. Và mình đồng ý với quyết định tạm hoãn thuê VPS, chưa triển khai coturn. Không cần phát sinh chi phí khi chưa thực sự cần thiết.
+
+Mình đánh giá Task 03.1 như sau:
+
+BLOCKED – Thiếu hạ tầng TURN## 1. Những gì đã hoàn thành
+
+Có một số kết quả đáng ghi nhận:
+
+- Đã xác nhận UDP outbound hoạt động qua Google STUN và Cloudflare STUN.
+- Đã phát hiện lỗi phân biệt STUN response với TURN allocation.
+- Đã sửa `/health` để tách ba trạng thái `configured`, `answering`, `allocationVerified`.
+- Đã bổ sung Diagnostics → Test relay để kiểm tra allocation bằng credential thực tế.
+- Đã sửa TLS SNI cho IP target.
+- Signaling tests: 120 PASS.
+- Desktop tests: 149 PASS.
+- Tauri release build: PASS.
+
+Commit mới: `31f5bbe`.
+
+Đặc biệt, mình đánh giá cao việc không tuyên bố TURN hoạt động chỉ vì cổng 3478 có phản hồi.
+
+## 2. Trạng thái các Task hiện tại
+
+| Task | Trạng thái |
+| --- | --- |
+| Task 02 – Trusted Device | PARTIAL |
+| Task 02.1 – Security fixes | PARTIAL |
+| Task 03 – Internet Connectivity | PARTIAL |
+| Task 03.1 – TURN deployment | BLOCKED |
+
+Không có nghĩa là phải dừng phát triển MiniRemote.
+
+## 3. Mình đề xuất chuyển sang Task 04
+
+Trong lúc chưa có TURN server, chúng ta vẫn có thể tối ưu những phần độc lập với hạ tầng:
+
+- Giảm độ trễ truyền màn hình.
+- Kiểm tra có mã hóa hai lần hay không.
+- Tối ưu H.264 encoder.
+- Tối ưu FPS.
+- Giảm CPU và RAM.
+- Tối ưu frame queue.
+- Giảm hiện tượng giật hình.
+- Đo latency từ Capture đến Viewer.
+
+Các thử nghiệm này có thể thực hiện qua LAN và WARP hiện có.
+
+## 4\. Một nguyên tắc cần giữ
+
+Mình muốn MiniRemote phát triển theo hướng:
+
+Hoàn thiện tính năng độc lập trước, bổ sung hạ tầng khi cần thiết.
+
+Không nên để việc chưa có VPS làm đình trệ toàn bộ dự án.
+
+Khi nào quyết định thuê server, chúng ta quay lại Task 03.1, tiếp tục từ commit `31f5bbe`, không cần làm lại.
+
+Bước tiếp theo hợp lý: Task 04 – Screen Streaming Performance Optimization.
+
+
+11111111111
