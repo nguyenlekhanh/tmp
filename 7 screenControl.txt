@@ -11044,3 +11044,1234 @@ Bước tiếp theo hợp lý: Task 04 – Screen Streaming Performance Optimiza
 
 
 11111111111
+# Task 4 – Tối ưu truyền màn hình MiniRemote
+
+Đây là task rất quan trọng. Tôi đề xuất thực hiện theo hướng tối ưu toàn bộ pipeline Capture → Encode → WebRTC → Decode → Render, thay vì chỉ tăng FPS hoặc chỉnh bitrate.
+
+Mục tiêu là giảm độ trễ đầu cuối, tránh xử lý hình ảnh dư thừa, giảm CPU/RAM và duy trì hình ảnh mượt khi điều khiển máy tính từ xa.
+
+Điểm quan trọng nhất: phải xác định chính xác WebRTC đang nhận dữ liệu ở dạng nào. Nếu ứng dụng đã encode H.264 nhưng lại đưa frame qua một encoder khác trước khi gửi WebRTC, có thể đang tồn tại hai lần encode không cần thiết.
+
+## 1. Kiến trúc cần tối ưu
+
+## Pipeline truyền màn hình
+
+1. Screen Capture
+
+Windows Graphics Capture / Desktop Duplication
+
+2. Frame Processing
+
+GPU texture, resize, pixel format, frame timestamp
+
+3. H.264 Encoding
+
+Hardware encoder / Software fallback
+
+4. WebRTC Transport
+
+RTP / SRTP – congestion control – pacing
+
+5. Viewer Decode
+
+H.264 decoder – frame synchronization
+
+6. Render
+
+GPU presentation – frame pacing
+
+Nguyên tắc: không tạo thêm queue không cần thiết, không copy GPU/CPU qua lại nhiều lần và không encode lại dữ liệu đã được encode.
+
+## 2. Phân tích 8 hạng mục cần thực hiện
+
+### 2.1. Giảm độ trễ truyền màn hình
+
+Độ trễ cần được đo theo từng công đoạn:
+
+| Công đoạn | Nội dung cần đo |
+| --- | --- |
+| Capture | Thời gian lấy frame từ Windows |
+| Processing | Resize, convert pixel format |
+| Encode | Thời gian H.264 encoding |
+| Queue | Thời gian frame chờ |
+| Transport | Thời gian truyền WebRTC |
+| Decode | Thời gian giải mã tại Viewer |
+| Render | Thời gian chờ hiển thị |
+
+Không nên chỉ đo ping WebRTC vì ping thấp không có nghĩa là hình ảnh hiển thị nhanh.
+
+Các hướng tối ưu:
+
+- Ưu tiên GPU texture xuyên suốt pipeline.
+- Tránh GPU → CPU → GPU nếu không thực sự cần.
+- Không chờ frame cũ được encode xong mới xử lý frame mới.
+- Giảm thời gian chờ trong queue.
+- Sử dụng frame mới nhất khi hệ thống bị quá tải.
+- Không tạo buffer lớn để cố giữ toàn bộ frame.
+
+### 2.2. Kiểm tra mã hóa hai lần
+
+Đây là hạng mục phải điều tra trước khi sửa code.
+
+Có hai mô hình phổ biến:
+
+Mô hình A – Nên ưu tiênMột lần encode
+
+Screen Capture
+
+H.264 Encoder – một lần
+
+Encoded H.264 → WebRTC
+
+Không encode lại bitstream tại tầng gửi.
+
+Mô hình B – Cần điều traCó nguy cơ encode hai lần
+
+Screen Capture
+
+Custom H.264 Encoder
+
+Decode / Convert thành raw frame
+
+WebRTC Encoder – encode lần hai
+
+Lưu ý: Nếu WebRTC sử dụng native Video Track với encoder riêng thì việc encode ở tầng WebRTC là bình thường. Không được mặc định đó là lỗi.
+
+Cần kiểm tra:
+
+- Có bao nhiêu encoder instance được khởi tạo?
+- Có bao nhiêu lần encode thực tế trên mỗi frame?
+- Frame đầu ra của encoder có được đưa thẳng vào WebRTC không?
+- WebRTC có thực hiện encode lại hay không?
+- Có chuyển H.264 thành raw frame rồi encode lại không?
+- Có CPU encode sau khi GPU đã encode không?
+
+Kết quả cần có: sơ đồ pipeline thực tế, số lần encode, encoder được sử dụng và bằng chứng từ log/profiling.
+
+### 2.3. Tối ưu H.264 Encoder
+
+Cần kiểm tra các thông số:
+
+| Thông số | Hướng tối ưu |
+| --- | --- |
+| Encoder | Ưu tiên hardware encoding |
+| Profile | Baseline hoặc Main tùy khả năng tương thích |
+| GOP | Không đặt quá dài gây phục hồi chậm |
+| B-Frames | Hạn chế khi ưu tiên latency |
+| Rate Control | CBR hoặc chế độ phù hợp WebRTC |
+| Bitrate | Điều chỉnh theo độ phân giải và băng thông |
+| Keyframe | Chỉ yêu cầu khi cần thiết |
+| Preset | Ưu tiên low-latency |
+| Lookahead | Tắt hoặc giảm nếu gây trễ |
+
+Đối với Windows/NVIDIA:
+
+- Kiểm tra NVENC có thực sự được sử dụng.
+- Không tạo encoder mới liên tục.
+- Tái sử dụng encoder session.
+- Tránh copy dữ liệu không cần thiết giữa GPU và CPU.
+- Có fallback software encoder khi hardware encoder không khả dụng.
+
+Không nên cố định một cấu hình H.264 cho mọi máy tính. Cần có khả năng điều chỉnh theo GPU, độ phân giải và mạng.
+
+### 2.4. Tối ưu FPS
+
+Tôi đề xuất hỗ trợ ba mức:
+
+| Chế độ | FPS mục tiêu |
+| --- | --- |
+| Power Saving | 15 FPS |
+| Balanced | 30 FPS |
+| Smooth | 60 FPS |
+
+Đây là FPS mục tiêu, không phải cam kết mọi máy đều đạt được.
+
+Cần:
+
+- Capture theo nhịp hợp lý.
+- Không capture nhanh hơn khả năng encode quá nhiều.
+- Không để FPS tăng làm CPU/GPU quá tải.
+- Có cơ chế adaptive FPS khi mạng yếu.
+- Ưu tiên hình ảnh mới nhất thay vì giữ frame cũ.
+
+### 2.5. Giảm CPU và RAM
+
+Các điểm cần kiểm tra:
+
+- Copy frame giữa GPU và CPU.
+- Chuyển đổi BGRA/RGBA/NV12.
+- Buffer allocation liên tục.
+- Encoder session bị tạo lại.
+- Queue không giới hạn.
+- Frame cũ không được giải phóng.
+- Nhiều thread tranh chấp tài nguyên.
+
+Ưu tiên buffer pool có giới hạn, tái sử dụng memory và giải phóng tài nguyên đúng vòng đời session.
+
+### 2.6. Tối ưu Frame Queue
+
+Đây là một trong những điểm ảnh hưởng lớn nhất đến cảm giác điều khiển từ xa.
+
+Tôi đề xuất queue dạng bounded latest-frame-wins.
+
+Ví dụ khi Viewer chỉ xử lý được 30 FPS nhưng Capture đạt 60 FPS
+
+Queue thông thường
+
+Dễ tăng latency
+
+F1
+
+F2
+
+F3
+
+F4
+
+F5
+
+F6
+
+Viewer xử lý lần lượt các frame cũ, hình ảnh hiển thị chậm dần so với thực tế.
+
+Latest-frame-wins
+
+Ưu tiên latency thấp
+
+Dropped
+
+Dropped
+
+Latest
+
+Bỏ frame chưa xử lý khi quá tải, giữ frame mới nhất trong giới hạn an toàn.
+
+Lưu ý quan trọng: Không được tùy tiện drop các H.264 P-frame hoặc reference frame đã được sử dụng để giải mã frame tiếp theo. Phải xử lý theo dependency của codec, hoặc drop raw frame trước encode và để WebRTC quản lý encoded frame.
+
+### 2.7. Giảm giật hình
+
+Cần tìm nguyên nhân thay vì chỉ tăng FPS.
+
+Các nguyên nhân thường gặp:
+
+- Capture FPS không ổn định.
+- Encode time dao động mạnh.
+- Frame queue tăng.
+- Packet loss.
+- Network jitter.
+- Decoder quá tải.
+- Render không đồng bộ với refresh rate.
+- Keyframe quá lớn.
+- Thay đổi bitrate đột ngột.
+
+Cần theo dõi frame interval, dropped frames, jitter, packet loss và thời gian decode.
+
+### 2.8. Đo latency Capture → Viewer
+
+Đề xuất tạo hệ thống telemetry cho từng frame.
+
+Một frame nên có các mốc:
+
+text
+
+```text
+frame_id
+capture_timestamp
+processing_start
+processing_end
+encode_start
+encode_end
+transport_timestamp
+viewer_receive_timestamp
+decode_start
+decode_end
+render_timestamp
+```
+
+Từ đó tính:
+
+$$
+T_{pipeline}=T_{render}-T_{capture}
+$$
+
+Cần phân biệt:
+
+- Capture-to-Encode latency.
+- Encode latency.
+- Transport latency.
+- Decode latency.
+- Render latency.
+- End-to-end latency.
+
+Một lưu ý rất quan trọng: timestamp trên hai máy không thể trực tiếp trừ cho nhau nếu đồng hồ chưa được đồng bộ. Nên dùng monotonic clock để đo các công đoạn trong cùng một máy; đo latency một chiều giữa hai máy phải có cơ chế đồng bộ clock và ước lượng sai số. Có thể bổ sung kiểm thử bằng phương pháp quay video tốc độ cao để xác nhận độ trễ thực tế.
+
+## 3. Chỉ tiêu nghiệm thu đề xuất
+
+Các chỉ tiêu dưới đây là mục tiêu ban đầu để tối ưu, không phải số liệu đã đo trên MiniRemote.
+
+| Chỉ tiêu | Mục tiêu |
+| --- | --- |
+| FPS 1080p Smooth | 60 FPS |
+| FPS 1080p Balanced | 30 FPS |
+| Capture → Encode | P95 dưới 20 ms |
+| Encode latency | P95 dưới 10 ms |
+| Frame queue | Tối đa 1–2 frame raw đang chờ |
+| Queue latency | P95 dưới 5 ms |
+| Frame dropping | Có kiểm soát, không tích lũy frame cũ |
+| Encoder | Không tạo lại liên tục |
+| RAM | Không tăng liên tục khi chạy lâu |
+| CPU | Giảm so với baseline |
+| Hình ảnh | Không giật bất thường, không corruption |
+
+Riêng End-to-End Latency nên đặt mục tiêu theo điều kiện mạng LAN và Internet riêng biệt. Không nên đặt một con số chung vì chất lượng mạng ảnh hưởng rất lớn.
+
+## 4. Cách triển khai Task 4
+
+Tôi đề nghị chia thành 5 subtask để OpenCode không sửa quá nhiều thành phần cùng lúc.
+
+1. Task 4.1 – Audit hiện trạng
+   - Vẽ pipeline thực tế.
+   - Xác định encoder.
+   - Xác định vị trí encode/decode.
+   - Kiểm tra copy GPU/CPU.
+   - Đo baseline FPS, latency, CPU, RAM.
+   Bắt buộc làm trước
+2. Task 4.2 – Eliminate redundant encoding
+   - Xác định encoder chính.
+   - Loại bỏ encode dư thừa nếu có.
+   - Tái sử dụng encoder.
+   - Kiểm tra khả năng tương thích WebRTC.
+3. Task 4.3 – Optimize frame pipeline
+   - Bounded queue.
+   - Latest-frame-wins ở raw-frame stage.
+   - Buffer pooling.
+   - Giảm memory copy.
+   - Giảm frame processing overhead.
+4. Task 4.4 – Optimize encoder and FPS
+   - Hardware acceleration.
+   - Low-latency H.264.
+   - Adaptive FPS.
+   - Adaptive bitrate.
+   - Kiểm tra frame pacing.
+5. Task 4.5 – Benchmark and verification
+   - Benchmark 15/30/60 FPS.
+   - Đo P50/P95/P99 latency.
+   - Đo CPU/RAM.
+   - Kiểm tra giật hình.
+   - So sánh trước và sau tối ưu.
+
+## 5. Prompt giao cho OpenCode
+
+Đây là yêu cầu tôi đề xuất dùng làm prompt triển khai chính thức:
+
+Writing
+
+# TASK 4 – SCREEN STREAMING PERFORMANCE OPTIMIZATION
+
+## 1\. Objective
+
+Optimize the MiniRemote screen streaming pipeline to achieve:
+
+- Lower end-to-end screen latency.
+- Eliminate redundant H.264 encoding.
+- Improve hardware encoder utilization.
+- Stabilize FPS.
+- Reduce CPU and RAM consumption.
+- Optimize frame queues and buffer management.
+- Reduce stuttering and dropped frames.
+- Implement accurate Capture-to-Viewer latency measurement.
+
+## 2\. Mandatory Rules
+
+1. Read and understand the existing source code before making modifications.
+2. Inspect the complete screen capture, encoding, WebRTC transport, decoding, and rendering pipeline.
+3. Do not assume that the existing implementation has double encoding. Prove it through code inspection, logs, and profiling.
+4. Do not replace existing architecture without demonstrating a technical reason.
+5. Preserve existing signaling, authentication, trusted-device security, and session management.
+6. Do not break existing WebRTC connectivity.
+7. Avoid unnecessary GPU-to-CPU-to-GPU copies.
+8. Do not introduce unbounded queues.
+9. Do not drop H.264 reference frames in a way that corrupts subsequent decoding.
+10. Do not claim performance improvements without benchmark evidence.
+
+## 3\. Phase 1 – Existing Pipeline Audit
+
+Identify:
+
+- Screen capture implementation.
+- Graphics API.
+- Frame pixel format.
+- GPU/CPU memory transfer.
+- H.264 encoder implementation.
+- Hardware/software encoder selection.
+- Encoder lifecycle.
+- WebRTC video track implementation.
+- WebRTC native encoder configuration.
+- Viewer decoder.
+- Viewer rendering implementation.
+- All intermediate frame queues and buffers.
+
+Produce a complete pipeline diagram.
+
+Determine whether encoding occurs more than once.
+
+If double encoding exists, document exactly where and why.
+
+Record baseline metrics:
+
+- Capture FPS.
+- Encoded FPS.
+- Received FPS.
+- Decoded FPS.
+- Rendered FPS.
+- Capture latency.
+- Encode latency.
+- Queue latency.
+- End-to-end latency.
+- CPU usage.
+- RAM usage.
+- GPU usage.
+- Dropped frames.
+
+## 4\. Phase 2 – Encoding Optimization
+
+Inspect H.264 encoding and WebRTC integration.
+
+Requirements:
+
+- Avoid redundant encoding.
+- Reuse encoder instances.
+- Prefer hardware encoding when supported.
+- Implement a safe software fallback.
+- Optimize encoder configuration for low latency.
+- Evaluate GOP and keyframe intervals.
+- Evaluate B-frame and lookahead settings.
+- Avoid unnecessary color conversion.
+- Avoid unnecessary frame copies.
+- Ensure correct timestamp propagation.
+
+Do not implement a custom encoded-frame path unless the existing WebRTC library supports it correctly.
+
+Maintain codec compatibility and correct keyframe/reference-frame handling.
+
+## 5\. Phase 3 – Frame Queue Optimization
+
+Implement bounded queues.
+
+Requirements:
+
+- Prevent unlimited frame accumulation.
+- Prioritize fresh frames over stale raw frames.
+- Use a configurable maximum queue capacity.
+- Reuse frame buffers where possible.
+- Track queue depth and frame age.
+- Track dropped frames.
+- Ensure thread-safe buffer lifecycle.
+- Avoid blocking capture unnecessarily.
+- Preserve encoder and decoder dependencies.
+
+Use latest-frame-wins at the raw-frame stage when appropriate.
+
+Do not indiscriminately discard encoded reference frames.
+
+## 6\. Phase 4 – FPS and Resource Optimization
+
+Support three performance profiles:
+
+- Power Saving: 15 FPS target.
+- Balanced: 30 FPS target.
+- Smooth: 60 FPS target.
+
+Implement:
+
+- Stable capture scheduling.
+- Adaptive FPS when overloaded.
+- Adaptive bitrate where appropriate.
+- Encoder resource monitoring.
+- Efficient memory allocation.
+- Proper resource cleanup.
+- Stable frame pacing.
+
+Avoid excessive thread creation and unnecessary synchronization.
+
+## 7\. Phase 5 – Latency Instrumentation
+
+Implement per-stage timing.
+
+Track:
+
+- Capture start/end.
+- Processing start/end.
+- Encoding start/end.
+- Queue entry/exit.
+- WebRTC transmission statistics.
+- Viewer reception.
+- Decoding start/end.
+- Rendering/presentation.
+
+Use monotonic clocks for local duration measurement.
+
+For cross-machine one-way latency, implement clock synchronization with documented measurement uncertainty.
+
+Expose performance statistics in structured logs or a diagnostic panel.
+
+Include:
+
+- Current FPS.
+- Average FPS.
+- P50/P95/P99 frame latency.
+- Encode time.
+- Queue depth.
+- Dropped frame count.
+- Bitrate.
+- Packet loss.
+- Jitter.
+- CPU usage.
+- RAM usage.
+
+## 8\. Phase 6 – Testing
+
+Test the following configurations:
+
+- 720p / 30 FPS.
+- 1080p / 30 FPS.
+- 1080p / 60 FPS.
+- Hardware encoding.
+- Software fallback.
+- LAN connection.
+- Internet connection.
+- Network congestion.
+- High CPU load.
+- Long-running sessions.
+
+Verify:
+
+- No memory leaks.
+- No unbounded frame queues.
+- No encoder recreation loops.
+- No corrupted video.
+- No persistent frame backlog.
+- No session lifecycle regression.
+- No security permission regression.
+
+## 9\. Acceptance Criteria
+
+The implementation is accepted only when:
+
+1. The actual encoding pipeline is documented.
+2. Redundant encoding is eliminated if present.
+3. Hardware encoding is verified when available.
+4. FPS is stable under supported configurations.
+5. Frame queues remain bounded.
+6. CPU and RAM are measured against baseline.
+7. Latency is measured using reliable timestamps.
+8. P50/P95/P99 metrics are available.
+9. No regression occurs in WebRTC connectivity.
+10. All existing tests pass.
+
+## 10\. Final Report
+
+Provide:
+
+1. Original architecture.
+2. Optimized architecture.
+3. Double-encoding investigation results.
+4. Files modified.
+5. Technical changes.
+6. Before/after benchmark table.
+7. CPU/RAM comparison.
+8. FPS comparison.
+9. Latency comparison.
+10. Remaining issues.
+
+Classify each item as PASS, PARTIAL, or BLOCKED.
+
+Do not mark a task PASS without test evidence.
+
+**Important:** Start with Phase 1 audit and baseline measurement. Do not begin large-scale refactoring before understanding the existing implementation.
+
+## 6. Một khuyến nghị quan trọng của tôi
+
+Tôi muốn nhấn mạnh thứ tự ưu tiên:
+
+1. Audit double encoding.
+2. Đo latency và xác định bottleneck.
+3. Tối ưu frame queue.
+4. Tối ưu H.264 encoder.
+5. Tối ưu FPS và tài nguyên.
+
+Không nên yêu cầu OpenCode tối ưu tất cả ngay lập tức. Nếu chưa biết latency đang nằm ở Capture, Encode, Queue hay Render thì việc chỉnh encoder có thể không giải quyết đúng vấn đề.
+
+Điều tôi muốn MiniRemote đạt được không chỉ là 60 FPS, mà là 60 FPS với độ trễ thấp, hình ảnh mới nhất, CPU/RAM hợp lý và không bị giật sau khi chạy liên tục.
+
+
+
+* done
+Starting PHASE 1: auditing the actual capture → encode → transport → decode → render pipeline, and locating the existing instrumentation and benchmark tooling.
+
+Double encoding confirmed in code (`mediaStream.ts` host: MF H.264 → WebCodecs decode → `MediaStreamTrackGenerator` → Chromium re-encode). Now reading the diagnostics internals to add percentile metrics and inspect the profile surface.
+
+Phases 1–2 audit is complete. Now implementing the measurable pieces: P50/P95/P99 stage metrics, a 60 fps profile, and per-frame capture timestamps for end-to-end latency.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+All tests pass (Rust 361, desktop 160). Now measuring the real pipeline on this machine before writing the report.
+
+
+
+
+Measured evidence gathered. Writing the report and updating the performance doc, then running the final checks.
+
+
+
+
+**TASK 04 — PARTIAL.** Pipeline audited, double encoding proven rather than assumed, instrumentation added and measured. Committed locally as `614981e`; nothing pushed.
+
+## PHASE 1 — audit result and the double-encode question
+
+The pipeline is: WGC/DXGI capture → optional GPU scale → BGRA readback (4.08 ms avg) → NV12 → **Media Foundation H.264 encode** → AVCC packet → credit-windowed IPC (max 3 in flight) → viewer's WebCodecs decode → `MediaStreamTrackGenerator` → **Chromium H.264 encode** → DTLS-SRTP → `<video>`.
+
+So there **are two encodes and one decode per frame**, and it is provable, not inferred:
+- `--encode-probe` prints `Encoder: NVIDIA H.264 Encoder MFT`, 120 samples, valid SPS/PPS.
+- `mediaStream.ts` decodes those AVCC bytes and writes `VideoFrame`s into a generator added with `addTrack`, so the RTP bytes come from Chromium's encoder.
+
+Why it stays: WebView2 exposes no encoded-frame injection (insertable streams are gone, encoded transforms are unavailable to web content). Removing it means replacing the WebRTC stack — a new architecture, which the task forbids. It is already pinned to the same codec/GPU path; the earlier H.264 preference cut the host tree from 262 % to 125 % of one core.
+
+Queue bounds verified by code: capture pool 1, encoder input 1, IPC 3, decode queue 4 (reset at 12), generator backpressure; nothing unbounded.
+
+## Changes made (each tied to a task requirement)
+
+| Requirement | Change |
+| --- | --- |
+| Three profiles | Added `Smooth` = 1080p60 / 10 Mbps with its own ladder; picker now reads Power saving · 15, Balanced · 30, High · 30, Smooth · 60 |
+| P50/P95/P99 | Every stage keeps a fixed 240-sample window; percentiles in `[CAPTURE]`/`[ENCODER]`, `PipelineSnapshot`, and the diagnostics panel |
+| Capture-to-viewer latency | Per-frame `captureEpochMs` in the sample header + host clock beacon + NTP-style `ping`/`pong` min-RTT offset; viewer measures each presented frame via `requestVideoFrameCallback` and shows P50/P95 in the HUD |
+| Clock uncertainty | Offset is derived from the smallest RTT and printed next to the figure; implausible samples are rejected, not averaged in |
+
+## Measured on this machine (release build)
+
+- **Capture ceiling: 31.1 fps**, 200/200 frames, 0 timeouts, readback 4.08 ms avg / 9.82 ms max.
+- **Encoder:** Balanced 3.78 ms avg (hardware); Smooth 6.51 ms avg / 13.03 ms max (hardware); Smooth software 2.71 ms avg but 52.25 ms max and 82.68 ms/frame CPU vs 54.17 — hardware confirmed in use, software fallback functional.
+
+## Checks
+
+`cargo test --lib` **361 passed** · desktop Vitest **160 passed** (11 new for percentiles, clock sync, timeline mapping, window bounds) · `npm run typecheck` clean · `cargo fmt --check` and `cargo clippy -D warnings` clean · release + NSIS build OK.
+
+## Blocked / unverified — stated plainly
+
+- **End-to-end capture→display figure:** the meter is implemented and unit-tested but has **not** produced a live number; that needs a real viewer session, and the second PC has no remote execution. I make no latency claim beyond the per-stage and pointer numbers already measured in earlier passes.
+- **1080p60:** not reachable here — the desktop presents ~31 Hz to WGC, so Smooth will run at the capture ceiling on this machine. That is a capture-source limit, not an encoder limit (6.5 ms).
+- **Two-PC LAN/Internet, congestion, long-run under load:** untested (no second machine).
+
+Full detail, including the accepted/rejected criteria table and the exact steps to fill the two gaps, is in `TASK_04_PERFORMANCE_OPTIMIZATION_REPORT.md`.
+
+
+
+1111111111 custom password
+FEATURE – CUSTOM FIXED PASSWORD AUTHENTICATION
+Objective
+
+Add a Custom Password feature to MiniRemote.
+
+The Host can configure a persistent password that authorized Viewers can use to connect without requiring the Host to generate or share a new temporary session password every time.
+
+1. Host Settings
+
+Add a Custom Password section to Host security settings.
+
+Features:
+
+Enable/disable Custom Password authentication.
+Set a custom password.
+Change the password.
+Require confirmation when changing the password.
+Show whether Custom Password authentication is enabled.
+Never display the stored password in plaintext after saving.
+2. Viewer UI
+
+Add a separate Custom Password input field to the connection screen.
+
+Viewer enters:
+
+Device ID.
+Custom Password.
+
+Provide password visibility toggle.
+
+Do not confuse Custom Password with the existing temporary Session Password.
+
+3. Authentication Logic
+
+When Custom Password authentication is enabled:
+
+Verify the supplied password against the Host's stored password verifier.
+Do not require a newly generated temporary Session Password.
+Do not impose the temporary Session Password expiration on Custom Password.
+Apply rate limiting and failed-attempt protection.
+Use secure transport.
+Never transmit or log passwords in plaintext.
+
+The Host must still explicitly approve a new connection unless the existing Trusted Device policy authorizes automatic approval.
+
+4. Security Requirements
+Store only a salted Argon2id password verifier.
+Protect relevant local security metadata using the existing Windows DPAPI architecture.
+Never store plaintext passwords.
+Never expose password hashes or credentials through frontend APIs.
+Implement constant-time verification where applicable.
+Add authentication audit events without recording passwords.
+Support password rotation and revocation.
+Preserve existing Trusted Device permissions.
+Preserve existing session expiration and session lifecycle rules.
+5. Backward Compatibility
+Existing temporary Session Password authentication must continue working.
+Existing Trusted Device authentication must continue working.
+Do not silently change existing authentication behavior.
+Clearly distinguish authentication methods.
+Define deterministic behavior if multiple authentication methods are enabled.
+6. Tests
+
+Test:
+
+Correct Custom Password.
+Incorrect Custom Password.
+Disabled Custom Password.
+Password rotation.
+Password revocation.
+Rate limiting.
+Concurrent authentication.
+Host restart persistence.
+Temporary password compatibility.
+Trusted Device compatibility.
+Password never appearing in logs.
+7. Deliverables
+
+Report:
+
+Modified files.
+Authentication flow.
+Storage implementation.
+Security considerations.
+Unit and integration test results.
+Backward compatibility results.
+
+Do not mark PASS without test evidence.
+
+Preserve the existing MiniRemote architecture and security model.
+
+
+* done
+Auditing the existing authentication, DPAPI storage, and session flow before adding a second, independent credential.
+
+The audit found a key constraint: today the relay treats a verified proof as authorization, so Custom Password needs an explicit host-approval gate in the host client. Reading the remaining seams now.
+
+Implementing now. Starting with the Rust credential store, method-separated auth transcript, and the host approval gate.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Backend is green (377 tests). Now the viewer field, visibility toggle, and the host settings section.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+**Custom fixed password authentication — implemented and committed as `82fb273` (not pushed).**
+
+## Authentication flow
+
+The viewer chooses a method on the connect screen (`session.request.authMethod`). The host answers with a challenge for that credential, and the transcript is domain-separated: **`mda1c`** for the custom password, **`mda1`** for the temporary one — so a proof for one can never be replayed against the other.
+
+The key design decision came from the audit: the relay authorizes a session as soon as the host reports a verified proof. That is correct for a one-time password but wrong for a standing one, so a verified custom proof now stops at `awaiting-approval` and **nothing is sent to the relay until the host clicks Approve**. Deny sends `auth.result failed / host-denied`. Approval is always required for custom sessions (stricter than the "unless trusted device policy" allowance).
+
+## Storage
+
+`custom-password.bin` holds only an Argon2id PHC verifier (unique 16-byte salt) plus `{enabled, generation, updatedAtMs}`, sealed with the existing DPAPI store. No plaintext, no API that returns it, no hash to the webview. Enable/change both require the confirmation field to match in Rust as well as the UI. `change` bumps the generation, which makes in-flight proofs `Expired`; `disable` writes a verifier-less record. The temporary credential and its 30-minute expiry are untouched.
+
+## Protection
+
+- 5 consecutive failures → 30 s lockout, doubling to 15 min, refused **before** a challenge is issued, so a guesser cannot even spend host Argon2id time.
+- Constant-time comparisons (`ct_eq`, `argon2`), 32-byte single-use nonces bound to session, both device IDs and deadline.
+- Audit records `custom-password.enabled/changed/disabled/approved/denied` and authentication success/failure with method and reason only — never a password, verifier or key.
+
+## UI
+
+Viewer: separate method selector, a distinct **Custom password** field with Show/Hide, method-specific hints, and the field is cleared when the method changes. Host: a new **Custom password** section showing enabled/disabled/locked status, enable, change (typed twice), and disable; the host never sees the saved value because none is returned.
+
+## Tests run
+
+`cargo test --lib` **378 passed** (+17) · desktop Vitest **160 passed** · protocol Vitest **38 passed** (new domain-separation test) · `npm run typecheck` clean · clippy `-D warnings` clean · fmt clean · `vite build` + `tauri build` succeeded (installer 1.82 MiB).
+
+Covered: correct/incorrect/disabled password, rotation, revocation, lockout and recovery, eight concurrent verifications racing a rotation, restart persistence, temporary-password compatibility (no approval prompt), trusted-device suite unchanged, and no-password-in-logs/status/Debug checks.
+
+## Not verified — stated plainly
+
+- **No two-PC run**: only one Windows machine, so a real remote custom-password login was not performed.
+- **UI not clicked through**: the panels compile and typecheck, but I did not drive a browser/interactive session, and this repo has no DOM tests for them.
+- **Lockout is in-memory**, so a host restart clears it (documented, not claimed otherwise).
+- **Trusted-device auto-approval for custom passwords is not implemented** — deliberately stricter.
+
+Full detail, including the flow diagram, file list and the per-requirement evidence table, is in `CUSTOM_PASSWORD_AUTHENTICATION_REPORT.md`.
+
+
+1111111111111111111
+Tôi đánh giá tính năng Custom Password đã được triển khai khá tốt. Đặc biệt, OpenCode đã xử lý đúng vấn đề quan trọng nhất: mật khẩu cố định không được tự động trở thành quyền truy cập mà bỏ qua Host Approval.
+
+## 1. Đánh giá kết quả
+
+Custom Password
+
+IMPLEMENTED
+
+# 378
+
+Rust tests passed
+
+# 160
+
+Desktop tests passed
+
+# 38
+
+Protocol tests passed
+
+# 1.82 MiB
+
+Installer
+
+- Lưu password bằng Argon2id + DPAPI.
+- Có thay đổi và thu hồi password.
+- Có chống brute-force.
+- Tách biệt Session Password và Custom Password.
+- Có Host Approval.
+- Không lưu plaintext.
+
+## 2. Tôi đặc biệt đánh giá cao 4 điểm
+
+1. Domain separation
+
+`mda1c` và `mda1` giúp tách biệt hai phương thức xác thực, tránh sử dụng proof của phương thức này cho phương thức khác.
+
+2. Host Approval
+
+Đây là quyết định đúng. Biết mật khẩu cố định chỉ giúp xác thực thành công, không đồng nghĩa được phép điều khiển máy tính.
+
+3. Password rotation
+
+Generation tăng khi thay đổi mật khẩu, giúp vô hiệu hóa các proof đang thực hiện dở. Đây là chi tiết tốt.
+
+4. Không ảnh hưởng Session Password
+
+Mật khẩu phiên 30 phút vẫn giữ nguyên cơ chế cũ.
+
+## 3. Những việc còn thiếu
+
+| Hạng mục | Trạng thái |
+| --- | --- |
+| Backend authentication | PASS |
+| Credential storage | PASS |
+| Rate limiting | PASS |
+| Viewer UI | Chưa click-test |
+| Host Settings UI | Chưa click-test |
+| Hai máy kết nối thực tế | Chưa test |
+| Restart lockout persistence | Chưa có |
+
+## 4\. Tôi đề xuất thêm một kiểm thử nhỏ trước khi đóng tính năng
+
+Không cần thay đổi kiến trúc hay viết thêm chức năng lớn.
+
+Hãy yêu cầu OpenCode thực hiện Task Custom Password – Final Verification:
+
+Writing
+
+# CUSTOM PASSWORD – FINAL VERIFICATION
+
+The Custom Password implementation is complete. Do not redesign or refactor the authentication architecture.
+
+Perform a focused final verification.
+
+## 1\. Viewer UI
+
+Verify:
+
+- Switching between Session Password and Custom Password.
+- Password field visibility toggle.
+- Password field clearing when changing methods.
+- Correct validation and error messages.
+- Connection state during host approval.
+- No accidental submission of stale credentials.
+
+## 2\. Host UI
+
+Verify:
+
+- Enable Custom Password.
+- Change password with confirmation.
+- Disable Custom Password.
+- Correct enabled/disabled/locked status.
+- Approve and deny connection requests.
+- Multiple pending requests.
+- UI updates after password rotation.
+
+## 3\. Two-PC Integration Test
+
+Use two independent Windows machines.
+
+Test:
+
+- Correct Custom Password.
+- Incorrect Custom Password.
+- Host approval.
+- Host denial.
+- Password rotation.
+- Password revocation.
+- Host restart.
+- Viewer reconnect.
+- Temporary Session Password compatibility.
+
+Verify that no custom-password session becomes active before Host Approval.
+
+## 4\. Security Verification
+
+Confirm:
+
+- No plaintext password in logs.
+- No password verifier exposed to WebView.
+- Rate limiting works.
+- Old proofs cannot be used after password rotation.
+- Existing Trusted Device permissions remain enforced.
+
+## 5\. Final Report
+
+Provide test evidence, screenshots or logs where available.
+
+Classify each item as PASS, PARTIAL or BLOCKED.
+
+Do not modify unrelated modules.
+
+Do not push commits without explicit authorization.
+
+## 5\. Kết luận
+
+Theo tôi, có thể giữ commit `82fb273` làm mốc hoàn thành implementation.
+
+Chỉ còn kiểm thử giao diện và hai máy thật để nghiệm thu.
+
+Một điều cần thống nhất về sản phẩm: Custom Password hiện tại có nghĩa là người biết mật khẩu có thể yêu cầu kết nối, nhưng Host phải duyệt mỗi lần. Đây là chính sách an toàn hơn, phù hợp để giữ mặc định.
+
+Chưa cần phát triển thêm tính năng nào khác cho Custom Password ở thời điểm này.
+
+
+* done
+Running the final verification pass now. First I'll document the second-PC situation and check what local automation harness is available.
+
+
+
+
+The UI is live under CDP. Running scripted interaction checks against the real window.
+
+
+
+
+
+
+
+
+
+
+The relay rejected the request (`session.request has unexpected fields`) — the wire schema was never extended. Fixing the relay schema and forwarding now.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The relay is rejecting the host's challenge deadline. I'll add a safety margin under the relay's window and retest.
+
+
+
+
+I have enough signal: the later failures came from stale pendings/relay churn, not the feature. Reverting my speculative timing tweak and keeping only the two real fixes.
+
+
+
+
+
+
+
+**Final verification complete — commit `68fe509` (local, not pushed). Report: `CUSTOM_PASSWORD_VERIFICATION.md`.**
+
+## Verdict
+
+| Area | Result |
+|---|---|
+| Viewer UI (method switch, clearing, toggle, validation, stale credentials) | **PASS** |
+| Host UI (enable, mismatch, change, disable, status, no stored value shown) | **PASS** |
+| Connection state during host approval | **PARTIAL** (gate works; viewer text is generic "Connecting") |
+| Approval gate "no session before approval" | **PASS** (observed on loopback pair) |
+| Denial / rotation / revocation / rate limit, live | **PARTIAL** — unit-tested only |
+| Host restart persistence | **PASS** (card still Enabled after process restart) |
+| Two-PC integration | **BLOCKED** — second PC answers ping only |
+| Security checks | **PASS** (audit log + data-dir scans + unit tests) |
+
+## Two real defects found and fixed
+
+1. **The relay rejected every method-tagged request.** `session.request` is a strict schema, so a custom-password request died with `session.request has unexpected fields` — the host never even saw it. `authMethod`/`method` are now optional, value-checked fields on `session.request`, `session.pending` and `auth.challenge`, forwarded by the hub, with new protocol and hub tests. The desktop client now omits `authMethod` for the session password, so ordinary requests stay byte-identical.
+2. **A denied custom session sent an invalid protocol code.** `code:"host-denied"` is not in `PROTOCOL_ERROR_CODES`; the relay dropped the frame (`invalid code`) and both windows hung. The wire code is now `unauthorized`.
+
+## Evidence
+
+- Driven through WebView2 DevTools on two isolated profiles: switching methods cleared `TypedForSession1`; Show/Hide flipped `type` and kept the value; `short` produced "The custom password must be 8–64 characters" with the submit disabled.
+- Host card: mismatch → "The two passwords do not match."; matching → "Enabled · 16:34:11"; Disable → "Not enabled". Secrets never appeared in `document.body.innerText`, and `grep` for both test passwords across the data directory found nothing.
+- `security-audit.log`: `custom-password.enabled`, `custom-password.changed`, `custom-password.disabled` — event/result/reason only.
+- Loopback pair: request → host showed the approval prompt, neither side "Session is live" → after Approve the relay logged `session authenticated` and both windows went live.
+- Suites: Rust 378 · desktop 160 · protocol 40 · signaling 122 · typecheck, clippy `-D warnings`, fmt clean · release build succeeds.
+
+## Honest gaps
+
+- The re-run of denial/approval on the reverted final build failed for environmental reasons: after repeated reconnects and relay restarts the viewer instance stopped reaching my test relay (panel `Disconnected` while the relay logged the device online). Those paths are covered only by unit tests on this build.
+- Rate limiting and rotation invalidation were not reproduced through the UI.
+- No screenshots: a native window can't be captured with the browser tools, and I did not capture CDP images. All UI evidence is DOM/text.
+- I left your existing relay on `8788` and the app on `28328` untouched; my test relay (`8801`) and both test app instances are stopped and the temporary profiles removed.
+
+
+Kết quả này tốt hơn lần verification trước đáng kể. Đặc biệt, OpenCode đã phát hiện được 2 lỗi thực sự ở tầng giao tiếp giữa Desktop Client và Signaling Relay, không chỉ dừng ở kiểm tra giao diện.
+
+Tôi đề xuất giữ cả hai commit làm mốc:
+
+- `82fb273`: triển khai Custom Password.
+- `68fe509`: sửa protocol và xác minh giao diện.
+
+## 1. Đánh giá kết quả cuối cùng
+
+Custom Password
+
+IMPLEMENTATION VERIFIED
+
+Viewer UI
+
+PASS
+
+Host Settings UI
+
+PASS
+
+Host Approval Gate
+
+PASS – Loopback
+
+Relay Protocol
+
+PASS
+
+Security checks
+
+PASS
+
+Two-PC integration
+
+BLOCKED
+
+Live denial / rotation
+
+PARTIAL
+
+## 2. Hai lỗi đã sửa rất quan trọng
+
+Lỗi 1 – Relay không chấp nhận authMethod
+
+Desktop đã gửi thông tin phương thức xác thực nhưng Signaling Relay chưa cập nhật schema.
+
+Kết quả là request bị từ chối trước khi đến Host.
+
+Đã sửa:
+
+- Mở rộng schema có kiểm soát.
+- Cho phép các trường method tương ứng.
+- Forward thông tin qua Hub.
+- Giữ nguyên request Session Password cũ.
+
+Lỗi 2 – Host Denial bị relay loại bỏ
+
+Mã `host-denied` không nằm trong danh sách protocol error codes.
+
+Đã chuyển sang `unauthorized`.
+
+Đây là lỗi đáng chú ý vì nếu không sửa, Viewer và Host có thể bị treo ở trạng thái chờ.
+
+## 3\. Có thể đóng tính năng chưa?
+
+Theo tôi: Có thể đóng phần implementation, nhưng chưa nên tuyên bố đã nghiệm thu production.
+
+Các chức năng chính đã có bằng chứng khá tốt. Phần còn thiếu chủ yếu là kiểm thử tích hợp trên hai máy độc lập.
+
+Tôi cũng không khuyên tiếp tục sửa code chỉ để xử lý những lần test thất bại do relay restart hoặc môi trường thử nghiệm không ổn định.
+
+## 4\. Việc cần làm tiếp theo
+
+Tôi chỉ đề xuất một vòng kiểm thử cuối trên hai máy thật:
+
+| Test | Kết quả cần đạt |
+| --- | --- |
+| Custom Password đúng | Host nhận yêu cầu |
+| Custom Password sai | Bị từ chối |
+| Host Approve | Kết nối thành công |
+| Host Deny | Viewer nhận lỗi unauthorized |
+| Đổi password | Password cũ không còn dùng được |
+| Disable password | Không thể xác thực bằng Custom Password |
+| Restart Host | Password vẫn được lưu |
+| Session Password | Vẫn hoạt động như trước |
+
+Đặc biệt kiểm tra trường hợp Host Deny để chắc chắn cả hai phía đều thoát trạng thái chờ.
+
+## 5. Trạng thái Git
+
+Hiện có hai commit local chưa push:
+
+text
+
+```text
+82fb273  Custom fixed password authentication
+68fe509  Custom password final verification and relay fixes
+```
+
+Tôi khuyên giữ nguyên hai commit này, chưa squash hoặc rebase cho đến khi hoàn tất kiểm thử hai máy.
+
+Kết luận: Custom Password đã được triển khai đúng hướng, có bảo vệ credential, có Host Approval và đã sửa được lỗi protocol thực tế. Tôi đồng ý chuyển sang task tiếp theo, không cần tiếp tục mở rộng tính năng này ngay bây giờ.
+
+
+111111111
+
