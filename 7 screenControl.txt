@@ -12273,5 +12273,748 @@ Tôi khuyên giữ nguyên hai commit này, chưa squash hoặc rebase cho đế
 Kết luận: Custom Password đã được triển khai đúng hướng, có bảo vệ credential, có Host Approval và đã sửa được lỗi protocol thực tế. Tôi đồng ý chuyển sang task tiếp theo, không cần tiếp tục mở rộng tính năng này ngay bây giờ.
 
 
-111111111
+111111111 line 10553 continue
+giờ quay lại Task 03 này dc ko
+| Hạng mục | Kết quả |
+| ICE configuration | PASS |
+| STUN/TURN URL validation | PASS |
+| TURN UDP/TCP/TLS integration | PASS - Client |
+ICE timeout configuration | PASS |
+| Candidate deduplication | PASS |
+Network path classification | PASS |
+| Failure diagnosticsj PASS |
+Trusted Device regression | PASS |
+Real TURN allocation | NOT TESTED |
+WARP thực tế | NOT TESTED/
+| Hai máy Internet NOT TESTED |
+giờ làm qua server dùng cloudflared dc ko?
+làm sao để chạy cmd: C:\cloudflared\cloudflared.exe tunnel --url
+Ws://10.0.0.142:8788/wS
+hay làm sao rồi cho opencode/freecode lãy domain từ cloudflared? hay là tôi chạy gì xong sau đó lấy domain cho nó làm?
 
+
+Được. Và mình nghĩ chúng ta nên quay lại Task 03, sử dụng Cloudflare Tunnel để đưa Signaling Server của MiniRemote ra Internet trước.
+
+Bạn chưa cần mua VPS ngay. Có thể tận dụng máy Windows đang chạy MiniRemote để thử nghiệm kết nối giữa hai máy ở hai mạng khác nhau.
+
+Nhưng có một điểm cực kỳ quan trọng:
+
+Cloudflare Tunnel giải quyết việc đưa Signaling Server ra Internet, không thay thế TURN Server.
+
+Nghĩa là chúng ta có thể dùng Cloudflare Tunnel để kiểm tra một phần lớn Task 03, nhưng không thể lấy nó làm bằng chứng TURN Relay đã hoạt động.
+
+## 1. Kiến trúc mình đề xuất
+
+## MiniRemote – Cloudflare Tunnel Test
+
+PC B – Host
+
+Windows · LAN IP 10.0.0.142
+
+- MiniRemote Host
+- Signaling Server :8788
+- WebRTC Host
+
+Cloudflare Tunnel
+
+Public HTTPS / WSSDomain được Cloudflare cấp
+
+PC A – Viewer
+
+Mạng Internet khác
+
+- MiniRemote Viewer
+- Kết nối Signaling qua WSS
+- Nhận SDP và ICE candidates
+
+WebRTC media vẫn sử dụng ICE + DTLS/SRTP
+
+Đường truyền video và input không tự động đi qua Cloudflare Tunnel.
+
+Mô hình này cho phép kiểm tra:
+
+- Signaling qua Internet.
+- WebSocket Secure (WSS).
+- Device authentication.
+- Trusted Device.
+- SDP offer/answer.
+- ICE candidate exchange.
+- WebRTC direct connectivity khi có thể.
+
+## 2. Cách chạy Cloudflare Tunnel trên Windows
+
+Bạn đang có:
+
+- `cloudflared.exe`: `C:\cloudflared\cloudflared.exe`
+- Signaling Server: `10.0.0.142`
+- Port: `8788`
+- WebSocket endpoint dự kiến: `/ws`
+
+Lệnh bạn cần chạy trong CMD:
+
+cmd
+
+```cmd
+C:\cloudflared\cloudflared.exe tunnel --url http://10.0.0.142:8788
+```
+
+Có một điểm cần sửa trong lệnh cũ của bạn:
+
+- Không dùng `Ws://`.
+- Dùng `http://` làm địa chỉ origin.
+- Không cần ghi `/ws` vào lệnh Tunnel. Cloudflare sẽ chuyển tiếp đường dẫn `/ws` của request đến server gốc.
+
+Cloudflare Tunnel hỗ trợ WebSocket qua HTTP Upgrade.
+
+Cloudflare Docs
+
++1
+
+### Các bước thực hiện
+
+Bước 1 – Kiểm tra Signaling Server
+
+Mở CMD:
+
+cmd
+
+```cmd
+curl http://10.0.0.142:8788/health
+```
+
+Nếu server có endpoint `/health`, bạn cần nhận được phản hồi từ server.
+
+Nếu không có endpoint này, kiểm tra port:
+
+powershell
+
+```powershell
+Test-NetConnection 10.0.0.142 -Port 8788
+```
+
+`TcpTestSucceeded : True` là dấu hiệu port có thể kết nối được.
+
+Bước 2 – Chạy Tunnel
+
+Mở một cửa sổ CMD riêng:
+
+cmd
+
+```cmd
+C:\cloudflared\cloudflared.exe tunnel --url http://10.0.0.142:8788
+```
+
+Đợi Cloudflare cấp domain.
+
+Ví dụ kết quả:
+
+text
+
+```text
+Your quick Tunnel has been created!
+
+https://random-name.trycloudflare.com
+```
+
+Đây chỉ là domain ví dụ. Domain thật sẽ do Cloudflare cấp.
+
+Bước 3 – Xác định WebSocket URL
+
+Nếu WebSocket server của bạn sử dụng endpoint `/ws`, URL tương ứng sẽ là:
+
+text
+
+```text
+wss://random-name.trycloudflare.com/ws
+```
+
+Đây chính là URL bạn cần đưa cho OpenCode.
+
+Lưu ý: Quick Tunnel tạo domain tạm thời. Khi tắt cloudflared, tunnel ngừng hoạt động; khi tạo lại, domain có thể thay đổi.
+
+Cloudflare Docs
+
++1
+
+## 3. Có nên để OpenCode tự lấy domain không?
+
+Theo mình, không nên để OpenCode tự đoán hoặc tự tìm domain.
+
+Cách tốt nhất là bạn chạy Tunnel trước, sau đó gửi domain thực tế cho OpenCode.
+
+Lý do:
+
+- OpenCode có thể đọc và sửa repository.
+- Nhưng nó không nhất thiết có quyền truy cập tiến trình CMD đang chạy cloudflared.
+- Domain Quick Tunnel được tạo ngẫu nhiên.
+- Mỗi lần tạo Tunnel mới có thể phải cập nhật lại URL.
+
+Bạn chỉ cần cung cấp cho nó một URL cụ thể.
+
+## 4. Gửi domain cho OpenCode
+
+Sau khi có domain, gửi prompt này cho OpenCode:
+
+Writing
+
+# TASK 03 – CLOUDFLARE TUNNEL SIGNALLING INTEGRATION
+
+Current commit: `31f5bbe`
+
+We are resuming Task 03 using Cloudflare Quick Tunnel.
+
+Cloudflare Tunnel is running on the Host PC.
+
+Signaling origin: `http://10.0.0.142:8788`
+
+WebSocket endpoint: `/ws`
+
+Public Cloudflare domain: `<DÁN DOMAIN CLOUDFLARE THỰC TẾ VÀO ĐÂY>`
+
+Public WebSocket URL: `wss://<DOMAIN>/ws`
+
+## OBJECTIVES
+
+1. Inspect existing signaling configuration.
+2. Identify where Viewer obtains its signaling URL.
+3. Update configuration to support the public WSS endpoint.
+4. Preserve LAN connectivity.
+5. Preserve Trusted Device authentication.
+6. Preserve existing WARP compatibility.
+7. Keep STUN/TURN configuration independent from the signaling URL.
+8. Verify WebSocket connection through Cloudflare Tunnel.
+9. Verify SDP offer/answer and ICE candidate exchange.
+10. Run existing regression tests.
+
+## IMPORTANT
+
+- Do not replace STUN/TURN URLs with the Cloudflare domain.
+- Do not claim Cloudflare Tunnel is a TURN server.
+- Do not remove existing ICE servers.
+- Do not bypass Trusted Device verification.
+- Do not weaken authentication.
+- Do not hardcode temporary tunnel domains into production builds.
+- Support configurable signaling URLs through the existing configuration architecture.
+- Do not modify firewall or VPN settings.
+- Do not start Task 04.
+
+## TESTING
+
+Test:
+
+A. Viewer connects to Host signaling through public WSS.
+
+B. Authentication succeeds.
+
+C. Trusted Device verification remains enforced.
+
+D. SDP offer/answer exchange works.
+
+E. ICE candidates are exchanged correctly.
+
+F. WebRTC media connection is established if direct ICE connectivity permits.
+
+G. Existing LAN signaling still works.
+
+Record actual results.
+
+Create:
+
+`TASK_03_CLOUDFLARE_TUNNEL_REPORT.md`
+
+Clearly distinguish signaling connectivity from WebRTC media connectivity and TURN relay.
+
+Do not claim TURN PASS without a real TURN allocation and relayed media traffic.
+
+Commit only Task 03 changes. Do not push.
+
+Start by inspecting the repository.
+
+## 5. Sau khi chạy, chúng ta kiểm tra được những gì?
+
+| Hạng mục | Có thể kiểm tra bằng Tunnel |
+| --- | --- |
+| Public Signaling | Có |
+| WebSocket WSS | Có |
+| Authentication | Có |
+| Trusted Device | Có |
+| SDP exchange | Có |
+| ICE candidate exchange | Có |
+| Direct WebRTC Internet | Có điều kiện |
+| TURN Allocation | Không |
+| TURN Relay | Không |
+
+Lưu ý bảo mật: Quick Tunnel tạo endpoint công khai. Không bật Cloudflare Access yêu cầu đăng nhập trình duyệt cho WebSocket client của MiniRemote nếu chưa tích hợp cơ chế Access tương ứng. Hãy giữ xác thực riêng của MiniRemote, giới hạn endpoint được public và không để lộ API quản trị.
+
+Cloudflare Docs
+
++1
+
+## 6\. Bây giờ bạn làm đúng 2 việc
+
+1\. Chạy lệnh:
+
+cmd
+
+```cmd
+C:\cloudflared\cloudflared.exe tunnel --url http://10.0.0.142:8788
+```
+
+2\. Gửi mình domain `trycloudflare.com` mà CMD trả về.
+
+Mình sẽ giúp bạn xác định URL WSS chính xác và cấu hình để OpenCode kết nối MiniRemote qua Internet.
+
+Chưa cần mua VPS, chưa cần coturn. Trước mắt chúng ta nghiệm thu Signaling Internet và WebRTC direct connectivity; TURN sẽ là bước tiếp theo.
+
+
+đây:  https://outdoor-move-labour-cards.trycloudflare.com
+
+Domain receivedDomain của bạn là:
+
+`outdoor-move-labour-cards.trycloudflare.com`
+
+URL cần đưa vào MiniRemote:
+
+Public Signaling URL
+
+## wss://outdoor-move-labour-cards.trycloudflare.com/ws
+
+ Copy WebSocket URL Public HTTP URL
+
+`https://outdoor-move-labour-cards.trycloudflare.com`
+
+ Mở kiểm tra endpoint
+
+## Việc tiếp theo
+
+1. Giữ nguyên cửa sổ CMD đang chạy `cloudflared`. Đừng đóng nó.
+2. Gửi OpenCode prompt dưới đây.
+
+Writing
+
+Resume MiniRemote Task 03.
+
+Cloudflare Quick Tunnel is running.
+
+Host origin: http://10.0.0.142:8788
+
+Public signaling domain: [https://outdoor-move-labour-cards.trycloudflare.com](<https://outdoor-move-labour-cards.trycloudflare.com>)
+
+Public WebSocket endpoint: wss://outdoor-move-labour-cards.trycloudflare.com/ws
+
+Implement and verify Cloudflare Tunnel signaling connectivity.
+
+Requirements:
+
+1. Inspect existing signaling URL configuration.
+2. Configure Viewer to use the public WSS endpoint.
+3. Preserve local LAN signaling configuration.
+4. Preserve STUN/TURN ICE configuration.
+5. Preserve Trusted Device authentication and revocation.
+6. Preserve WARP compatibility.
+7. Verify WebSocket upgrade and authentication.
+8. Verify SDP and ICE candidate exchange.
+9. Verify WebRTC connection independently of signaling.
+10. Export diagnostics and create TASK\_03\_CLOUDFLARE\_TUNNEL\_REPORT.md.
+
+IMPORTANT: Cloudflare Tunnel is NOT a TURN server. Do not mark TURN allocation or TURN relay as PASS. Do not hardcode this temporary domain into production defaults. Do not weaken authentication. Do not push to GitHub.
+
+Start by inspecting the repository and continue implementation, testing and reporting.
+
+## 3\. Sau đó gửi mình kết quả
+
+Mình cần OpenCode trả lời được ba câu:
+
+- WebSocket WSS đã kết nối thành công chưa?
+- Authentication và Trusted Device có hoạt động không?
+- WebRTC đã kết nối trực tiếp giữa hai máy chưa?
+
+Một lưu ý: Quick Tunnel chỉ tồn tại khi tiến trình cloudflared còn chạy và hostname có thể thay đổi khi tạo lại tunnel.
+
+Cloudflare Docs
+
++1
+
+Chúng ta đang đi đúng thứ tự: hoàn thiện Signaling Internet trước, sau đó kiểm tra WebRTC direct, cuối cùng mới cần TURN server thật.
+
+
+* done
+I'll start by inspecting the repository structure and the signaling URL configuration.
+
+Now let me read the endpoint validation/settings code and the relay config, and probe the live tunnel endpoints.
+
+Tunnel HTTP path works. Now let me find the existing WS/session test tooling I can reuse to verify upgrade, auth, SDP/ICE through the tunnel.
+
+Now let me check the transport/rate-limit handling (behind a tunnel every peer looks like 127.0.0.1) and what WebRTC runtime is available for an independent test.
+
+Cloudflare Tunnel passes the WebSocket upgrade (HTTP 101). Let me read the wire protocol and hub flow so the tunnel harness speaks it exactly.
+
+Now let me read the payload validators (limits the harness must respect) and the Rust endpoint tests I'll extend.
+
+I have the full protocol contract. Now I'll write the tunnel verification harness, the independent WebRTC self-check page, and a Rust test for the public WSS endpoint.
+
+
+
+
+
+
+
+Harness is ready. Running it against the live tunnel now (signaling only — Cloudflare forwards no media).
+
+Two harness bugs (both mine): the negative test derived both sides from the same password, and the staleness case used the wrong sender. Fixing those and adding a Rust test for public WSS endpoints.
+
+
+
+
+Signaling through the tunnel is fully verified. Now the two remaining pieces: a real MiniRemote client on the tunnel endpoint, and the signaling-independent WebRTC check.
+
+The real client connects through the tunnel (`STATUS Connected`, device `189 845 352`). One self-check assertion was reading `protocol` off the wrong stats record — fixing that.
+
+
+
+
+Adding a real STUN binding probe to the harness, and checking the UI controls I'd need to drive a real viewer session on the tunnel.
+
+Let me add the STUN binding probe to the harness and a small CDP driver so I can exercise the real viewer on the tunnel.
+
+
+
+
+Both real clients now sit on the tunnel. Driving a real session between them: viewer `9510` → host `9500`.
+
+A full session is running with signaling through the tunnel and media direct. Capturing the transport details, relay state, and app-level diagnostics export.
+
+Session telemetry captured. Tearing down the two test instances and re-running the harness with the STUN probe for the final diagnostics export.
+
+Clean teardown (only the user's app remains). Final harness run with the STUN binding probe:
+
+All checks pass. Writing the report now.
+
+
+
+
+Done. Cloudflare Tunnel signaling is verified end to end, and the report is committed locally as `9c78869` (not pushed).
+
+## What I changed
+
+| File | Purpose |
+| --- | --- |
+| `apps/desktop/src-tauri/src/networking/endpoint.rs` | Test: a public `wss://` endpoint validates/normalizes, the same host over `ws://` is still refused, nothing compiled in |
+| `scripts/tunnel-verify.mjs` (new) | Protocol probe: health, upgrade, registration, MDA-1 auth (positive **and** negative), SDP/ICE relay, role/staleness rules, no-plaintext assertion, LAN regression, STUN binding |
+| `scripts/webrtc-selfcheck.html` (new) | Peer connection with **no signaling server at all** |
+| `scripts/cdp.mjs` (new) | DevTools driver for reading/driving real windows |
+| `TASK_03_CLOUDFLARE_TUNNEL_REPORT.md` (new) | Full report + diagnostics |
+
+No production default changed (`DEFAULT_SIGNALING_URL` is still loopback, the temporary domain exists only in the report and throwaway `%TEMP%` profiles), and no auth code was touched.
+
+## Verified
+
+**Protocol level** — `30 PASS / 0 FAIL / 1 NOT TESTED` (exit 0), written to `%APPDATA%\com.miniremote.desktop\diagnostics\task03-tunnel-verify.json`:
+- WS upgrade through Cloudflare: **101 → open in 219 ms**, `hello.ack`; ping/pong 46 ms; presence lookup ok
+- Auth: Argon2id `m=19456,t=2,p=1` proof verified, viewer verified host signature, token issued to both; **wrong password → `failed/invalid-credentials`, no `session.ready`**
+- SDP: 452-byte offer and answer relayed byte-identical under one `negotiationId`; **3/3 ICE candidates in order** + end-of-candidates, `sdpMid`/`sdpMLineIndex` intact, host→viewer candidate intact
+- Host offer → `unauthorized`; stale answer → `invalid-message`; 25 frames inspected, none contained the password
+- **LAN preserved:** `ws://10.0.0.142:8788/ws` passes the identical suite; ICE config unchanged (`stunServers 2, turnUrls 0`)
+- STUN in the issued list genuinely answers: `stun.l.google.com:19302` replied in 51 ms, mapped `73.76.87.14:53633`
+
+**Real app pair over the tunnel** — two release instances, both profiles pointed at the tunnel: both showed `STATUS Connected` with the `wss://` URL; host still required **Approve → Allow & share → Allow control**; viewer window played **1280×720, 17 fps, 433 Kbps**; app diagnostics report a nominated **UDP host↔host pair, RTT 1 ms, 477 frames received / 473 decoded / 0 dropped, luma 99.6** (real picture, not black). Clean teardown: `sessions 0, devices 1`.
+
+**WebRTC without signaling** — self-check page: **5/5 PASS** with no ICE servers and **5/5** with the hub-issued STUN (SDP/ICE exchanged in-page, data channel echo, UDP pair).
+
+**Regression** — `cargo test --lib`: 385 passed, 0 failed.
+
+## Not tested (stated as such in the report)
+
+- **TURN allocation / TURN relay: NOT TESTED.** The tunnel forwards the signaling WebSocket only — it is not a TURN server, and `/health` still shows `turn:false`. Two peers that cannot reach each other directly will still get a black screen; a tunnel does not fix that.
+- **Media across the Internet** — both test instances ran here, so the media pair was direct/LAN. Signaling-through-Cloudflare is proven; remote NAT traversal is not.
+- **WARP** — no WARP client on this host, so unverified rather than passing.
+- **PC A (`10.0.0.108`)** could not be driven from here: on that machine set **Settings → Server URL** to `wss://outdoor-move-labour-cards.trycloudflare.com/ws`, press **Save**, then connect to device `938 641 493`.
+
+One finding worth acting on later: `AuthenticationGuard` keys a token bucket on the peer IP, so behind a tunnel every client arrives from `127.0.0.1` and shares one 10/min bucket plus one lockout window. Left unchanged deliberately — trusting `CF-Connecting-IP` is a security decision for its own change.
+
+
+1111111111111111111
+Kết quả này rất tốt. Mình đánh giá đây là một bước tiến lớn của Task 03. Đặc biệt, lần này OpenCode không chỉ chạy unit test mà đã chạy hai MiniRemote release instances, thực hiện một phiên remote desktop thật và kiểm tra media thực tế.
+
+Tuy nhiên, cần phân biệt rõ: đã nghiệm thu Signaling qua Cloudflare, chưa nghiệm thu kết nối media giữa hai mạng Internet khác nhau.
+
+# 1. Đánh giá kết quả
+
+Cloudflare Signaling
+
+PASS
+
+# 30 / 30
+
+Protocol checks passed · 1 NOT TESTED
+
+WebSocket WSS / HTTP 101
+
+PASS
+
+Password authentication
+
+PASS
+
+Trusted Device / Authorization
+
+PASS
+
+SDP / ICE exchange
+
+PASS
+
+LAN regression
+
+PASS
+
+Real TURN allocation
+
+NOT TESTED
+
+Internet-to-Internet media
+
+NOT TESTED
+
+WARP
+
+NOT TESTED
+
+## 2. Kết quả thực tế đáng chú ý
+
+### Signaling qua Cloudflare
+
+- WebSocket mở thành công: HTTP 101.
+- Thời gian kết nối: 219 ms.
+- Ping/pong: 46 ms.
+- Authentication sai bị từ chối.
+- Không cấp `session.ready` khi nhập sai mật khẩu.
+- SDP và ICE candidates được chuyển tiếp chính xác.
+- Không phát hiện password dạng plaintext trong 25 frame kiểm tra.
+
+### Remote desktop thực tế
+
+## Media session telemetry
+
+# 1280×720
+
+Resolution
+
+# 17 FPS
+
+Video frame rate
+
+# 433 Kbps
+
+Video bitrate
+
+# 0
+
+Dropped frames
+
+- 477 frames received.
+- 473 frames decoded.
+- Luma 99.6 – có hình ảnh thực.
+- UDP host-to-host nominated pair.
+- RTT 1 ms.
+
+Điều này chứng minh ứng dụng có thể hoạt động với Signaling đi qua Cloudflare trong khi media truyền trực tiếp.
+
+Nhưng vì cả hai instance chạy trên cùng máy nên RTT 1 ms không đại diện cho Internet thực tế.
+
+# 3. Có một vấn đề cần xử lý trước khi đưa vào production
+
+OpenCode phát hiện:
+
+`AuthenticationGuard` sử dụng IP của peer để giới hạn tốc độ đăng nhập.
+
+Khi chạy qua Cloudflare Tunnel, server có thể nhìn thấy tất cả client dưới địa chỉ `127.0.0.1`.
+
+Điều này có nghĩa:
+
+- Các người dùng có thể dùng chung rate-limit bucket.
+- Một người thử mật khẩu sai nhiều lần có thể ảnh hưởng người khác.
+- Có thể gây lockout nhầm.
+
+Không nên sửa bằng cách tin tưởng tùy tiện header `CF-Connecting-IP`.
+
+Cần xác minh request thực sự đến từ Cloudflare Tunnel đáng tin cậy, chỉ tin header ở đúng ranh giới proxy và có cơ chế chống giả mạo khi truy cập trực tiếp.
+
+Mình đề xuất xử lý thành một task bảo mật riêng, không sửa vội trong lần nghiệm thu vừa rồi.
+
+# 4. Bây giờ cần kiểm tra PC A
+
+Đây là bước quan trọng nhất tiếp theo.
+
+Trên PC A (`10.0.0.108`), thực hiện:
+
+1. Mở MiniRemote.
+2. Vào Settings.
+3. Tìm Server URL.
+4. Nhập:
+
+text
+
+```text
+wss://outdoor-move-labour-cards.trycloudflare.com/ws
+```
+
+5. Save.
+6. Kết nối tới Device ID:
+
+text
+
+```text
+938 641 493
+```
+
+7. Trên Host, thực hiện Approve → Allow & share → Allow control.
+
+Sau đó thử điều khiển màn hình.
+
+Lưu ý: Hai máy phải thực sự ở hai mạng Internet khác nhau để kết quả có giá trị nghiệm thu Internet.
+
+# 5. Prompt tiếp theo cho OpenCode
+
+Mình đề xuất Task 03.2, tập trung nghiệm thu PC A và PC B, chưa triển khai coturn.
+
+Writing
+
+# TASK 03.2 – REAL TWO-PC INTERNET CONNECTIVITY ACCEPTANCE
+
+Project: MiniRemote
+
+Current commit: 9c78869
+
+Current status:
+
+- Cloudflare signaling: PASS
+- Same-machine WebRTC: PASS
+- Real Internet-to-Internet media: NOT TESTED
+- TURN: NOT TESTED
+- WARP: NOT TESTED
+
+## OBJECTIVE
+
+Complete real two-PC connectivity testing using the existing Cloudflare Quick Tunnel.
+
+Do not rewrite the existing networking architecture.
+
+## TEST ENVIRONMENT
+
+Host PC: 10.0.0.142
+
+Viewer PC: 10.0.0.108
+
+Public signaling: wss://outdoor-move-labour-cards.trycloudflare.com/ws
+
+Host device ID: 938 641 493
+
+## PHASE 1 – PREPARE TEST
+
+Inspect current diagnostics and connection configuration.
+
+Verify:
+
+- Both clients use the same public signaling endpoint.
+- Both clients receive valid ICE configuration.
+- Existing Trusted Device security remains enabled.
+- Host approval is mandatory.
+
+Do not change security settings to simplify testing.
+
+## PHASE 2 – REAL TWO-PC SESSION
+
+Coordinate with the user to run the Viewer on PC A.
+
+Do not assume remote access to PC A.
+
+Verify:
+
+- WSS connection.
+- Authentication.
+- Trusted Device verification.
+- SDP negotiation.
+- ICE candidate exchange.
+- Nominated candidate pair.
+- DTLS connection.
+- Video streaming.
+- Mouse and keyboard control.
+
+## PHASE 3 – NETWORK PATH
+
+Determine the actual nominated candidate pair.
+
+Classify:
+
+- Direct LAN.
+- Direct Internet.
+- STUN-assisted.
+- TURN relay.
+- Failed.
+
+Do not infer Internet connectivity from signaling success.
+
+## PHASE 4 – QUALITY
+
+Capture:
+
+- Connection establishment time.
+- RTT.
+- Video FPS.
+- Bitrate.
+- Frames received.
+- Frames decoded.
+- Dropped frames.
+- CPU and memory where available.
+
+## PHASE 5 – REGRESSION
+
+Verify:
+
+- LAN signaling still works.
+- Cloudflare WSS still works.
+- Trusted Device remains enforced.
+- Session revocation still works.
+- Host authorization remains mandatory.
+
+## PHASE 6 – REPORT
+
+Create TASK\_03\_2\_TWO\_PC\_ACCEPTANCE\_REPORT.md.
+
+Mark tests requiring user interaction as NOT TESTED until actual evidence is collected.
+
+Do not claim TURN PASS.
+
+Do not claim WARP PASS.
+
+Do not start Task 04.
+
+Do not push to GitHub.
+
+Start with repository inspection.
+
+# 6. Trạng thái Task 03 hiện tại
+
+| Hạng mục | Trạng thái |
+| --- | --- |
+| ICE configuration | PASS |
+| STUN/TURN client integration | PASS |
+| ICE timeout | PASS |
+| Candidate deduplication | PASS |
+| Network diagnostics | PASS |
+| Trusted Device regression | PASS |
+| Cloudflare WSS signaling | PASS |
+| Same-machine WebRTC | PASS |
+| Two-PC Internet media | NOT TESTED |
+| TURN relay | NOT TESTED |
+| WARP | NOT TESTED |
+
+Quan điểm của mình: Chưa cần mua VPS ngay. Hãy thử PC A kết nối PC B qua Cloudflare trước. Nếu media trực tiếp thành công, chúng ta đã giải quyết được một phần quan trọng của Task 03 mà chưa cần TURN.
+
+Sau đó mới đầu tư VPS để giải quyết các trường hợp NAT đối xứng, UDP bị chặn và kết nối bắt buộc phải relay.
+
+
+* done
+
+11111111111111
